@@ -1,5 +1,7 @@
 package model
 
+import model.Color.Color
+
 // Files are numerical for easier processing. A-file is 1.
 case class Square(file: Int, rank: Int) {
   def changeFile(delta: Int): Square = {
@@ -16,18 +18,10 @@ object Board {
   private val RankAndFileMax = 8
 }
 
-class Board {
-  private var pieces = Map[Square, Piece]()
-  //TODO(hinderson): revisit storing kings explicitly here.
-  private var whiteKingSquare = Square(4, 1)
-  private var blackKingSquare = Square(4, 8)
-  private var turnColor       = Color.White
-
-  def this(pieces: Map[Square, Piece], turn: Color.Value = Color.White) = {
-    this()
-    this.pieces = pieces
-    this.turnColor = turn
-  }
+class Board(
+    private val pieces: Map[Square, Piece],
+    private var turnColor: Color = Color.White
+) {
 
   def isInBounds(square: Square): Boolean = {
     val bounds = Board.RankAndFileMin to Board.RankAndFileMax

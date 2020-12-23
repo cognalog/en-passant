@@ -13,6 +13,4 @@ object Color extends Enumeration {
   val White, Black = Value
 }
 
-class Piece(var pieceType: PieceType, var color: Color) {
-
-}
+case class Piece(var pieceType: PieceType, var color: Color)

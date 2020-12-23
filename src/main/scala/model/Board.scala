@@ -8,6 +8,12 @@ object Board {
 }
 
 class Board {
+  def this(pieces: Map[Square, Piece], turn: Color.Value = Color.White) = {
+    this()
+    this.pieces = pieces
+    this.turn = turn
+  }
+
   def isLegalMove(start: Square, dest: Square): Either[String, Unit] = {
     if (!pieces.contains(start)) {
       return Left(f"There's no piece at ${start.toString}")

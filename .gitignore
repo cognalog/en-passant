@@ -1,5 +1,6 @@
 *.class
 *.log
+.scalafmt.conf
 project
 target
 .idea

@@ -1,7 +1,6 @@
 package model
 
 import model.Color.Color
-import model.PieceType.PieceType
 
 object PieceType extends Enumeration {
   type PieceType = Value
@@ -13,4 +12,9 @@ object Color extends Enumeration {
   val White, Black = Value
 }
 
-case class Piece(var pieceType: PieceType, var color: Color)
+abstract class Piece(val color: Color) {
+  def getLegalMoves(currentSquare: Square, board: Board): Set[Square]
+  def isColor(color: Color): Boolean = {
+    color == this.color
+  }
+}

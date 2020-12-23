@@ -1,17 +1,49 @@
 package model
 
 // Files are numerical for easier processing. A-file is 1.
-case class Square(file: Int, rank: Int)
+case class Square(file: Int, rank: Int) {
+  def changeFile(delta: Int): Square = {
+    Square(file + delta, rank)
+  }
+
+  def changeRank(delta: Int): Square = {
+    Square(file, rank + delta)
+  }
+}
 
 object Board {
-  val RowAndColSize = 8
+  private val RankAndFileMin = 1
+  private val RankAndFileMax = 8
 }
 
 class Board {
+  private var pieces = Map[Square, Piece]()
+  //TODO(hinderson): revisit storing kings explicitly here.
+  private var whiteKingSquare = Square(4, 1)
+  private var blackKingSquare = Square(4, 8)
+  private var turnColor       = Color.White
+
   def this(pieces: Map[Square, Piece], turn: Color.Value = Color.White) = {
     this()
     this.pieces = pieces
-    this.turn = turn
+    this.turnColor = turn
+  }
+
+  def isInBounds(square: Square): Boolean = {
+    val bounds = Board.RankAndFileMin to Board.RankAndFileMax
+    bounds.contains(square.file) && bounds.contains(square.rank)
+  }
+
+  def move(start: Square, dest: Square): Unit = {
+    val legalMove = isLegalMove(start, dest)
+    isLegalMove(start, dest).fold(
+      err =>
+        throw new IllegalArgumentException(
+          f"${start.toString} --> ${dest.toString} is not legal: $err"
+        ),
+      unused => unused
+    )
+    swapTurns()
   }
 
   def isLegalMove(start: Square, dest: Square): Either[String, Unit] = {
@@ -19,32 +51,28 @@ class Board {
       return Left(f"There's no piece at ${start.toString}")
     }
     val piece = pieces(start)
-    if (piece.color != turn) {
-      return Left(f"The piece at ${start.toString} is ${piece.color}, and it is $turn's turn.'")
+    if (!piece.isColor(turnColor)) {
+      return Left(
+        f"The piece at ${start.toString} is ${piece.color}, and it is $turnColor's turn.'"
+      )
     }
-    //TODO(hinderson): incorporate other rules
+    if (!piece.getLegalMoves(start, this).contains(dest)) {
+      return Left(
+        f"The ${piece.getClass.getSimpleName} at $start cannot legally move to $dest"
+      )
+    }
     Right()
   }
 
   def swapTurns(): Unit = {
-    if (turn == Color.White) {
-      turn = Color.Black
+    if (turnColor == Color.White) {
+      turnColor = Color.Black
     } else {
-      turn = Color.White
+      turnColor = Color.White
     }
   }
 
-  def move(start: Square, dest: Square): Unit = {
-    val legalMove = isLegalMove(start, dest)
-    if (!legalMove.isRight) {
-      throw new IllegalArgumentException(f"${start.toString} --> ${dest.toString} is not legal: ${legalMove.left}")
-    }
-    swapTurns()
+  def pieceAt(square: Square): Option[Piece] = {
+    pieces.get(square)
   }
-
-  private var pieces = Map[Square, Piece]()
-  //TODO(hinderson): revisit storing kings explicitly here.
-  private var whiteKing = Square(4, 1)
-  private var blackKing = Square(4, 8)
-  private var turn = Color.White
 }

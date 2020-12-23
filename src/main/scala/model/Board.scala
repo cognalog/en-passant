@@ -19,8 +19,9 @@ object Board {
 }
 
 class Board(
-    private val pieces: Map[Square, Piece],
-    private var turnColor: Color = Color.White
+    val pieces: Map[Square, Piece],
+    val turnColor: Color = Color.White,
+    val enPassant: Option[Square] = None
 ) {
 
   def isInBounds(square: Square): Boolean = {
@@ -28,16 +29,8 @@ class Board(
     bounds.contains(square.file) && bounds.contains(square.rank)
   }
 
-  def move(start: Square, dest: Square): Unit = {
-    val legalMove = isLegalMove(start, dest)
-    isLegalMove(start, dest).fold(
-      err =>
-        throw new IllegalArgumentException(
-          f"${start.toString} --> ${dest.toString} is not legal: $err"
-        ),
-      unused => unused
-    )
-    swapTurns()
+  def move(start: Square, dest: Square): Either[String, Board] = {
+    Left("Unimplemented")
   }
 
   def isLegalMove(start: Square, dest: Square): Either[String, Unit] = {
@@ -56,14 +49,6 @@ class Board(
       )
     }
     Right()
-  }
-
-  def swapTurns(): Unit = {
-    if (turnColor == Color.White) {
-      turnColor = Color.Black
-    } else {
-      turnColor = Color.White
-    }
   }
 
   def pieceAt(square: Square): Option[Piece] = {

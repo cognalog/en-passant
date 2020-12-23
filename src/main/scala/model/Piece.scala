@@ -12,7 +12,7 @@ object Color extends Enumeration {
   val White, Black = Value
 }
 
-abstract class Piece(val color: Color) {
+abstract class Piece(val color: Color, val hasMoved: Boolean = false) {
   def getLegalMoves(currentSquare: Square, board: Board): Set[Square]
   def isColor(color: Color): Boolean = {
     color == this.color

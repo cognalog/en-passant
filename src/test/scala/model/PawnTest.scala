@@ -65,4 +65,12 @@ class PawnTest extends FunSuite {
     }
   }
 
+  test("testGetLegalMoves_EnPassant") {
+    val board = new Board(Map(), enPassant = Some(Square(5, 3)))
+    val pawn = new Pawn(Color.White)
+    assertResult(Set(Square(4, 3), Square(5, 3))) {
+      pawn.getLegalMoves(Square(4, 2), board)
+    }
+  }
+
 }

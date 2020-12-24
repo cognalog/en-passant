@@ -30,25 +30,25 @@ class Board(
   }
 
   def move(start: Square, dest: Square): Either[String, Board] = {
+    checkLegalMove(start, dest)
     Left("Unimplemented")
   }
 
-  def isLegalMove(start: Square, dest: Square): Either[String, Unit] = {
+  def checkLegalMove(start: Square, dest: Square): Unit = {
     if (!pieces.contains(start)) {
-      return Left(f"There's no piece at ${start.toString}")
+      throw new IllegalStateException(f"There's no piece at ${start.toString}")
     }
     val piece = pieces(start)
     if (!piece.isColor(turnColor)) {
-      return Left(
+      throw new IllegalStateException(
         f"The piece at ${start.toString} is ${piece.color}, and it is $turnColor's turn.'"
       )
     }
     if (!piece.getLegalMoves(start, this).contains(dest)) {
-      return Left(
+      throw new IllegalArgumentException(
         f"The ${piece.getClass.getSimpleName} at $start cannot legally move to $dest"
       )
     }
-    Right()
   }
 
   def pieceAt(square: Square): Option[Piece] = {

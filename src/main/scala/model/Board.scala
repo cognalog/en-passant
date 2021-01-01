@@ -38,8 +38,10 @@ class Board(
     // if it's a pawn that just moved 2 spaces, set the space behind it as en passant
     var nextEnPassant: Option[Square] = None
     val unused: Unit = piece match {
-      case Pawn(_, _) if dest.rank - start.rank == 2 =>
+      case Pawn(Color.White, _) if dest.rank - start.rank == 2 =>
         nextEnPassant = Some(Square(start.file, start.rank + 1))
+      case Pawn(Color.Black, _) if start.rank - dest.rank == 2 =>
+        nextEnPassant = Some(Square(start.file, start.rank - 1))
       case _ => ()
     }
     Right(new Board(nextPieces, nextTurnColor, nextEnPassant))
@@ -55,6 +57,10 @@ class Board(
       throw new IllegalStateException(
         f"The piece at ${start.toString} is ${piece.color}, and it is $turnColor's turn.'"
       )
+    }
+    if (!isInBounds(dest)) {
+      throw new IllegalArgumentException(f"${dest.toString} is not a valid space on the board. Acceptable range for " +
+        f"rank and file is are ${Board.RankAndFileMin} to ${Board.RankAndFileMax}")
     }
   }
 

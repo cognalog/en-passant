@@ -6,9 +6,9 @@ case class Bishop(override val color: Color, override val hasMoved: Boolean = fa
   override def updateHasMoved(): Piece = Bishop(color, hasMoved = true)
 
   override def getLegalMoves(currentSquare: Square, board: Board): Set[Square] = {
-    getAvailableLinearSquares(currentSquare, board, sq => sq.changeFile(1).changeRank(1)) ++
-      getAvailableLinearSquares(currentSquare, board, sq => sq.changeFile(-1).changeRank(1)) ++
-      getAvailableLinearSquares(currentSquare, board, sq => sq.changeFile(1).changeRank(-1)) ++
-      getAvailableLinearSquares(currentSquare, board, sq => sq.changeFile(-1).changeRank(-1))
+    getAvailableLinearSquares(currentSquare, board, _.changeFile(1).changeRank(1)) ++
+      getAvailableLinearSquares(currentSquare, board, _.changeFile(-1).changeRank(1)) ++
+      getAvailableLinearSquares(currentSquare, board, _.changeFile(1).changeRank(-1)) ++
+      getAvailableLinearSquares(currentSquare, board, _.changeFile(-1).changeRank(-1))
   }
 }

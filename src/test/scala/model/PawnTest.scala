@@ -1,85 +1,104 @@
 package model
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class PawnTest extends FunSuite {
 
-  test("testGetLegalMoves_FirstMove") {
+class PawnTest extends AnyFunSuite {
+
+  test("testGetLegalMoves_OneOrTwoForwardIfFirstMoveWhite") {
     val board = new Board(Map())
-    val pawn = new Pawn(Color.White, false)
+    val pawn = Pawn(Color.White)
     assertResult(Set(Square(4, 3), Square(4, 4))) {
       pawn.getLegalMoves(Square(4, 2), board)
     }
   }
 
-  test("testGetLegalMoves_OneForward") {
+  test("testGetLegalMoves_OneForwardIfNotFirstMoveWhite") {
     val board = new Board(Map())
-    val pawn = new Pawn(Color.White, true)
+    val pawn = Pawn(Color.White, hasMoved = true)
     assertResult(Set(Square(4, 3))) {
       pawn.getLegalMoves(Square(4, 2), board)
     }
   }
 
-  test("testGetLegalMoves_OneForwardOutOfBounds") {
+  test("testGetLegalMoves_OneForwardIfTwoBlockedWhite") {
+    val board = new Board(Map(Square(4, 4) -> Pawn(Color.Black)))
+    val pawn = Pawn(Color.White)
+    assertResult(Set(Square(4, 3))) {
+      pawn.getLegalMoves(Square(4, 2), board)
+    }
+  }
+
+  test("testGetLegalMoves_OneForwardOutOfBoundsWhite") {
     val board = new Board(Map())
-    val pawn = new Pawn(Color.White, true)
+    val pawn = Pawn(Color.White, hasMoved = true)
     assertResult(Set()) {
       pawn.getLegalMoves(Square(4, 8), board)
     }
   }
 
-  test("testGetLegalMoves_OneForwardBlockedByPiece") {
+  test("testGetLegalMoves_OneForwardBlockedByPieceWhite") {
     val board =
       new Board(
-        Map(Square(4, 3) -> new Pawn(Color.Black))
+        Map(Square(4, 3) -> Pawn(Color.Black))
       )
-    val pawn = new Pawn(Color.White, true)
+    val pawn = Pawn(Color.White)
     assertResult(Set()) {
       pawn.getLegalMoves(Square(4, 2), board)
     }
   }
 
-  test("testGetLegalMoves_SameColorDiagonals") {
+  test("testGetLegalMoves_SameColorDiagonalsWhite") {
     val board = new Board(
       Map(
-        Square(3, 3) -> new Pawn(Color.White),
-        Square(5, 3) -> new Pawn(Color.White)
+        Square(3, 3) -> Pawn(Color.White),
+        Square(5, 3) -> Pawn(Color.White)
       )
     )
-    val pawn = new Pawn(Color.White, true)
+    val pawn = Pawn(Color.White, hasMoved = true)
     assertResult(Set(Square(4, 3))) {
       pawn.getLegalMoves(Square(4, 2), board)
     }
   }
 
-  test("testGetLegalMoves_CaptureLeft") {
+  test("testGetLegalMoves_CaptureLeftWhite") {
     val board =
       new Board(
-        Map(Square(3, 3) -> new Pawn(Color.Black))
+        Map(Square(3, 3) -> Pawn(Color.Black))
       )
-    val pawn = new Pawn(Color.White, true)
+    val pawn = Pawn(Color.White, hasMoved = true)
     assertResult(Set(Square(4, 3), Square(3, 3))) {
       pawn.getLegalMoves(Square(4, 2), board)
     }
   }
 
-  test("testGetLegalMoves_CaptureRight") {
+  test("testGetLegalMoves_CaptureRightWhite") {
     val board =
       new Board(
-        Map(Square(5, 3) -> new Pawn(Color.Black))
+        Map(Square(5, 3) -> Pawn(Color.Black))
       )
-    val pawn = new Pawn(Color.White, true)
+    val pawn = Pawn(Color.White, hasMoved = true)
     assertResult(Set(Square(4, 3), Square(5, 3))) {
       pawn.getLegalMoves(Square(4, 2), board)
+    }
+  }
+
+  test("testGetLegalMoves_CaptureRightBlack") {
+    val board =
+      new Board(
+        Map(Square(5, 6) -> Pawn(Color.White))
+      )
+    val pawn = Pawn(Color.Black, hasMoved = true)
+    assertResult(Set(Square(4, 6), Square(5, 6))) {
+      pawn.getLegalMoves(Square(4, 7), board)
     }
   }
 
   test("testGetLegalMoves_EnPassant") {
     val board = new Board(Map(), enPassant = Some(Square(5, 3)))
-    val pawn = new Pawn(Color.White, true)
+    val pawn = Pawn(Color.White, hasMoved = true)
     assertResult(Set(Square(4, 3), Square(5, 3))) {
       pawn.getLegalMoves(Square(4, 2), board)
     }
   }
-
 }

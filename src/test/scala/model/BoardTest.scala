@@ -33,6 +33,16 @@ class BoardTest extends AnyFunSuite with MockFactory {
     }
   }
 
+  test("testIsLegalMove_OOB") {
+    val mockPiece = mock[Piece]
+    val board =
+      new Board(Map(Square(1, 1) -> mockPiece), Color.White)
+    (mockPiece.isColor _).expects(Color.White).returning(true)
+    assertThrows[IllegalArgumentException] {
+      board.checkLegalMove(Square(1, 1), Square(99, 2))
+    }
+  }
+
   test("testMove_OK") {
     val mockPiece = mock[Piece]
     val board =

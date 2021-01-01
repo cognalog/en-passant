@@ -58,6 +58,10 @@ class Board(
         f"The piece at ${start.toString} is ${piece.color}, and it is $turnColor's turn.'"
       )
     }
+    if (!isInBounds(dest)) {
+      throw new IllegalArgumentException(f"${dest.toString} is not a valid space on the board. Acceptable range for " +
+        f"rank and file is are ${Board.RankAndFileMin} to ${Board.RankAndFileMax}")
+    }
   }
 
   def pieceAt(square: Square): Option[Piece] = {

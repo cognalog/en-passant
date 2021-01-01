@@ -30,25 +30,38 @@ class Board(
   }
 
   def move(start: Square, dest: Square): Either[String, Board] = {
-    Left("Unimplemented")
+    checkLegalMove(start, dest)
+    val piece = pieces(start).updateHasMoved()
+    val nextPieces = pieces - start + (dest -> piece)
+    val nextTurnColor =
+      if (turnColor == Color.Black) Color.White else Color.Black
+    // if it's a pawn that just moved 2 spaces, set the space behind it as en passant
+    var nextEnPassant: Option[Square] = None
+    val unused: Unit = piece match {
+      case Pawn(Color.White, _) if dest.rank - start.rank == 2 =>
+        nextEnPassant = Some(Square(start.file, start.rank + 1))
+      case Pawn(Color.Black, _) if start.rank - dest.rank == 2 =>
+        nextEnPassant = Some(Square(start.file, start.rank - 1))
+      case _ => ()
+    }
+    Right(new Board(nextPieces, nextTurnColor, nextEnPassant))
+    // TODO(hinderson): determine whether this turn's king is in check in new board state
   }
 
-  def isLegalMove(start: Square, dest: Square): Either[String, Unit] = {
+  def checkLegalMove(start: Square, dest: Square): Unit = {
     if (!pieces.contains(start)) {
-      return Left(f"There's no piece at ${start.toString}")
+      throw new IllegalStateException(f"There's no piece at ${start.toString}")
     }
     val piece = pieces(start)
     if (!piece.isColor(turnColor)) {
-      return Left(
+      throw new IllegalStateException(
         f"The piece at ${start.toString} is ${piece.color}, and it is $turnColor's turn.'"
       )
     }
-    if (!piece.getLegalMoves(start, this).contains(dest)) {
-      return Left(
-        f"The ${piece.getClass.getSimpleName} at $start cannot legally move to $dest"
-      )
+    if (!isInBounds(dest)) {
+      throw new IllegalArgumentException(f"${dest.toString} is not a valid space on the board. Acceptable range for " +
+        f"rank and file is are ${Board.RankAndFileMin} to ${Board.RankAndFileMax}")
     }
-    Right()
   }
 
   def pieceAt(square: Square): Option[Piece] = {

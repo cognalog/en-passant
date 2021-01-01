@@ -2,8 +2,11 @@ package model
 
 import model.Color.Color
 
-class Pawn(override val color: Color, override val hasMoved: Boolean = false)
-    extends Piece(color, hasMoved) {
+case class Pawn(
+    override val color: Color,
+    override val hasMoved: Boolean = false
+) extends Piece {
+
   override def getLegalMoves(
       currentSquare: Square,
       board: Board
@@ -20,4 +23,6 @@ class Pawn(override val color: Color, override val hasMoved: Boolean = false)
           .fold(false)(!_.isColor(color))
       )).filter(board.isInBounds)
   }
+
+  override def updateHasMoved(): Piece = Pawn(color, hasMoved = true)
 }

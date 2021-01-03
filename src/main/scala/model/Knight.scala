@@ -10,6 +10,8 @@ case class Knight(override val color: Color, override val hasMoved: Boolean = fa
       x <- Set(1, -1)
       y <- Set(2, -2)
     } yield Set(currentSquare.changeFile(x).changeRank(y), currentSquare.changeFile(y).changeRank(x))
-    moves.flatten.filter(board.isInBounds)
+    moves.flatten
+         .filter(board.isInBounds)
+         .filter(sq => board.pieceAt(sq).forall(_.isColor(color)))
   }
 }

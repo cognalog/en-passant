@@ -2,6 +2,13 @@ package model
 
 import model.Color.Color
 
+/**
+ * A Queen piece.
+ *
+ * @see [[https://en.wikipedia.org/wiki/Queen_(chess)]]
+ * @param color    the color of this Queen.
+ * @param hasMoved whether this Queen has moved (likely unused).
+ */
 case class Queen(override val color: Color, override val hasMoved: Boolean = false) extends Piece {
   override def updateHasMoved(): Piece = Queen(color, hasMoved = true)
 

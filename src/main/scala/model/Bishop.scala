@@ -2,6 +2,13 @@ package model
 
 import model.Color.Color
 
+/**
+ * The Bishop piece.
+ *
+ * @see [[https://en.wikipedia.org/wiki/Bishop_(chess)]]
+ * @param color    the color of the Bishop.
+ * @param hasMoved whether the Bishop has moved (likely unused).
+ */
 case class Bishop(override val color: Color, override val hasMoved: Boolean = false) extends Piece {
   override def updateHasMoved(): Piece = Bishop(color, hasMoved = true)
 

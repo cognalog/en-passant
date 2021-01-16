@@ -2,6 +2,13 @@ package model
 
 import model.Color.Color
 
+/**
+ * A pawn piece
+ *
+ * @see [[https://en.wikipedia.org/wiki/Pawn_(chess)]]
+ * @param color    the color of this Pawn.
+ * @param hasMoved whether this Pawn has moved.
+ */
 case class Pawn(
     override val color: Color,
     override val hasMoved: Boolean = false

@@ -2,7 +2,13 @@ package model
 
 import model.Color.Color
 
-// Files are numerical for easier processing. A-file is 1.
+/**
+ * One of 64 squares on the board. Has coordinates in terms of rank (y) and file (x).
+ * Files are numerical instead of alphabetical for easier processing. A-file is 1.
+ *
+ * @param file x coordinate, 1-indexed
+ * @param rank y coordinate, 1-indexed
+ */
 case class Square(file: Int, rank: Int) {
   def changeFile(delta: Int): Square = {
     Square(file + delta, rank)
@@ -13,22 +19,35 @@ case class Square(file: Int, rank: Int) {
   }
 }
 
+/**
+ * Companion object for board. Holds constants.
+ */
 object Board {
   private val RankAndFileMin = 1
   private val RankAndFileMax = 8
 }
 
+/**
+ * A representation of a chessboard after some number of legal moves.
+ *
+ * @param pieces    the board's occupied squares mapped to the pieces sitting on them.
+ * @param turnColor the color whose turn it is.
+ * @param enPassant the square, if any, where a pawn may move for en passant.
+ */
 class Board(
     val pieces: Map[Square, Piece],
     val turnColor: Color = Color.White,
     val enPassant: Option[Square] = None
 ) {
 
-  def isInBounds(square: Square): Boolean = {
-    val bounds = Board.RankAndFileMin to Board.RankAndFileMax
-    bounds.contains(square.file) && bounds.contains(square.rank)
-  }
-
+  /**
+   * Generate a new board reflecting the board state after the piece at the starting square moves to the destination
+   * square.
+   *
+   * @param start the starting square. There must be a piece here.
+   * @param dest  the destination square. The piece must be able to move here.
+   * @return the resulting board after a legal move, or an error string if the move is illegal.
+   */
   def move(start: Square, dest: Square): Either[String, Board] = {
     checkLegalMove(start, dest)
     val piece = pieces(start).updateHasMoved()
@@ -48,6 +67,13 @@ class Board(
     // TODO(hinderson): determine whether this turn's king is in check in new board state
   }
 
+  /**
+   * Check whether a move is legal on this board.
+   * TODO(hinderson): For clarity, create an IllegalMoveException, or move away from exceptions entirely.
+   *
+   * @param start the starting square.
+   * @param dest  the destination square.
+   */
   def checkLegalMove(start: Square, dest: Square): Unit = {
     if (!pieces.contains(start)) {
       throw new IllegalStateException(f"There's no piece at ${start.toString}")
@@ -56,12 +82,23 @@ class Board(
     if (!piece.isColor(turnColor)) {
       throw new IllegalStateException(
         f"The piece at ${start.toString} is ${piece.color}, and it is $turnColor's turn.'"
-      )
+        )
     }
     if (!isInBounds(dest)) {
       throw new IllegalArgumentException(f"${dest.toString} is not a valid space on the board. Acceptable range for " +
         f"rank and file is are ${Board.RankAndFileMin} to ${Board.RankAndFileMax}")
     }
+  }
+
+  /**
+   * Determine whether a square is on the board.
+   *
+   * @param square the square in question.
+   * @return true if the square is on the board, false otherwise.
+   */
+  def isInBounds(square: Square): Boolean = {
+    val bounds = Board.RankAndFileMin to Board.RankAndFileMax
+    bounds.contains(square.file) && bounds.contains(square.rank)
   }
 
   def pieceAt(square: Square): Option[Piece] = {

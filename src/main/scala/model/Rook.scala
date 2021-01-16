@@ -2,6 +2,13 @@ package model
 
 import model.Color.Color
 
+/**
+ * A Rook Piece.
+ *
+ * @see [[https://en.wikipedia.org/wiki/Rook_(chess)]]
+ * @param color    the color of this Rook.
+ * @param hasMoved whether this Rook has moved.
+ */
 case class Rook(override val color: Color, override val hasMoved: Boolean = false) extends Piece {
   override def updateHasMoved(): Piece = Rook(color, hasMoved = true)
 

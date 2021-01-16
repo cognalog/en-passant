@@ -2,6 +2,13 @@ package model
 
 import model.Color.Color
 
+/**
+ * A Knight piece
+ *
+ * @see [[https://en.wikipedia.org/wiki/Knight_(chess)]]
+ * @param color    the color of the Knight.
+ * @param hasMoved whether the Knight has moved (likely unused).
+ */
 case class Knight(override val color: Color, override val hasMoved: Boolean = false) extends Piece {
   override def updateHasMoved(): Piece = Knight(color, hasMoved = true)
 

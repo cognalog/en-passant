@@ -2,18 +2,41 @@ package model
 
 import model.Color.Color
 
+/**
+ * One of two piece colors in chess.
+ */
 object Color extends Enumeration {
   type Color = Value
   val White, Black = Value
 }
 
+/**
+ * A chess piece.
+ */
 trait Piece {
+  /**
+   * @return the color of the piece
+   */
   def color: Color
 
+  /**
+   * @return true if the piece has moved in a game, false otherwise.
+   */
   def hasMoved: Boolean
 
+  /**
+   * @return a copy of the piece where hasMoved will return true
+   */
   def updateHasMoved(): Piece
 
+  /**
+   * Calculate the squares this piece may legally move to from the given square on the given board. Does not account
+   * for leaving the king in check.
+   *
+   * @param currentSquare the piece's starting square on the board.
+   * @param board the board to consider.
+   * @return All squares to which this piece can move on the board, not considering king safety.
+   */
   def getLegalMoves(currentSquare: Square, board: Board): Set[Square]
 
   /**
@@ -35,6 +58,10 @@ trait Piece {
     getAvailableLinearSquares(nextSquare, board, nextFn) + nextSquare
   }
 
+  /**
+   * @param color the color in question.
+   * @return true if this piece is the given color, false otherwise.
+   */
   def isColor(color: Color): Boolean = {
     color == this.color
   }

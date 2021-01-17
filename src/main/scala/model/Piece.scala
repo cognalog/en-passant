@@ -8,6 +8,8 @@ import model.Color.Color
 object Color extends Enumeration {
   type Color = Value
   val White, Black = Value
+
+  def opposite(color: Color): Color = if (color == White) Black else White
 }
 
 /**

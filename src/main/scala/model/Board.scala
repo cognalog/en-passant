@@ -41,6 +41,33 @@ class Board(
 ) {
 
   /**
+   * Get the set of pieces attacking this square.
+   *
+   * @param square the square in question.
+   * @param color  the color of attackers to find.
+   * @return the set of pieces attacking this square.
+   */
+  def getAttackers(square: Square, color: Color): Set[Piece] = {
+    // algo: find the attackers by checking whether each piece could capture its own kind from this square.
+    val opposingColor = Color.opposite(color)
+    Rook(opposingColor).getLegalMoves(square, this).flatMap(pieceAt)
+                       .filter(_ match {
+                                 case Rook(_, _) => true
+                                 case Queen(_, _) => true
+                               }) ++
+    Bishop(opposingColor).getLegalMoves(square, this).flatMap(pieceAt)
+                         .filter(_ match {
+                                   case Bishop(_, _) => true
+                                   case Queen(_, _) => true
+                                 }) ++
+    Knight(opposingColor).getLegalMoves(square, this).flatMap(pieceAt)
+                         .filter(_ match { case Knight(_, _) => true }) ++
+    King(opposingColor).getLegalMoves(square, this).flatMap(pieceAt)
+                       .filter(_ match { case King(_, _) => true }) ++
+    Pawn(opposingColor).getCaptures(square, this).flatMap(pieceAt).filter(_ match { case Pawn(_, _) => true })
+  }
+
+  /**
    * Generate a new board reflecting the board state after the piece at the starting square moves to the destination
    * square.
    *

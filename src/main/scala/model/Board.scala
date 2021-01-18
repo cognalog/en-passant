@@ -47,7 +47,7 @@ class Board(
       rank => (RankAndFileMin to RankAndFileMax).map(
         file => pieceAt(Square(file, rank)) match {
           case Some(piece) => "" + Color.shortName(piece.color) + piece.shortName
-          case None        => "_"
+          case None        => "__"
         }).mkString(" | ")).reverse.mkString("\n")
   }
 

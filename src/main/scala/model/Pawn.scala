@@ -30,15 +30,15 @@ case class Pawn(
     )).filter(board.pieceAt(_).isEmpty)
   }
 
-  private def getCaptures(currentSquare: Square, board: Board): Set[Square] = {
+  def getCaptures(currentSquare: Square, board: Board): Set[Square] = {
     Set(
       changeRankByColor(currentSquare, 1).changeFile(-1),
       changeRankByColor(currentSquare, 1).changeFile(1)
-    ).filter(square =>
-      board.enPassant.fold(false)(_ == square) || board
-        .pieceAt(square)
-        .fold(false)(!_.isColor(color))
-    )
+      ).filter(square =>
+                 board.enPassant.fold(false)(_ == square) || board
+                   .pieceAt(square)
+                   .fold(false)(!_.isColor(color))
+               )
   }
 
   private def changeRankByColor(square: Square, delta: Int): Square = {
@@ -47,4 +47,11 @@ case class Pawn(
   }
 
   override def updateHasMoved(): Piece = Pawn(color, hasMoved = true)
+
+  /**
+   * NB: we use 'P' for printing pawns, but not for move notation per international standard.
+   *
+   * @return the 1-character short name for this piece.
+   */
+  override def shortName: Char = 'P'
 }

@@ -5,6 +5,28 @@ import org.scalatest.funsuite.AnyFunSuite
 
 class BoardTest extends AnyFunSuite with MockFactory {
 
+  test("testGetAttackers") {
+    val board = new Board(Map(
+      Square(1, 1) -> Bishop(Color.Black), Square(1, 4) -> Rook(Color.Black), Square(1, 7) -> Bishop(Color.White),
+      Square(2, 5) -> Knight(Color.Black), Square(4, 3) -> King(Color.Black), Square(4, 5) -> King(Color.White),
+      Square(4, 6) -> Pawn(Color.Black), Square(5, 3) -> Pawn(Color.White), Square(5, 8) -> Rook(Color.White),
+      Square(6, 3) -> Knight(Color.White), Square(7, 7) -> Queen(Color.White), Square(8, 5) -> Queen(Color.Black)))
+
+    assertResult(Set(Bishop(Color.Black), Rook(Color.Black), Knight(Color.Black), King(Color.Black))) {
+      board.getAttackers(Square(4, 4), Color.Black)
+    }
+    assertResult(
+      Set(Bishop(Color.White), King(Color.White), Knight(Color.White), Pawn(Color.White), Queen(Color.White))) {
+      board.getAttackers(Square(4, 4), Color.White)
+    }
+    assertResult(Set(Pawn(Color.Black), Queen(Color.Black), Bishop(Color.Black))) {
+      board.getAttackers(Square(5, 5), Color.Black)
+    }
+    assertResult(Set(King(Color.White), Rook(Color.White), Knight(Color.White), Queen(Color.White))) {
+      board.getAttackers(Square(5, 5), Color.White)
+    }
+  }
+
   test("testIsLegalMove_Ok") {
     val mockPiece = mock[Piece]
     val board =

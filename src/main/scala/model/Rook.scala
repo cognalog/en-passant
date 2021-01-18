@@ -18,4 +18,9 @@ case class Rook(override val color: Color, override val hasMoved: Boolean = fals
     getAvailableLinearSquares(currentSquare, board, _.changeRank(1)) ++
     getAvailableLinearSquares(currentSquare, board, _.changeRank(-1))
   }
+
+  /**
+   * @return the 1-character short name for this piece.
+   */
+  override def shortName: Char = 'R'
 }

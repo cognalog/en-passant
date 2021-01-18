@@ -18,4 +18,9 @@ case class Bishop(override val color: Color, override val hasMoved: Boolean = fa
       getAvailableLinearSquares(currentSquare, board, _.changeFile(1).changeRank(-1)) ++
       getAvailableLinearSquares(currentSquare, board, _.changeFile(-1).changeRank(-1))
   }
+
+  /**
+   * @return the 1-character short name for this piece.
+   */
+  override def shortName: Char = 'B'
 }

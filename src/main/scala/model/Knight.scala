@@ -19,6 +19,11 @@ case class Knight(override val color: Color, override val hasMoved: Boolean = fa
     } yield Set(currentSquare.changeFile(x).changeRank(y), currentSquare.changeFile(y).changeRank(x))
     moves.flatten
          .filter(board.isInBounds)
-         .filter(sq => board.pieceAt(sq).forall(_.isColor(color)))
+         .filter(sq => board.pieceAt(sq).forall(!_.isColor(color)))
   }
+
+  /**
+   * @return the 1-character short name for this piece.
+   */
+  override def shortName: Char = 'N'
 }

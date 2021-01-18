@@ -8,6 +8,9 @@ import model.Color.Color
 object Color extends Enumeration {
   type Color = Value
   val White, Black = Value
+
+  def opposite(color: Color): Color = if (color == White) Black else White
+  def shortName(color: Color): Char = if (color == White) 'W' else 'B'
 }
 
 /**
@@ -23,6 +26,11 @@ trait Piece {
    * @return true if the piece has moved in a game, false otherwise.
    */
   def hasMoved: Boolean
+
+  /**
+   * @return the 1-character short name for this piece.
+   */
+  def shortName: Char
 
   /**
    * @return a copy of the piece where hasMoved will return true

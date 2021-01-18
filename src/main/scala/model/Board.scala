@@ -1,10 +1,12 @@
 package model
 
+import model.Board.{RankAndFileMax, RankAndFileMin}
 import model.Color.Color
 
 /**
  * One of 64 squares on the board. Has coordinates in terms of rank (y) and file (x).
  * Files are numerical instead of alphabetical for easier processing. A-file is 1.
+ * TODO(hinderson): swap rank and file order in ctor
  *
  * @param file x coordinate, 1-indexed
  * @param rank y coordinate, 1-indexed
@@ -39,6 +41,55 @@ class Board(
     val turnColor: Color = Color.White,
     val enPassant: Option[Square] = None
 ) {
+
+  override def toString: String = {
+    (RankAndFileMin to RankAndFileMax).map(
+      rank => (RankAndFileMin to RankAndFileMax).map(
+        file => pieceAt(Square(file, rank)) match {
+          case Some(piece) => "" + Color.shortName(piece.color) + piece.shortName
+          case None        => "_"
+        }).mkString(" | ")).reverse.mkString("\n")
+  }
+
+  /**
+   * Get the set of pieces attacking this square.
+   *
+   * @param square the square in question.
+   * @param color  the color of attackers to find.
+   * @return the set of pieces attacking this square, or an empty set if there are no attackers or the square is out
+   *         of bounds.
+   */
+  def getAttackers(square: Square, color: Color): Set[Piece] = {
+    // algo: find the attackers by checking whether each piece could capture its own kind from this square.
+    val opposingColor = Color.opposite(color)
+    Rook(opposingColor).getLegalMoves(square, this).flatMap(pieceAt)
+                       .filter {
+                         case Rook(_, _)  => true
+                         case Queen(_, _) => true
+                         case _           => false
+                       } ++
+    Bishop(opposingColor).getLegalMoves(square, this).flatMap(pieceAt)
+                         .filter {
+                           case Bishop(_, _) => true
+                           case Queen(_, _)  => true
+                           case _            => false
+                         } ++
+    Knight(opposingColor).getLegalMoves(square, this).flatMap(pieceAt)
+                         .filter({
+                           case Knight(_, _) => true
+                           case _            => false
+                         }) ++
+    King(opposingColor).getLegalMoves(square, this).flatMap(pieceAt)
+                       .filter {
+                         case King(_, _) => true
+                         case _          => false
+                       } ++
+    Pawn(opposingColor).getCaptures(square, this).flatMap(pieceAt)
+                       .filter {
+                         case Pawn(_, _) => true
+                         case _          => false
+                       }
+  }
 
   /**
    * Generate a new board reflecting the board state after the piece at the starting square moves to the destination

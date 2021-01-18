@@ -47,4 +47,11 @@ case class Pawn(
   }
 
   override def updateHasMoved(): Piece = Pawn(color, hasMoved = true)
+
+  /**
+   * NB: we use 'P' for printing pawns, but not for move notation per international standard.
+   *
+   * @return the 1-character short name for this piece.
+   */
+  override def shortName: Char = 'P'
 }

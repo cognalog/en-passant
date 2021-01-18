@@ -22,4 +22,9 @@ case class King(override val color: Color, override val hasMoved: Boolean = fals
       .filter(board.isInBounds)
       .filter(sq => board.pieceAt(sq).forall(!_.isColor(color)))
   }
+
+  /**
+   * @return the 1-character short name for this piece.
+   */
+  override def shortName: Char = 'K'
 }

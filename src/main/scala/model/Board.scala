@@ -1,10 +1,12 @@
 package model
 
+import model.Board.{RankAndFileMax, RankAndFileMin}
 import model.Color.Color
 
 /**
  * One of 64 squares on the board. Has coordinates in terms of rank (y) and file (x).
  * Files are numerical instead of alphabetical for easier processing. A-file is 1.
+ * TODO(hinderson): swap rank and file order in ctor
  *
  * @param file x coordinate, 1-indexed
  * @param rank y coordinate, 1-indexed
@@ -39,6 +41,15 @@ class Board(
     val turnColor: Color = Color.White,
     val enPassant: Option[Square] = None
 ) {
+
+  override def toString: String = {
+    (RankAndFileMin to RankAndFileMax).map(
+      rank => (RankAndFileMin to RankAndFileMax).map(
+        file => pieceAt(Square(file, rank)) match {
+          case Some(piece) => "" + Color.shortName(piece.color) + piece.shortName
+          case None        => "_"
+        }).mkString(" | ")).reverse.mkString("\n")
+  }
 
   /**
    * Get the set of pieces attacking this square.

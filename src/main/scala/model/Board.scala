@@ -180,8 +180,25 @@ class Board(
     }
     if (!isInBounds(dest)) {
       throw new IllegalArgumentException(f"${dest.toString} is not a valid space on the board. Acceptable range for " +
-        f"rank and file is are ${Board.RankAndFileMin} to ${Board.RankAndFileMax}")
+                                         f"rank and file is are ${Board.RankAndFileMin} to ${Board.RankAndFileMax}")
     }
+  }
+
+  /**
+   * Generate the "next board" for every legal move from this board.
+   *
+   * @return a collection of the legal successors of this board.
+   */
+  def successors(): Iterable[Board] = {
+    //TODO(hinderson): figure out how/where to integrate king safety
+    pieces.filter(_._2.isColor(turnColor))
+          .map(sq_piece => (sq_piece._1, sq_piece._2.getLegalMoves(sq_piece._1, this))).toList
+          .flatMap(sq_pieces => sq_pieces._2.map(piece => (sq_pieces._1, piece)))
+          .map(start_dest => move(start_dest._1, start_dest._2))
+          .flatMap {
+            case Left(str) => print(str); None
+            case Right(b)  => Some(b)
+          }
   }
 
   /**

@@ -88,7 +88,100 @@ class BoardTest extends AnyFunSuite with MockFactory {
           resultBoard.enPassant
         }
       }
-    )
+      )
+  }
+
+  test("testCastle_OK") {
+    val board = new Board(
+      Map(
+        Square(1, 1) -> Rook(Color.White), Square(5, 1) -> King(Color.White), Square(8, 1) -> Rook(Color.White),
+        Square(1, 8) -> Rook(Color.White),
+        Square(5, 8) -> King(Color.White), Square(8, 8) -> Rook(Color.White)), turnColor = Color.White)
+
+    val rank1QueensideResult = board.castle(Square(3, 1))
+    rank1QueensideResult.fold(
+      _ => fail(), resultBoard => {
+        assertResult(Some(King(Color.White, hasMoved = true))) { resultBoard.pieceAt(Square(3, 1)) }
+        assertResult(Some(Rook(Color.White, hasMoved = true))) { resultBoard.pieceAt(Square(4, 1)) }
+        assertResult(Color.Black) { resultBoard.turnColor }
+      })
+    val rank1KingsideResult = board.castle(Square(7, 1))
+    rank1KingsideResult.fold(
+      _ => fail(), resultBoard => {
+        assertResult(Some(King(Color.White, hasMoved = true))) { resultBoard.pieceAt(Square(7, 1)) }
+        assertResult(Some(Rook(Color.White, hasMoved = true))) { resultBoard.pieceAt(Square(6, 1)) }
+        assertResult(Color.Black) { resultBoard.turnColor }
+      })
+    val rank8QueensideResult = board.castle(Square(3, 8))
+    rank8QueensideResult.fold(
+      _ => fail(), resultBoard => {
+        assertResult(Some(King(Color.White, hasMoved = true))) { resultBoard.pieceAt(Square(3, 8)) }
+        assertResult(Some(Rook(Color.White, hasMoved = true))) { resultBoard.pieceAt(Square(4, 8)) }
+        assertResult(Color.Black) { resultBoard.turnColor }
+      })
+    val rank8KingsideResult = board.castle(Square(7, 8))
+    rank8KingsideResult.fold(
+      _ => fail(), resultBoard => {
+        assertResult(Some(King(Color.White, hasMoved = true))) { resultBoard.pieceAt(Square(7, 8)) }
+        assertResult(Some(Rook(Color.White, hasMoved = true))) { resultBoard.pieceAt(Square(6, 8)) }
+        assertResult(Color.Black) { resultBoard.turnColor }
+      })
+  }
+
+  test("testCastle_WrongColorKing") {
+    val board = new Board(
+      Map(
+        Square(1, 1) -> Rook(Color.Black), Square(5, 1) -> King(Color.White)), turnColor = Color.Black)
+    assertResult(Left("There is no unmoved Black king at Square(5,1).")) {
+      board.castle(Square(3, 1))
+    }
+  }
+
+  test("testCastle_WrongColorRook") {
+    val board = new Board(
+      Map(
+        Square(1, 1) -> Rook(Color.White), Square(5, 1) -> King(Color.Black)), turnColor = Color.Black)
+    assertResult(Left("There is no unmoved Black rook at Square(1,1).")) {
+      board.castle(Square(3, 1))
+    }
+  }
+
+  test("testCastle_AlreadyMovedKing") {
+    val board = new Board(
+      Map(
+        Square(1, 1) -> Rook(Color.Black), Square(5, 1) -> King(Color.Black, hasMoved = true)), turnColor = Color.Black)
+    assertResult(Left("There is no unmoved Black king at Square(5,1).")) {
+      board.castle(Square(3, 1))
+    }
+  }
+
+  test("testCastle_AlreadyMovedRook") {
+    val board = new Board(
+      Map(
+        Square(1, 1) -> Rook(Color.Black, hasMoved = true), Square(5, 1) -> King(Color.Black)), turnColor = Color.Black)
+    assertResult(Left("There is no unmoved Black rook at Square(1,1).")) {
+      board.castle(Square(3, 1))
+    }
+  }
+
+  test("testCastle_PiecesBlocking") {
+    val board = new Board(
+      Map(
+        Square(1, 1) -> Rook(Color.Black), Square(2, 1) -> Knight(Color.Black), Square(5, 1) -> King(Color.Black)),
+      turnColor = Color.Black)
+    assertResult(Left("There are pieces between the king at Square(5,1) and the rook at Square(1,1).")) {
+      board.castle(Square(3, 1))
+    }
+  }
+
+  test("testCastle_PiecesAttacking") {
+    val board = new Board(
+      Map(
+        Square(1, 1) -> Rook(Color.Black), Square(2, 3) -> Knight(Color.White), Square(5, 1) -> King(Color.Black)),
+      turnColor = Color.Black)
+    assertResult(Left("The king cannot safely move from Square(5,1) to Square(3,1).")) {
+      board.castle(Square(3, 1))
+    }
   }
 
   test("testMove_EnPassantWhite") {

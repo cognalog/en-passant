@@ -47,7 +47,7 @@ class Board(
       rank => (RankAndFileMin to RankAndFileMax).map(
         file => pieceAt(Square(file, rank)) match {
           case Some(piece) => "" + Color.shortName(piece.color) + piece.shortName
-          case None        => "_"
+          case None        => "__"
         }).mkString(" | ")).reverse.mkString("\n")
   }
 
@@ -103,8 +103,7 @@ class Board(
     checkLegalMove(start, dest)
     val piece = pieces(start).updateHasMoved()
     val nextPieces = pieces - start + (dest -> piece)
-    val nextTurnColor =
-      if (turnColor == Color.Black) Color.White else Color.Black
+    val nextTurnColor = Color.opposite(turnColor)
     // if it's a pawn that just moved 2 spaces, set the space behind it as en passant
     var nextEnPassant: Option[Square] = None
     val unused: Unit = piece match {
@@ -112,10 +111,54 @@ class Board(
         nextEnPassant = Some(Square(start.file, start.rank + 1))
       case Pawn(Color.Black, _) if start.rank - dest.rank == 2 =>
         nextEnPassant = Some(Square(start.file, start.rank - 1))
-      case _ => ()
+      case _                                                   => ()
     }
     Right(new Board(nextPieces, nextTurnColor, nextEnPassant))
     // TODO(hinderson): determine whether this turn's king is in check in new board state
+  }
+
+  /**
+   * Castle the king to the destination square, moving the rook as well according to the rules.
+   *
+   * @see [[https://en.wikipedia.org/wiki/Castling]]
+   * @param kingDest the square to which the king will move.
+   * @return the new board after the king has castled accordingly, or a failure message if the move is not legal.
+   */
+  def castle(kingDest: Square): Either[String, Board] = {
+    // make sure neither king, destination, or in-between square has opposing attackers
+    // make sure there are no pieces between king and rook
+    if (!Set(3, 7).contains(kingDest.file) || !Set(1, 8).contains(kingDest.rank)) {
+      return Left(s"$kingDest is not a legal castling destination.")
+    }
+
+    val kingStart = Square(5, kingDest.rank)
+    val rookStart = if (kingDest.file == 3) Square(1, kingDest.rank) else Square(8, kingDest.rank)
+    val validKing: Boolean = pieceAt(kingStart) match {
+      case Some(King(this.turnColor, false)) => true
+      case _                                 => false
+    }
+    if (!validKing) return Left(s"There is no unmoved $turnColor king at $kingStart.")
+    val validRook: Boolean = pieceAt(rookStart) match {
+      case Some(Rook(this.turnColor, false)) => true
+      case _                                 => false
+    }
+    if (!validRook) return Left(s"There is no unmoved $turnColor rook at $rookStart.")
+    val rookDest = if (kingDest.file == 3) Square(4, kingDest.rank) else Square(6, kingDest.rank)
+
+    val piecesInBetween: Boolean = (math.min(kingStart.file, rookStart.file) + 1 until
+                                    math.max(kingStart.file, rookStart.file))
+      .exists(file => pieceAt(Square(file, kingStart.rank)).nonEmpty)
+    if (piecesInBetween) return Left(s"There are pieces between the king at $kingStart and the rook at $rookStart.")
+
+    val kingMovesSafe: Boolean = (math.min(kingStart.file, kingDest.file) to
+                                  math.max(kingStart.file, kingDest.file))
+      .forall(file => getAttackers(Square(file, kingDest.rank), Color.opposite(turnColor)).isEmpty)
+    if (!kingMovesSafe) return Left(s"The king cannot safely move from $kingStart to $kingDest.")
+
+    val newPieces = pieces - kingStart - rookStart + (rookDest -> Rook(turnColor, hasMoved = true)) +
+                    (kingDest -> King(turnColor, hasMoved = true))
+    Right(new Board(
+      pieces = newPieces, Color.opposite(turnColor)))
   }
 
   /**

@@ -137,18 +137,18 @@ class Board(
       case Some(King(this.turnColor, false)) => true
       case _                                 => false
     }
-    if (!validKing) return Left(s"There is no unmoved $turnColor king at $kingStart")
+    if (!validKing) return Left(s"There is no unmoved $turnColor king at $kingStart.")
     val validRook: Boolean = pieceAt(rookStart) match {
       case Some(Rook(this.turnColor, false)) => true
       case _                                 => false
     }
-    if (!validRook) return Left(s"There is no unmoved $turnColor rook at $rookStart")
+    if (!validRook) return Left(s"There is no unmoved $turnColor rook at $rookStart.")
     val rookDest = if (kingDest.file == 3) Square(4, kingDest.rank) else Square(6, kingDest.rank)
 
     val piecesInBetween: Boolean = (math.min(kingStart.file, rookStart.file) + 1 until
                                     math.max(kingStart.file, rookStart.file))
-      .forall(file => pieceAt(Square(file, kingStart.rank)).nonEmpty)
-    if (piecesInBetween) return Left(s"There are pieces between the king at $kingStart and the rook at $rookStart")
+      .exists(file => pieceAt(Square(file, kingStart.rank)).nonEmpty)
+    if (piecesInBetween) return Left(s"There are pieces between the king at $kingStart and the rook at $rookStart.")
 
     val kingMovesSafe: Boolean = (math.min(kingStart.file, kingDest.file) to
                                   math.max(kingStart.file, kingDest.file))

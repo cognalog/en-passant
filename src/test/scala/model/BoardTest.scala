@@ -132,7 +132,7 @@ class BoardTest extends AnyFunSuite with MockFactory {
     val board = new Board(
       Map(
         Square(1, 1) -> Rook(Color.Black), Square(5, 1) -> King(Color.White)), turnColor = Color.Black)
-    assertResult(Left("There is no unmoved Black king at Square(5,1)")) {
+    assertResult(Left("There is no unmoved Black king at Square(5,1).")) {
       board.castle(Square(3, 1))
     }
   }
@@ -141,7 +141,7 @@ class BoardTest extends AnyFunSuite with MockFactory {
     val board = new Board(
       Map(
         Square(1, 1) -> Rook(Color.White), Square(5, 1) -> King(Color.Black)), turnColor = Color.Black)
-    assertResult(Left("There is no unmoved Black rook at Square(1,1)")) {
+    assertResult(Left("There is no unmoved Black rook at Square(1,1).")) {
       board.castle(Square(3, 1))
     }
   }
@@ -150,7 +150,7 @@ class BoardTest extends AnyFunSuite with MockFactory {
     val board = new Board(
       Map(
         Square(1, 1) -> Rook(Color.Black), Square(5, 1) -> King(Color.Black, hasMoved = true)), turnColor = Color.Black)
-    assertResult(Left("There is no unmoved Black king at Square(5,1)")) {
+    assertResult(Left("There is no unmoved Black king at Square(5,1).")) {
       board.castle(Square(3, 1))
     }
   }
@@ -159,7 +159,27 @@ class BoardTest extends AnyFunSuite with MockFactory {
     val board = new Board(
       Map(
         Square(1, 1) -> Rook(Color.Black, hasMoved = true), Square(5, 1) -> King(Color.Black)), turnColor = Color.Black)
-    assertResult(Left("There is no unmoved Black rook at Square(1,1)")) {
+    assertResult(Left("There is no unmoved Black rook at Square(1,1).")) {
+      board.castle(Square(3, 1))
+    }
+  }
+
+  test("testCastle_PiecesBlocking") {
+    val board = new Board(
+      Map(
+        Square(1, 1) -> Rook(Color.Black), Square(2, 1) -> Knight(Color.Black), Square(5, 1) -> King(Color.Black)),
+      turnColor = Color.Black)
+    assertResult(Left("There are pieces between the king at Square(5,1) and the rook at Square(1,1).")) {
+      board.castle(Square(3, 1))
+    }
+  }
+
+  test("testCastle_PiecesAttacking") {
+    val board = new Board(
+      Map(
+        Square(1, 1) -> Rook(Color.Black), Square(2, 3) -> Knight(Color.White), Square(5, 1) -> King(Color.Black)),
+      turnColor = Color.Black)
+    assertResult(Left("The king cannot safely move from Square(5,1) to Square(3,1).")) {
       board.castle(Square(3, 1))
     }
   }

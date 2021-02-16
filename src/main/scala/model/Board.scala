@@ -52,6 +52,21 @@ class Board(
   }
 
   /**
+   * Determine whether the king of the given color is in check on this board. Undefined behavior if there are
+   * multiple kings of that color.
+   *
+   * @param color the color of the king in question.
+   * @return true if the king of given color is in check, false otherwise.
+   */
+  def kingInCheck(color: Color): Boolean = {
+    val kingSquare: Option[Square] = pieces.filter {
+      case (_, King(color, _)) => true
+      case _                   => false
+    }.keys.headOption
+    kingSquare.fold(false)(getAttackers(_, Color.opposite(color)).nonEmpty)
+  }
+
+  /**
    * Get the set of pieces attacking this square.
    *
    * @param square the square in question.
@@ -113,7 +128,9 @@ class Board(
         nextEnPassant = Some(Square(start.file, start.rank - 1))
       case _                                                   => ()
     }
-    Right(new Board(nextPieces, nextTurnColor, nextEnPassant))
+    val newBoard = new Board(nextPieces, nextTurnColor, nextEnPassant)
+    if (newBoard.kingInCheck(turnColor)) return Left("This move leaves the king in check.")
+    Right(newBoard)
     // TODO(hinderson): determine whether this turn's king is in check in new board state
   }
 

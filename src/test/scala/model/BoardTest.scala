@@ -91,6 +91,36 @@ class BoardTest extends AnyFunSuite with MockFactory {
       )
   }
 
+  test("testMove_kingInCheck") {
+    val board =
+      new Board(Map(Square(1, 1) -> King(Color.Black), Square(2, 2) -> Rook(Color.White)), Color.Black)
+    val result = board.move(Square(1, 1), Square(1, 2))
+    assertResult(Left("This move leaves the king in check.")) {
+      board.move(Square(1, 1), Square(2, 1))
+    }
+  }
+
+  test("testKingInCheck_true") {
+    val board = new Board(Map(Square(3, 3) -> King(Color.Black), Square(7, 7) -> Bishop(Color.White)))
+    assertResult(true) {
+      board.kingInCheck(Color.Black)
+    }
+  }
+
+  test("testKingInCheck_false") {
+    val board = new Board(Map(Square(3, 3) -> King(Color.Black), Square(7, 6) -> Bishop(Color.White)))
+    assertResult(false) {
+      board.kingInCheck(Color.Black)
+    }
+  }
+
+  test("testKingInCheck_truePawn") {
+    val board = new Board(Map(Square(3, 3) -> King(Color.Black), Square(2, 2) -> Pawn(Color.White)))
+    assertResult(true) {
+      board.kingInCheck(Color.Black)
+    }
+  }
+
   test("testCastle_OK") {
     val board = new Board(
       Map(

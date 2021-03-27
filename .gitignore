@@ -1,7 +1,8 @@
 *.class
 *.log
 .scalafmt.conf
-project
+project/project
+project/target
 target
 .idea
 .bsp

@@ -131,7 +131,6 @@ class Board(
     val newBoard = new Board(nextPieces, nextTurnColor, nextEnPassant)
     if (newBoard.kingInCheck(turnColor)) return Left("This move leaves the king in check.")
     Right(newBoard)
-    // TODO(hinderson): determine whether this turn's king is in check in new board state
   }
 
   /**
@@ -206,8 +205,7 @@ class Board(
    *
    * @return a collection of the legal successors of this board.
    */
-  def successors(): Iterable[Board] = {
-    //TODO(hinderson): figure out how/where to integrate king safety
+  def getSuccessors: Iterable[Board] = {
     pieces.filter(_._2.isColor(turnColor))
           .map(sq_piece => (sq_piece._1, sq_piece._2.getLegalMoves(sq_piece._1, this))).toList
           .flatMap(sq_pieces => sq_pieces._2.map(piece => (sq_pieces._1, piece)))

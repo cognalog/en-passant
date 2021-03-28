@@ -207,15 +207,16 @@ class Board(
    * @return a collection of the legal successors of this board.
    */
   def getSuccessors: Iterable[Board] = {
-    pieces.filter(_._2.isColor(turnColor))
-          .map(sq_piece => (sq_piece._1, sq_piece._2.getLegalMoves(sq_piece._1, this))).toList
-          .flatMap(sq_pieces => sq_pieces._2.map(piece => (sq_pieces._1, piece)))
-          .map(start_dest => move(start_dest._1, start_dest._2))
-          .flatMap {
-            case Left(str) => println(str); None //TODO make this optional a la VLOG
-            case Right(b) => Some(b)
-          }
-    //TODO include castling
+    val normalMoves = pieces.filter(_._2.isColor(turnColor))
+      .map(sq_piece => (sq_piece._1, sq_piece._2.getLegalMoves(sq_piece._1, this))).toList
+      .flatMap(sq_pieces => sq_pieces._2.map(piece => (sq_pieces._1, piece)))
+      .map(start_dest => move(start_dest._1, start_dest._2))
+    val castleMoves = List(Square(3, 1), Square(7, 1), Square(3, 8), Square(7, 8)).map(castle)
+    (normalMoves ++ castleMoves)
+      .flatMap {
+        case Left(str) => println(str); None //TODO make this optional a la VLOG
+        case Right(b) => Some(b)
+      }
   }
 
   /**

@@ -37,10 +37,10 @@ object Board {
  * @param enPassant the square, if any, where a pawn may move for en passant.
  */
 case class Board(
-    val pieces: Map[Square, Piece],
-    val turnColor: Color = Color.White,
-    val enPassant: Option[Square] = None
-) {
+                  pieces: Map[Square, Piece],
+                  turnColor: Color = Color.White,
+                  enPassant: Option[Square] = None
+                ) {
 
   override def toString: String = {
     (RankAndFileMin to RankAndFileMax).map(
@@ -202,20 +202,21 @@ case class Board(
   }
 
   /**
-   * Generate the "next board" for every legal move from this board.
+   * Generate all legal next moves and respective updated boards for this board.
    *
-   * @return a collection of the legal successors of this board.
+   * @return a collection of the legal moves and successors of this board.
    */
-  def getSuccessors: Iterable[Board] = {
+  def getNextMoves: Iterable[(Move, Board)] = {
     val normalMoves = pieces.filter(_._2.isColor(turnColor))
       .map(sq_piece => (sq_piece._1, sq_piece._2.getLegalMoves(sq_piece._1, this))).toList
       .flatMap(sq_pieces => sq_pieces._2.map(piece => (sq_pieces._1, piece)))
-      .map(start_dest => move(start_dest._1, start_dest._2))
-    val castleMoves = List(Square(3, 1), Square(7, 1), Square(3, 8), Square(7, 8)).map(castle)
+      .map(start_dest => move(start_dest._1, start_dest._2).map((NormalMove(start_dest._1, start_dest._2), _)))
+    val castleMoves = List(Square(3, 1), Square(7, 1), Square(3, 8), Square(7, 8))
+      .map(dest => castle(dest).map((CastleMove(dest), _)))
     (normalMoves ++ castleMoves)
       .flatMap {
-        case Left(str) => println(str); None //TODO make this optional a la VLOG
-        case Right(b) => Some(b)
+        case Left(error) => println(error); None // TODO make this optional a la VLOG
+        case Right((move, board)) => Some((move, board))
       }
   }
 

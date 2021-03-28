@@ -290,4 +290,30 @@ class BoardTest extends AnyFunSuite with MockFactory {
       board.getSuccessors.toSet
     }
   }
+
+  test("testGetSucessors_InCheckAlready") {
+    val board =
+      new Board(Map(Square(7, 1) -> King(Black), Square(4, 3) -> Queen(Black), Square(7, 3) -> Rook(White)),
+        turnColor = Black)
+
+    val expectedBoards: Set[Board] = Set(
+      new Board(
+        Map(Square(6, 2) -> King(Black, hasMoved = true), Square(4, 3) -> Queen(Black), Square(7, 3) -> Rook(White)),
+        turnColor = White),
+      new Board(
+        Map(Square(8, 2) -> King(Black, hasMoved = true), Square(4, 3) -> Queen(Black), Square(7, 3) -> Rook(White)),
+        turnColor = White),
+      new Board(
+        Map(Square(8, 1) -> King(Black, hasMoved = true), Square(4, 3) -> Queen(Black), Square(7, 3) -> Rook(White)),
+        turnColor = White),
+      new Board(
+        Map(Square(6, 1) -> King(Black, hasMoved = true), Square(4, 3) -> Queen(Black), Square(7, 3) -> Rook(White)),
+        turnColor = White),
+      new Board(Map(Square(7, 1) -> King(Black), Square(7, 3) -> Queen(Black, hasMoved = true)),
+        turnColor = White) // despite her central position, the queen can only move to remove the checking rook
+    )
+    assertResult(expectedBoards) {
+      board.getSuccessors.toSet
+    }
+  }
 }

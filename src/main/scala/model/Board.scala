@@ -46,9 +46,25 @@ class Board(
     (RankAndFileMin to RankAndFileMax).map(
       rank => (RankAndFileMin to RankAndFileMax).map(
         file => pieceAt(Square(file, rank)) match {
-          case Some(piece) => "" + Color.shortName(piece.color) + piece.shortName
-          case None        => "__"
-        }).mkString(" | ")).reverse.mkString("\n")
+          case Some(piece) => "" + Color.shortName(piece.color) + piece.shortName + (if (piece.hasMoved) "+" else "-")
+          case None if enPassant == Some(file, rank) => "e/p"
+          case _ => "___"
+        }).mkString(" | ")).reverse.mkString("\n") + "\n"
+  }
+
+  /**
+   * Determine whether the king of the given color is in check on this board. Undefined behavior if there are
+   * multiple kings of that color.
+   *
+   * @param color the color of the king in question.
+   * @return true if the king of given color is in check, false otherwise.
+   */
+  def kingInCheck(color: Color): Boolean = {
+    val kingSquare: Option[Square] = pieces.filter {
+      case (_, King(color, _)) => true
+      case _                   => false
+    }.keys.headOption
+    kingSquare.fold(false)(getAttackers(_, Color.opposite(color)).nonEmpty)
   }
 
   /**
@@ -113,8 +129,9 @@ class Board(
         nextEnPassant = Some(Square(start.file, start.rank - 1))
       case _                                                   => ()
     }
-    Right(new Board(nextPieces, nextTurnColor, nextEnPassant))
-    // TODO(hinderson): determine whether this turn's king is in check in new board state
+    val newBoard = new Board(nextPieces, nextTurnColor, nextEnPassant)
+    if (newBoard.kingInCheck(turnColor)) return Left(s"Move $start -> $dest leaves the king in check.")
+    Right(newBoard)
   }
 
   /**
@@ -180,8 +197,26 @@ class Board(
     }
     if (!isInBounds(dest)) {
       throw new IllegalArgumentException(f"${dest.toString} is not a valid space on the board. Acceptable range for " +
-        f"rank and file is are ${Board.RankAndFileMin} to ${Board.RankAndFileMax}")
+                                         f"rank and file is are ${Board.RankAndFileMin} to ${Board.RankAndFileMax}")
     }
+  }
+
+  /**
+   * Generate the "next board" for every legal move from this board.
+   *
+   * @return a collection of the legal successors of this board.
+   */
+  def getSuccessors: Iterable[Board] = {
+    val normalMoves = pieces.filter(_._2.isColor(turnColor))
+      .map(sq_piece => (sq_piece._1, sq_piece._2.getLegalMoves(sq_piece._1, this))).toList
+      .flatMap(sq_pieces => sq_pieces._2.map(piece => (sq_pieces._1, piece)))
+      .map(start_dest => move(start_dest._1, start_dest._2))
+    val castleMoves = List(Square(3, 1), Square(7, 1), Square(3, 8), Square(7, 8)).map(castle)
+    (normalMoves ++ castleMoves)
+      .flatMap {
+        case Left(str) => println(str); None //TODO make this optional a la VLOG
+        case Right(b) => Some(b)
+      }
   }
 
   /**
@@ -197,5 +232,21 @@ class Board(
 
   def pieceAt(square: Square): Option[Piece] = {
     pieces.get(square)
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(pieces, turnColor, enPassant)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[Board]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Board =>
+      (that canEqual this) &&
+        pieces == that.pieces &&
+        turnColor == that.turnColor &&
+        enPassant == that.enPassant
+    case _ => false
   }
 }

@@ -46,9 +46,10 @@ class Board(
     (RankAndFileMin to RankAndFileMax).map(
       rank => (RankAndFileMin to RankAndFileMax).map(
         file => pieceAt(Square(file, rank)) match {
-          case Some(piece) => "" + Color.shortName(piece.color) + piece.shortName
-          case None        => "__"
-        }).mkString(" | ")).reverse.mkString("\n")
+          case Some(piece) => "" + Color.shortName(piece.color) + piece.shortName + (if (piece.hasMoved) "+" else "-")
+          case None if enPassant == Some(file, rank) => "e/p"
+          case _ => "___"
+        }).mkString(" | ")).reverse.mkString("\n") + "\n"
   }
 
   /**
@@ -129,7 +130,7 @@ class Board(
       case _                                                   => ()
     }
     val newBoard = new Board(nextPieces, nextTurnColor, nextEnPassant)
-    if (newBoard.kingInCheck(turnColor)) return Left("This move leaves the king in check.")
+    if (newBoard.kingInCheck(turnColor)) return Left(s"Move $start -> $dest leaves the king in check.")
     Right(newBoard)
   }
 
@@ -211,9 +212,10 @@ class Board(
           .flatMap(sq_pieces => sq_pieces._2.map(piece => (sq_pieces._1, piece)))
           .map(start_dest => move(start_dest._1, start_dest._2))
           .flatMap {
-            case Left(str) => print(str); None
-            case Right(b)  => Some(b)
+            case Left(str) => println(str); None //TODO make this optional a la VLOG
+            case Right(b) => Some(b)
           }
+    //TODO include castling
   }
 
   /**
@@ -229,5 +231,21 @@ class Board(
 
   def pieceAt(square: Square): Option[Piece] = {
     pieces.get(square)
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(pieces, turnColor, enPassant)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[Board]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Board =>
+      (that canEqual this) &&
+        pieces == that.pieces &&
+        turnColor == that.turnColor &&
+        enPassant == that.enPassant
+    case _ => false
   }
 }

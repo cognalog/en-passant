@@ -36,7 +36,7 @@ object Board {
  * @param turnColor the color whose turn it is.
  * @param enPassant the square, if any, where a pawn may move for en passant.
  */
-class Board(
+case class Board(
     val pieces: Map[Square, Piece],
     val turnColor: Color = Color.White,
     val enPassant: Option[Square] = None
@@ -234,19 +234,4 @@ class Board(
     pieces.get(square)
   }
 
-  override def hashCode(): Int = {
-    val state = Seq(pieces, turnColor, enPassant)
-    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
-  }
-
-  def canEqual(other: Any): Boolean = other.isInstanceOf[Board]
-
-  override def equals(other: Any): Boolean = other match {
-    case that: Board =>
-      (that canEqual this) &&
-        pieces == that.pieces &&
-        turnColor == that.turnColor &&
-        enPassant == that.enPassant
-    case _ => false
-  }
 }

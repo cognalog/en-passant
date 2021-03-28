@@ -107,6 +107,13 @@ case class Board(
                        }
   }
 
+  def move(move: Move): Either[String, Board] = {
+    move match {
+      case NormalMove(start, dest) => normalMove(start, dest)
+      case CastleMove(dest) => castle(dest)
+    }
+  }
+
   /**
    * Generate a new board reflecting the board state after the piece at the starting square moves to the destination
    * square.
@@ -115,7 +122,7 @@ case class Board(
    * @param dest  the destination square. The piece must be able to move here.
    * @return the resulting board after a legal move, or an error string if the move is illegal.
    */
-  def move(start: Square, dest: Square): Either[String, Board] = {
+  private def normalMove(start: Square, dest: Square): Either[String, Board] = {
     checkLegalMove(start, dest)
     val piece = pieces(start).updateHasMoved()
     val nextPieces = pieces - start + (dest -> piece)
@@ -141,7 +148,7 @@ case class Board(
    * @param kingDest the square to which the king will move.
    * @return the new board after the king has castled accordingly, or a failure message if the move is not legal.
    */
-  def castle(kingDest: Square): Either[String, Board] = {
+  private def castle(kingDest: Square): Either[String, Board] = {
     // make sure neither king, destination, or in-between square has opposing attackers
     // make sure there are no pieces between king and rook
     if (!Set(3, 7).contains(kingDest.file) || !Set(1, 8).contains(kingDest.rank)) {
@@ -210,7 +217,7 @@ case class Board(
     val normalMoves = pieces.filter(_._2.isColor(turnColor))
       .map(sq_piece => (sq_piece._1, sq_piece._2.getLegalMoves(sq_piece._1, this))).toList
       .flatMap(sq_pieces => sq_pieces._2.map(piece => (sq_pieces._1, piece)))
-      .map(start_dest => move(start_dest._1, start_dest._2).map((NormalMove(start_dest._1, start_dest._2), _)))
+      .map(start_dest => normalMove(start_dest._1, start_dest._2).map((NormalMove(start_dest._1, start_dest._2), _)))
     val castleMoves = List(Square(3, 1), Square(7, 1), Square(3, 8), Square(7, 8))
       .map(dest => castle(dest).map((CastleMove(dest), _)))
     (normalMoves ++ castleMoves)

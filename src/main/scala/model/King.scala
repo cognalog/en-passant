@@ -13,7 +13,7 @@ case class King(override val color: Color, override val hasMoved: Boolean = fals
   override def updateHasMoved(): Piece = King(color, hasMoved = true)
 
   override def getLegalMoves(currentSquare: Square,
-                             board: Board): Set[Square] = {
+                             board: StandardBoard): Set[Square] = {
     Set(
       currentSquare.changeRank(1), currentSquare.changeFile(1).changeRank(1), currentSquare.changeFile(1),
       currentSquare.changeFile(1).changeRank(-1), currentSquare.changeRank(-1),

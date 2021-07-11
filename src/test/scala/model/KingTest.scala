@@ -7,7 +7,7 @@ class KingTest extends AnyFunSuite with MockFactory {
 
   test("testGetLegalMoves_blockedByPiece") {
     val sameColorPiece = mock[Piece]
-    val board = new Board(Map(Square(3, 4) -> sameColorPiece))
+    val board = new StandardBoard(Map(Square(3, 4) -> sameColorPiece))
     val king = King(Color.White)
     (sameColorPiece.isColor _).expects(Color.White).returning(true)
     assertResult(Set(
@@ -21,7 +21,7 @@ class KingTest extends AnyFunSuite with MockFactory {
   }
 
   test("testGetLegalMoves_someOOB") {
-    val board = new Board(Map())
+    val board = new StandardBoard(Map())
     val king = King(Color.White)
     assertResult(Set(
       Square(2, 2), Square(3, 2), Square(4, 2), Square(4, 1), Square(2, 1))) {

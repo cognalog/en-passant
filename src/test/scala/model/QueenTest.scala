@@ -7,7 +7,7 @@ class QueenTest extends AnyFunSuite with MockFactory {
 
   test("testGetLegalMoves_blockedByPiece") {
     val sameColorPiece = mock[Piece]
-    val board = new Board(
+    val board = new StandardBoard(
       Map(Square(6, 3) -> sameColorPiece, Square(3, 7) -> sameColorPiece, Square(6, 6) -> sameColorPiece), Color.Black)
     val queen = Queen(Color.Black)
     (sameColorPiece.isColor _).expects(Color.Black).returning(true).repeated(3).times()
@@ -22,7 +22,7 @@ class QueenTest extends AnyFunSuite with MockFactory {
 
   test("testGetLegalMoves_capture") {
     val sameColorPiece = mock[Piece]
-    val board = new Board(
+    val board = new StandardBoard(
       Map(Square(6, 3) -> sameColorPiece, Square(3, 7) -> sameColorPiece, Square(6, 6) -> sameColorPiece), Color.Black)
     val queen = Queen(Color.Black)
     (sameColorPiece.isColor _).expects(Color.Black).returning(false).repeated(3).times()

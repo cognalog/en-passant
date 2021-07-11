@@ -258,7 +258,7 @@ class BoardTest extends AnyFunSuite with MockFactory {
       }
   }
 
-  test("testGetSucessors_NoCurrentCheck") {
+  test("testGetNextMoves_NoCurrentCheck") {
     val board =
       Board(Map(Square(7, 1) -> King(White), Square(8, 1) -> Knight(Black),
         Square(5, 2) -> Bishop(Black), Square(7, 2) -> Queen(White), Square(8, 3) -> Pawn(White, hasMoved = true),
@@ -292,7 +292,7 @@ class BoardTest extends AnyFunSuite with MockFactory {
     }
   }
 
-  test("testGetSucessors_InCheckAlready") {
+  test("testGetNextMoves_InCheckAlready") {
     val board =
       Board(Map(Square(7, 1) -> King(Black), Square(4, 3) -> Queen(Black), Square(7, 3) -> Rook(White)),
         turnColor = Black)
@@ -319,7 +319,7 @@ class BoardTest extends AnyFunSuite with MockFactory {
     }
   }
 
-  test("testGetSucessors_WithCastles") {
+  test("testGetNextMoves_WithCastles") {
     val board =
       Board(Map(Square(5, 1) -> King(White), Square(8, 1) -> Rook(White), Square(8, 2) -> Rook(Black),
         Square(4, 8) -> Rook(Black)), // black rooks thrown in to keep the available moves limited

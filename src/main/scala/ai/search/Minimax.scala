@@ -7,6 +7,7 @@ import model.{Board, Move}
 case class Minimax(depth: Int, color: Color, utility: Utility) extends MoveSearch {
 
   override def GetBestMove(b: Board): Move = {
+    if (b.turnColor != color) throw new IllegalArgumentException(s"It isn't $color's turn'")
     MaxValue(b, depth)._1
   }
 

@@ -208,11 +208,6 @@ case class StandardBoard(
     }
   }
 
-  /**
-   * Generate all legal next moves and respective updated boards for this board.
-   *
-   * @return a collection of the legal moves and successors of this board.
-   */
   override def getNextMoves: Iterable[(Move, StandardBoard)] = {
     val normalMoves = pieces.filter(_._2.isColor(turnColor))
       .map(sq_piece => (sq_piece._1, sq_piece._2.getLegalMoves(sq_piece._1, this))).toList

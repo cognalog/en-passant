@@ -7,7 +7,7 @@ class RookTest extends AnyFunSuite with MockFactory {
 
   test("testGetLegalMoves_blockedByPiece") {
     val sameColorPiece = mock[Piece]
-    val board = new Board(Map(Square(6, 3) -> sameColorPiece, Square(3, 7) -> sameColorPiece), Color.Black)
+    val board = new StandardBoard(Map(Square(6, 3) -> sameColorPiece, Square(3, 7) -> sameColorPiece), Color.Black)
     val rook = Rook(Color.Black)
     (sameColorPiece.isColor _).expects(Color.Black).returning(true).twice()
 
@@ -20,7 +20,7 @@ class RookTest extends AnyFunSuite with MockFactory {
 
   test("testGetLegalMoves_capture") {
     val sameColorPiece = mock[Piece]
-    val board = new Board(Map(Square(6, 3) -> sameColorPiece, Square(3, 7) -> sameColorPiece), Color.Black)
+    val board = new StandardBoard(Map(Square(6, 3) -> sameColorPiece, Square(3, 7) -> sameColorPiece), Color.Black)
     val rook = Rook(Color.Black)
     (sameColorPiece.isColor _).expects(Color.Black).returning(false).twice()
 

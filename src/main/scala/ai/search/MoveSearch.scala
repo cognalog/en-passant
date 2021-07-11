@@ -1,12 +1,18 @@
 package ai.search
 
-import ai.utility.Utility
+import model.Color.Color
 import model.{Board, Move}
 
+/**
+ * Interface for search algorithms meant to find the best next move for a player on a board.
+ */
 trait MoveSearch {
-
-  def GetBestMove(b: Board): Move
-
-  final def GameOver(b: Board): Boolean = b.getNextMoves.isEmpty
-
+  /**
+   * Find the best next move for the player with the given color pieces.
+   *
+   * @param board the current board state.
+   * @param color the color for the player making the next turn.
+   * @return the best move.
+   */
+  def GetBestMove(board: Board, color: Color): Move
 }

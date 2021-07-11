@@ -1,8 +1,8 @@
-package ai.utility
+package ai.evaluator
 
 import model.Board
 import model.Color.Color
 
-trait Utility {
+trait Evaluator {
   def Evaluate(board: Board, color: Color): Int
 }

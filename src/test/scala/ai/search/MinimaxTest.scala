@@ -1,6 +1,6 @@
 package ai.search
 
-import ai.utility.MapUtility
+import ai.evaluator.MapEvaluator
 import model._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.funsuite.AnyFunSuite
@@ -30,7 +30,7 @@ class MinimaxTest extends AnyFunSuite with MockFactory {
 
   test("testGetBestMove_typical") {
     val minimax = Minimax(10, Color.White,
-      MapUtility(Map("a" -> 4, "b" -> 1, "c" -> 2, "b1" -> 5, "b2" -> 6, "b3" -> 7, "c1" -> 3, "c2" -> 9)))
+      MapEvaluator(Map("a" -> 4, "b" -> 1, "c" -> 2, "b1" -> 5, "b2" -> 6, "b3" -> 7, "c1" -> 3, "c2" -> 9)))
     val board = TreeBoard("root", Color.White,
       Map(NormalMove(Square(1, 1), Square(2, 2)) -> TreeBoard("a", Color.Black, Map()),
         NormalMove(Square(1, 1), Square(3, 3)) -> TreeBoard("b", Color.Black,
@@ -47,7 +47,7 @@ class MinimaxTest extends AnyFunSuite with MockFactory {
 
   test("testGetBestMove_shallowDepth") {
     val minimax = Minimax(1, Color.White,
-      MapUtility(Map("a" -> 4, "b" -> 1, "c" -> 2, "b1" -> 5, "b2" -> 6, "b3" -> 7, "c1" -> 3, "c2" -> 9)))
+      MapEvaluator(Map("a" -> 4, "b" -> 1, "c" -> 2, "b1" -> 5, "b2" -> 6, "b3" -> 7, "c1" -> 3, "c2" -> 9)))
     val board = TreeBoard("root", Color.White,
       Map(NormalMove(Square(1, 1), Square(2, 2)) -> TreeBoard("a", Color.Black, Map()),
         NormalMove(Square(1, 1), Square(3, 3)) -> TreeBoard("b", Color.Black,

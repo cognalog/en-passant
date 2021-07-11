@@ -1,10 +1,10 @@
 package ai.search
 
-import ai.utility.Utility
+import ai.evaluator.Evaluator
 import model.Color.Color
 import model.{Board, Move}
 
-case class Minimax(depth: Int, color: Color, utility: Utility) extends MoveSearch {
+case class Minimax(depth: Int, color: Color, utility: Evaluator) extends MoveSearch {
 
   override def GetBestMove(b: Board): Move = {
     if (b.turnColor != color) throw new IllegalArgumentException(s"It isn't $color's turn'")

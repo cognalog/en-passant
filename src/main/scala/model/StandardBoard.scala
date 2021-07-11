@@ -38,7 +38,7 @@ object StandardBoard {
  */
 case class StandardBoard(
                           pieces: Map[Square, Piece],
-                          turnColor: Color = Color.White,
+                          override val turnColor: Color = Color.White,
                           enPassant: Option[Square] = None
                         ) extends Board {
 
@@ -129,7 +129,7 @@ case class StandardBoard(
     val nextTurnColor = Color.opposite(turnColor)
     // if it's a pawn that just moved 2 spaces, set the space behind it as en passant
     var nextEnPassant: Option[Square] = None
-    val unused: Unit = piece match {
+    piece match {
       case Pawn(Color.White, _) if dest.rank - start.rank == 2 =>
         nextEnPassant = Some(Square(start.file, start.rank + 1))
       case Pawn(Color.Black, _) if start.rank - dest.rank == 2 =>
@@ -213,7 +213,7 @@ case class StandardBoard(
    *
    * @return a collection of the legal moves and successors of this board.
    */
-  def getNextMoves: Iterable[(Move, StandardBoard)] = {
+  override def getNextMoves: Iterable[(Move, StandardBoard)] = {
     val normalMoves = pieces.filter(_._2.isColor(turnColor))
       .map(sq_piece => (sq_piece._1, sq_piece._2.getLegalMoves(sq_piece._1, this))).toList
       .flatMap(sq_pieces => sq_pieces._2.map(piece => (sq_pieces._1, piece)))
@@ -242,4 +242,5 @@ case class StandardBoard(
     pieces.get(square)
   }
 
+  override def id: String = s"$hashCode()"
 }

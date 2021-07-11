@@ -16,7 +16,7 @@ case class Minimax(depth: Int, color: Color, utility: Utility) extends MoveSearc
     val movesAndScores = b.getNextMoves.map { case (move, board) => (move, MinValue(board, d - 1)._2) }
 
     if (movesAndScores.isEmpty) (null, utility.Evaluate(b, color)) else movesAndScores
-      .min(Ordering.by[(Move, Int), Int](_._2))
+      .max(Ordering.by[(Move, Int), Int](_._2))
   }
 
   private[search] def MinValue(b: Board, d: Int): (Move, Int) = {

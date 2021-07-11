@@ -3,9 +3,9 @@ package model
 import model.Color.Color
 
 trait Board {
+  def id: String
+
   def turnColor: Color
 
-  def getNextMoves: Iterable[(Move, StandardBoard)]
-
-  def toString: String
+  def getNextMoves: Iterable[(Move, Board)]
 }

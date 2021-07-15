@@ -17,19 +17,19 @@ case class Minimax(depth: Int, evaluator: Evaluator) extends MoveSearch {
     MaxValue(board, color, depth)._1
   }
 
-  private def MaxValue(b: Board, color: Color, d: Int): (Move, Int) = {
-    if (d <= 0) return (null, evaluator.Evaluate(b, color))
-    val movesAndScores = b.getNextMoves.map { case (move, board) => (move, MinValue(board, color, d - 1)._2) }
+  private def MaxValue(board: Board, color: Color, depth: Int): (Move, Int) = {
+    if (depth <= 0) return (null, evaluator.Evaluate(board, color))
+    val movesAndScores = board.getNextMoves.map { case (move, board) => (move, MinValue(board, color, depth - 1)._2) }
 
-    if (movesAndScores.isEmpty) (null, evaluator.Evaluate(b, color)) else movesAndScores
+    if (movesAndScores.isEmpty) (null, evaluator.Evaluate(board, color)) else movesAndScores
       .max(Ordering.by[(Move, Int), Int](_._2))
   }
 
-  private def MinValue(b: Board, color: Color, d: Int): (Move, Int) = {
-    if (d <= 0) return (null, evaluator.Evaluate(b, color))
-    val movesAndScores = b.getNextMoves.map { case (move, board) => (move, MaxValue(board, color, d - 1)._2) }
+  private def MinValue(board: Board, color: Color, depth: Int): (Move, Int) = {
+    if (depth <= 0) return (null, evaluator.Evaluate(board, color))
+    val movesAndScores = board.getNextMoves.map { case (move, board) => (move, MaxValue(board, color, depth - 1)._2) }
 
-    if (movesAndScores.isEmpty) (null, evaluator.Evaluate(b, color)) else movesAndScores
+    if (movesAndScores.isEmpty) (null, evaluator.Evaluate(board, color)) else movesAndScores
       .min(Ordering.by[(Move, Int), Int](_._2))
   }
 }

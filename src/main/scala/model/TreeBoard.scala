@@ -13,4 +13,8 @@ import model.Color.Color
  */
 case class TreeBoard(id: String, turnColor: Color, children: Map[Move, TreeBoard]) extends Board {
   override def getNextMoves: Iterable[(Move, Board)] = children.toList
+
+  override def move(move: Move): Either[String, Board] = ???
+
+  override def pieceAt(square: Square): Option[Piece] = None
 }

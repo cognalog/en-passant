@@ -27,6 +27,19 @@ case class Square(file: Int, rank: Int) {
 object StandardBoard {
   private val RankAndFileMin = 1
   private val RankAndFileMax = 8
+
+  val StartingPosition: Board = StandardBoard(
+    Map(Square(1, 1) -> Rook(Color.White), Square(2, 1) -> Knight(Color.White), Square(3, 1) -> Bishop(Color.White),
+      Square(4, 1) -> Queen(Color.White), Square(5, 1) -> King(Color.White), Square(6, 1) -> Bishop(Color.White),
+      Square(7, 1) -> Knight(Color.White), Square(8, 1) -> Rook(Color.White), Square(1, 2) -> Pawn(Color.White),
+      Square(2, 2) -> Pawn(Color.White), Square(3, 2) -> Pawn(Color.White), Square(4, 2) -> Pawn(Color.White),
+      Square(5, 2) -> Pawn(Color.White), Square(6, 2) -> Pawn(Color.White), Square(7, 2) -> Pawn(Color.White),
+      Square(8, 2) -> Pawn(Color.White), Square(1, 8) -> Rook(Color.Black), Square(2, 8) -> Knight(Color.Black),
+      Square(3, 8) -> Bishop(Color.Black), Square(4, 8) -> Queen(Color.Black), Square(5, 8) -> King(Color.Black),
+      Square(6, 8) -> Bishop(Color.Black), Square(7, 8) -> Knight(Color.Black), Square(8, 8) -> Rook(Color.Black),
+      Square(1, 7) -> Pawn(Color.Black), Square(2, 7) -> Pawn(Color.Black), Square(3, 7) -> Pawn(Color.Black),
+      Square(4, 7) -> Pawn(Color.Black), Square(5, 7) -> Pawn(Color.Black), Square(6, 7) -> Pawn(Color.Black),
+      Square(7, 7) -> Pawn(Color.Black), Square(8, 7) -> Pawn(Color.Black)))
 }
 
 /**
@@ -61,7 +74,7 @@ case class StandardBoard(
    */
   def kingInCheck(color: Color): Boolean = {
     val kingSquare: Option[Square] = pieces.filter {
-      case (_, King(color, _)) => true
+      case (_, King(_, _)) => true
       case _ => false
     }.keys.headOption
     kingSquare.fold(false)(getAttackers(_, Color.opposite(color)).nonEmpty)
@@ -107,10 +120,11 @@ case class StandardBoard(
         }
   }
 
-  def move(move: Move): Either[String, StandardBoard] = {
+  override def move(move: Move): Either[String, Board] = {
     move match {
       case NormalMove(start, dest) => normalMove(start, dest)
       case CastleMove(dest) => castle(dest)
+      case _ => Left(s"Malformed move: $move")
     }
   }
 
@@ -233,7 +247,7 @@ case class StandardBoard(
     bounds.contains(square.file) && bounds.contains(square.rank)
   }
 
-  def pieceAt(square: Square): Option[Piece] = {
+  override def pieceAt(square: Square): Option[Piece] = {
     pieces.get(square)
   }
 

@@ -2,6 +2,8 @@ package model
 
 import model.Color.Color
 
+import scala.util.Try
+
 /**
  * The representation of a chess board.
  */
@@ -33,7 +35,7 @@ trait Board {
    * @param move the move to apply.
    * @return Right(the new board) if the move is legal, otherwise Left(error message)
    */
-  def move(move: Move): Either[String, Board]
+  def move(move: Move): Try[Board]
 
   /**
    * Get the piece at a particular square on a board, if it exists.

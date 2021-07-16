@@ -3,6 +3,8 @@ package model
 import model.Color.Color
 import model.StandardBoard.{RankAndFileMax, RankAndFileMin}
 
+import scala.util.{Failure, Success, Try}
+
 /**
  * One of 64 squares on the board. Has coordinates in terms of rank (y) and file (x).
  * Files are numerical instead of alphabetical for easier processing. A-file is 1.
@@ -120,11 +122,11 @@ case class StandardBoard(
         }
   }
 
-  override def move(move: Move): Either[String, Board] = {
+  override def move(move: Move): Try[Board] = {
     move match {
       case NormalMove(start, dest) => normalMove(start, dest)
       case CastleMove(dest) => castle(dest)
-      case _ => Left(s"Malformed move: $move")
+      case _ => Failure(new IllegalArgumentException(s"Malformed move: $move"))
     }
   }
 
@@ -136,7 +138,7 @@ case class StandardBoard(
    * @param dest  the destination square. The piece must be able to move here.
    * @return the resulting board after a legal move, or an error string if the move is illegal.
    */
-  private def normalMove(start: Square, dest: Square): Either[String, StandardBoard] = {
+  private def normalMove(start: Square, dest: Square): Try[StandardBoard] = {
     checkLegalMove(start, dest)
     val piece = pieces(start).updateHasMoved()
     val nextPieces = pieces - start + (dest -> piece)
@@ -151,8 +153,9 @@ case class StandardBoard(
       case _ => ()
     }
     val newBoard = new StandardBoard(nextPieces, nextTurnColor, nextEnPassant)
-    if (newBoard.kingInCheck(turnColor)) return Left(s"Move $start -> $dest leaves the king in check.")
-    Right(newBoard)
+    if (newBoard.kingInCheck(turnColor)) return Failure(
+      new IllegalArgumentException(s"Move $start -> $dest leaves the king in check."))
+    Success(newBoard)
   }
 
   /**
@@ -162,11 +165,11 @@ case class StandardBoard(
    * @param kingDest the square to which the king will move.
    * @return the new board after the king has castled accordingly, or a failure message if the move is not legal.
    */
-  private def castle(kingDest: Square): Either[String, StandardBoard] = {
+  private def castle(kingDest: Square): Try[StandardBoard] = {
     // make sure neither king, destination, or in-between square has opposing attackers
     // make sure there are no pieces between king and rook
     if (!Set(3, 7).contains(kingDest.file) || !Set(1, 8).contains(kingDest.rank)) {
-      return Left(s"$kingDest is not a legal castling destination.")
+      return Failure(new IllegalArgumentException(s"$kingDest is not a legal castling destination."))
     }
 
     val kingStart = Square(5, kingDest.rank)
@@ -175,27 +178,30 @@ case class StandardBoard(
       case Some(King(this.turnColor, false)) => true
       case _ => false
     }
-    if (!validKing) return Left(s"There is no unmoved $turnColor king at $kingStart.")
+    if (!validKing) return Failure(new IllegalArgumentException(s"There is no unmoved $turnColor king at $kingStart."))
     val validRook: Boolean = pieceAt(rookStart) match {
       case Some(Rook(this.turnColor, false)) => true
       case _ => false
     }
-    if (!validRook) return Left(s"There is no unmoved $turnColor rook at $rookStart.")
+    if (!validRook) return Failure(
+      new IllegalArgumentException(s"There is no unmoved $turnColor rook at $rookStart."))
     val rookDest = if (kingDest.file == 3) Square(4, kingDest.rank) else Square(6, kingDest.rank)
 
     val piecesInBetween: Boolean = (math.min(kingStart.file, rookStart.file) + 1 until
       math.max(kingStart.file, rookStart.file))
       .exists(file => pieceAt(Square(file, kingStart.rank)).nonEmpty)
-    if (piecesInBetween) return Left(s"There are pieces between the king at $kingStart and the rook at $rookStart.")
+    if (piecesInBetween) return Failure(
+      new IllegalArgumentException(s"There are pieces between the king at $kingStart and the rook at $rookStart."))
 
     val kingMovesSafe: Boolean = (math.min(kingStart.file, kingDest.file) to
       math.max(kingStart.file, kingDest.file))
       .forall(file => getAttackers(Square(file, kingDest.rank), Color.opposite(turnColor)).isEmpty)
-    if (!kingMovesSafe) return Left(s"The king cannot safely move from $kingStart to $kingDest.")
+    if (!kingMovesSafe) return Failure(
+      new IllegalArgumentException(s"The king cannot safely move from $kingStart to $kingDest."))
 
     val newPieces = pieces - kingStart - rookStart + (rookDest -> Rook(turnColor, hasMoved = true)) +
       (kingDest -> King(turnColor, hasMoved = true))
-    Right(new StandardBoard(
+    Success(new StandardBoard(
       pieces = newPieces, Color.opposite(turnColor)))
   }
 
@@ -231,8 +237,8 @@ case class StandardBoard(
       .map(dest => castle(dest).map((CastleMove(dest), _)))
     (normalMoves ++ castleMoves)
       .flatMap {
-        case Left(error) => /*println(error);*/ None // TODO make this optional a la VLOG
-        case Right((move, board)) => Some((move, board))
+        case Failure(e) => /*println(e);*/ None // TODO make this optional a la VLOG
+        case Success((move, board)) => Some((move, board))
       }
   }
 

@@ -4,10 +4,11 @@ import model.Color.Color
 import model.{Board, StandardBoard}
 
 import scala.collection.mutable.ListBuffer
+import scala.util.{Failure, Success, Try}
 
-class Game(val players: Map[Color, Player], val maxTurns: Int = Int.MaxValue) {
+case class Game(players: Map[Color, Player], maxTurns: Int = Int.MaxValue) {
 
-  def Play(): List[Board] = {
+  def Play(): Try[List[Board]] = {
     var turns = 0
     val boardLog: ListBuffer[Board] = ListBuffer()
     var currentBoard: Board = StandardBoard.StartingPosition
@@ -16,10 +17,12 @@ class Game(val players: Map[Color, Player], val maxTurns: Int = Int.MaxValue) {
       boardLog.append(currentBoard)
       val turnColor = currentBoard.turnColor
       val nextMove = players(turnColor).GetNextMove(currentBoard, turnColor)
-      val moveAttempt = currentBoard.move(nextMove)
-      if (moveAttempt.isLeft) throw new IllegalStateException(s"Bad move from $turnColor player: $nextMove")
-      currentBoard = moveAttempt.fold(_ => StandardBoard(Map()), board => board)
+      val moveAttempt = nextMove.flatMap(currentBoard.move(_))
+      moveAttempt match {
+        case Success(board) => currentBoard = board
+        case Failure(e) => return Failure(e)
+      }
     }
-    boardLog.toList
+    Success(boardLog.toList)
   }
 }

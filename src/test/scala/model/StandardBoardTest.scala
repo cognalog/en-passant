@@ -74,17 +74,34 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
     }
   }
 
-  test("testKingInCheck_false") {
+  test("testKingInCheck_miss") {
     val board = StandardBoard(Map(Square(3, 3) -> King(Black), Square(7, 6) -> Bishop(White)))
     assertResult(false) {
       board.kingInCheck(Black)
     }
   }
 
-  test("testKingInCheck_truePawn") {
-    val board = StandardBoard(Map(Square(3, 3) -> King(Black), Square(2, 2) -> Pawn(White)))
-    assertResult(true) {
+  test("testKingInCheck_blockedByOpponent") {
+    val board = StandardBoard(
+      Map(Square(3, 3) -> King(Black), Square(6, 6) -> Bishop(Black), Square(7, 7) -> Bishop(White)))
+    assertResult(false) {
       board.kingInCheck(Black)
+    }
+  }
+
+  test("testKingInCheck_blockedBySelf") {
+    val board = StandardBoard(
+      Map(Square(3, 3) -> King(Black), Square(3, 6) -> Pawn(White), Square(3, 8) -> Rook(White)))
+    assertResult(false) {
+      board.kingInCheck(Black)
+    }
+  }
+
+  test("testKingInCheck_ColorSpecific") {
+    val board = StandardBoard(
+      Map(Square(5, 8) -> King(Black), Square(5, 1) -> King(White), Square(4, 8) -> Queen(Black)))
+    assertResult(false) {
+      board.kingInCheck(White)
     }
   }
 

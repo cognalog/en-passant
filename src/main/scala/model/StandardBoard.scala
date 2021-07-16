@@ -74,7 +74,7 @@ case class StandardBoard(
    */
   def kingInCheck(color: Color): Boolean = {
     val kingSquare: Option[Square] = pieces.filter {
-      case (_, King(_, _)) => true
+      case (_, King(kingColor, _)) if kingColor == color => true
       case _ => false
     }.keys.headOption
     kingSquare.fold(false)(getAttackers(_, Color.opposite(color)).nonEmpty)

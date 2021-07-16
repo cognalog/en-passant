@@ -231,7 +231,7 @@ case class StandardBoard(
       .map(dest => castle(dest).map((CastleMove(dest), _)))
     (normalMoves ++ castleMoves)
       .flatMap {
-        case Left(error) => println(error); None // TODO make this optional a la VLOG
+        case Left(error) => /*println(error);*/ None // TODO make this optional a la VLOG
         case Right((move, board)) => Some((move, board))
       }
   }

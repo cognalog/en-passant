@@ -2,7 +2,7 @@ package model
 
 import model.Color.Color
 
-import scala.util.{Failure, Try}
+import scala.util.{Failure, Success, Try}
 
 /**
  * A board which does not process moves except as keys to a pre-set map of
@@ -16,7 +16,10 @@ import scala.util.{Failure, Try}
 case class TreeBoard(id: String, turnColor: Color, children: Map[Move, TreeBoard]) extends Board {
   override def getNextMoves: Iterable[(Move, Board)] = children.toList
 
-  override def move(move: Move): Try[Board] = Failure(new UnsupportedOperationException("TreeBoard can't apply moves."))
+  override def move(move: Move): Try[Board] = children.get(move) match {
+    case Some(board) => Success(board)
+    case None => Failure(new IllegalArgumentException("No such move available"))
+  }
 
   override def pieceAt(square: Square): Option[Piece] = None
 

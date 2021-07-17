@@ -123,7 +123,7 @@ case class StandardBoard(
    * @return the resulting board after a legal move, or an error string if the move is illegal.
    */
   private def normalMove(start: Square, dest: Square): Try[StandardBoard] = {
-    checkLegalMove(start, dest)
+    Try(checkLegalMove(start, dest))
     val piece = pieces(start).updateHasMoved()
     val nextPieces = pieces - start + (dest -> piece)
     val nextTurnColor = Color.opposite(turnColor)

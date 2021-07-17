@@ -2,6 +2,8 @@ package model
 
 import model.Color.Color
 
+import scala.util.{Failure, Try}
+
 /**
  * A board which does not process moves except as keys to a pre-set map of
  * successors. Useful in [[ai.search.MoveSearch]] unit tests.
@@ -13,4 +15,14 @@ import model.Color.Color
  */
 case class TreeBoard(id: String, turnColor: Color, children: Map[Move, TreeBoard]) extends Board {
   override def getNextMoves: Iterable[(Move, Board)] = children.toList
+
+  override def move(move: Move): Try[Board] = Failure(new UnsupportedOperationException("TreeBoard can't apply moves."))
+
+  override def pieceAt(square: Square): Option[Piece] = None
+
+  override def locatePiece(piece: Piece): Set[Square] = Set()
+
+  override def isInBounds(square: Square): Boolean = false
+
+  override def isEnPassantPossible(square: Square): Boolean = false
 }

@@ -4,6 +4,8 @@ import model.Color.{Black, White}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.funsuite.AnyFunSuite
 
+import scala.util.Success
+
 class StandardBoardTest extends AnyFunSuite with MockFactory {
 
   test("testGetAttackers") {
@@ -74,17 +76,34 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
     }
   }
 
-  test("testKingInCheck_false") {
+  test("testKingInCheck_miss") {
     val board = StandardBoard(Map(Square(3, 3) -> King(Black), Square(7, 6) -> Bishop(White)))
     assertResult(false) {
       board.kingInCheck(Black)
     }
   }
 
-  test("testKingInCheck_truePawn") {
-    val board = StandardBoard(Map(Square(3, 3) -> King(Black), Square(2, 2) -> Pawn(White)))
-    assertResult(true) {
+  test("testKingInCheck_blockedByOpponent") {
+    val board = StandardBoard(
+      Map(Square(3, 3) -> King(Black), Square(6, 6) -> Bishop(Black), Square(7, 7) -> Bishop(White)))
+    assertResult(false) {
       board.kingInCheck(Black)
+    }
+  }
+
+  test("testKingInCheck_blockedBySelf") {
+    val board = StandardBoard(
+      Map(Square(3, 3) -> King(Black), Square(3, 6) -> Pawn(White), Square(3, 8) -> Rook(White)))
+    assertResult(false) {
+      board.kingInCheck(Black)
+    }
+  }
+
+  test("testKingInCheck_ColorSpecific") {
+    val board = StandardBoard(
+      Map(Square(5, 8) -> King(Black), Square(5, 1) -> King(White), Square(4, 8) -> Queen(Black)))
+    assertResult(false) {
+      board.kingInCheck(White)
     }
   }
 
@@ -153,8 +172,8 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
     val board = StandardBoard(
       Map(
         Square(1, 1) -> Rook(Black), Square(5, 1) -> King(White)), turnColor = Black)
-    assertResult(Left("There is no unmoved Black king at Square(5,1).")) {
-      board.move(CastleMove(Square(3, 1)))
+    assertResult("There is no unmoved Black king at Square(5,1).") {
+      board.move(CastleMove(Square(3, 1))).fold(ex => ex.getMessage, _ => fail())
     }
   }
 
@@ -162,8 +181,8 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
     val board = StandardBoard(
       Map(
         Square(1, 1) -> Rook(White), Square(5, 1) -> King(Black)), turnColor = Black)
-    assertResult(Left("There is no unmoved Black rook at Square(1,1).")) {
-      board.move(CastleMove(Square(3, 1)))
+    assertResult("There is no unmoved Black rook at Square(1,1).") {
+      board.move(CastleMove(Square(3, 1))).fold(ex => ex.getMessage, _ => fail())
     }
   }
 
@@ -171,8 +190,8 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
     val board = StandardBoard(
       Map(
         Square(1, 1) -> Rook(Black), Square(5, 1) -> King(Black, hasMoved = true)), turnColor = Black)
-    assertResult(Left("There is no unmoved Black king at Square(5,1).")) {
-      board.move(CastleMove(Square(3, 1)))
+    assertResult("There is no unmoved Black king at Square(5,1).") {
+      board.move(CastleMove(Square(3, 1))).fold(ex => ex.getMessage, _ => fail())
     }
   }
 
@@ -180,8 +199,8 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
     val board = StandardBoard(
       Map(
         Square(1, 1) -> Rook(Black, hasMoved = true), Square(5, 1) -> King(Black)), turnColor = Black)
-    assertResult(Left("There is no unmoved Black rook at Square(1,1).")) {
-      board.move(CastleMove(Square(3, 1)))
+    assertResult("There is no unmoved Black rook at Square(1,1).") {
+      board.move(CastleMove(Square(3, 1))).fold(ex => ex.getMessage, _ => fail())
     }
   }
 
@@ -190,8 +209,8 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
       Map(
         Square(1, 1) -> Rook(Black), Square(2, 1) -> Knight(Black), Square(5, 1) -> King(Black)),
       turnColor = Black)
-    assertResult(Left("There are pieces between the king at Square(5,1) and the rook at Square(1,1).")) {
-      board.move(CastleMove(Square(3, 1)))
+    assertResult("There are pieces between the king at Square(5,1) and the rook at Square(1,1).") {
+      board.move(CastleMove(Square(3, 1))).fold(ex => ex.getMessage, _ => fail())
     }
   }
 
@@ -200,8 +219,8 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
       Map(
         Square(1, 1) -> Rook(Black), Square(2, 3) -> Knight(White), Square(5, 1) -> King(Black)),
       turnColor = Black)
-    assertResult(Left("The king cannot safely move from Square(5,1) to Square(3,1).")) {
-      board.move(CastleMove(Square(3, 1)))
+    assertResult("The king cannot safely move from Square(5,1) to Square(3,1).") {
+      board.move(CastleMove(Square(3, 1))).fold(ex => ex.getMessage, _ => fail())
     }
   }
 
@@ -209,7 +228,7 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
     val board =
       StandardBoard(Map(Square(1, 1) -> Pawn(Black)), Black)
 
-    assertResult(Right(StandardBoard(Map(Square(1, 2) -> Pawn(Black, hasMoved = true)), White))) {
+    assertResult(Success(StandardBoard(Map(Square(1, 2) -> Pawn(Black, hasMoved = true)), White))) {
       board.move(NormalMove(Square(1, 1), Square(1, 2)))
     }
   }
@@ -217,8 +236,8 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
   test("testMove_kingMovingIntoCheck") {
     val board =
       StandardBoard(Map(Square(1, 1) -> King(Black), Square(2, 2) -> Rook(White)), Black)
-    assertResult(Left("Move Square(1,1) -> Square(2,1) leaves the king in check.")) {
-      board.move(NormalMove(Square(1, 1), Square(2, 1)))
+    assertResult("Move Square(1,1) -> Square(2,1) leaves the king in check.") {
+      board.move(NormalMove(Square(1, 1), Square(2, 1))).fold(ex => ex.getMessage, _ => fail())
     }
   }
 
@@ -227,8 +246,8 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
       StandardBoard(
         Map(Square(1, 1) -> King(Black), Square(2, 2) -> Rook(Black), Square(5, 5) -> Bishop(White)),
         Black)
-    assertResult(Left("Move Square(2,2) -> Square(3,2) leaves the king in check.")) {
-      board.move(NormalMove(Square(2, 2), Square(3, 2)))
+    assertResult("Move Square(2,2) -> Square(3,2) leaves the king in check.") {
+      board.move(NormalMove(Square(2, 2), Square(3, 2))).fold(ex => ex.getMessage, _ => fail())
     }
   }
 
@@ -237,7 +256,7 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
     val board =
       StandardBoard(Map(Square(1, 1) -> piece), White)
     assertResult(
-      Right(
+      Success(
         StandardBoard(Map(Square(1, 3) -> Pawn(White, hasMoved = true)), turnColor = Black,
           enPassant = Some(Square(1, 2))))
     ) {
@@ -251,7 +270,7 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
       StandardBoard(Map(Square(8, 8) -> piece), Black)
 
       assertResult(
-        Right(
+        Success(
           StandardBoard(Map(Square(8, 6) -> Pawn(Black, hasMoved = true)), turnColor = White,
             enPassant = Some(Square(8, 7))))
       ) {

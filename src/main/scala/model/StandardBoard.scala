@@ -3,23 +3,9 @@ package model
 import model.Color.Color
 import model.StandardBoard.{RankAndFileMax, RankAndFileMin}
 
-/**
- * One of 64 squares on the board. Has coordinates in terms of rank (y) and file (x).
- * Files are numerical instead of alphabetical for easier processing. A-file is 1.
- * TODO(hinderson): swap rank and file order in ctor
- *
- * @param file x coordinate, 1-indexed
- * @param rank y coordinate, 1-indexed
- */
-case class Square(file: Int, rank: Int) {
-  def changeFile(delta: Int): Square = {
-    Square(file + delta, rank)
-  }
+import scala.util.{Failure, Success, Try}
 
-  def changeRank(delta: Int): Square = {
-    Square(file, rank + delta)
-  }
-}
+
 
 /**
  * Companion object for board. Holds constants.
@@ -27,6 +13,19 @@ case class Square(file: Int, rank: Int) {
 object StandardBoard {
   private val RankAndFileMin = 1
   private val RankAndFileMax = 8
+
+  val StartingPosition: Board = StandardBoard(
+    Map(Square(1, 1) -> Rook(Color.White), Square(2, 1) -> Knight(Color.White), Square(3, 1) -> Bishop(Color.White),
+      Square(4, 1) -> Queen(Color.White), Square(5, 1) -> King(Color.White), Square(6, 1) -> Bishop(Color.White),
+      Square(7, 1) -> Knight(Color.White), Square(8, 1) -> Rook(Color.White), Square(1, 2) -> Pawn(Color.White),
+      Square(2, 2) -> Pawn(Color.White), Square(3, 2) -> Pawn(Color.White), Square(4, 2) -> Pawn(Color.White),
+      Square(5, 2) -> Pawn(Color.White), Square(6, 2) -> Pawn(Color.White), Square(7, 2) -> Pawn(Color.White),
+      Square(8, 2) -> Pawn(Color.White), Square(1, 8) -> Rook(Color.Black), Square(2, 8) -> Knight(Color.Black),
+      Square(3, 8) -> Bishop(Color.Black), Square(4, 8) -> Queen(Color.Black), Square(5, 8) -> King(Color.Black),
+      Square(6, 8) -> Bishop(Color.Black), Square(7, 8) -> Knight(Color.Black), Square(8, 8) -> Rook(Color.Black),
+      Square(1, 7) -> Pawn(Color.Black), Square(2, 7) -> Pawn(Color.Black), Square(3, 7) -> Pawn(Color.Black),
+      Square(4, 7) -> Pawn(Color.Black), Square(5, 7) -> Pawn(Color.Black), Square(6, 7) -> Pawn(Color.Black),
+      Square(7, 7) -> Pawn(Color.Black), Square(8, 7) -> Pawn(Color.Black)))
 }
 
 /**
@@ -61,7 +60,7 @@ case class StandardBoard(
    */
   def kingInCheck(color: Color): Boolean = {
     val kingSquare: Option[Square] = pieces.filter {
-      case (_, King(color, _)) => true
+      case (_, King(kingColor, _)) if kingColor == color => true
       case _ => false
     }.keys.headOption
     kingSquare.fold(false)(getAttackers(_, Color.opposite(color)).nonEmpty)
@@ -107,10 +106,11 @@ case class StandardBoard(
         }
   }
 
-  def move(move: Move): Either[String, StandardBoard] = {
+  override def move(move: Move): Try[Board] = {
     move match {
       case NormalMove(start, dest) => normalMove(start, dest)
       case CastleMove(dest) => castle(dest)
+      case _ => Failure(new IllegalArgumentException(s"Malformed move: $move"))
     }
   }
 
@@ -122,7 +122,7 @@ case class StandardBoard(
    * @param dest  the destination square. The piece must be able to move here.
    * @return the resulting board after a legal move, or an error string if the move is illegal.
    */
-  private def normalMove(start: Square, dest: Square): Either[String, StandardBoard] = {
+  private def normalMove(start: Square, dest: Square): Try[StandardBoard] = {
     checkLegalMove(start, dest)
     val piece = pieces(start).updateHasMoved()
     val nextPieces = pieces - start + (dest -> piece)
@@ -137,8 +137,9 @@ case class StandardBoard(
       case _ => ()
     }
     val newBoard = new StandardBoard(nextPieces, nextTurnColor, nextEnPassant)
-    if (newBoard.kingInCheck(turnColor)) return Left(s"Move $start -> $dest leaves the king in check.")
-    Right(newBoard)
+    if (newBoard.kingInCheck(turnColor)) return Failure(
+      new IllegalArgumentException(s"Move $start -> $dest leaves the king in check."))
+    Success(newBoard)
   }
 
   /**
@@ -148,11 +149,11 @@ case class StandardBoard(
    * @param kingDest the square to which the king will move.
    * @return the new board after the king has castled accordingly, or a failure message if the move is not legal.
    */
-  private def castle(kingDest: Square): Either[String, StandardBoard] = {
+  private def castle(kingDest: Square): Try[StandardBoard] = {
     // make sure neither king, destination, or in-between square has opposing attackers
     // make sure there are no pieces between king and rook
     if (!Set(3, 7).contains(kingDest.file) || !Set(1, 8).contains(kingDest.rank)) {
-      return Left(s"$kingDest is not a legal castling destination.")
+      return Failure(new IllegalArgumentException(s"$kingDest is not a legal castling destination."))
     }
 
     val kingStart = Square(5, kingDest.rank)
@@ -161,27 +162,30 @@ case class StandardBoard(
       case Some(King(this.turnColor, false)) => true
       case _ => false
     }
-    if (!validKing) return Left(s"There is no unmoved $turnColor king at $kingStart.")
+    if (!validKing) return Failure(new IllegalArgumentException(s"There is no unmoved $turnColor king at $kingStart."))
     val validRook: Boolean = pieceAt(rookStart) match {
       case Some(Rook(this.turnColor, false)) => true
       case _ => false
     }
-    if (!validRook) return Left(s"There is no unmoved $turnColor rook at $rookStart.")
+    if (!validRook) return Failure(
+      new IllegalArgumentException(s"There is no unmoved $turnColor rook at $rookStart."))
     val rookDest = if (kingDest.file == 3) Square(4, kingDest.rank) else Square(6, kingDest.rank)
 
     val piecesInBetween: Boolean = (math.min(kingStart.file, rookStart.file) + 1 until
       math.max(kingStart.file, rookStart.file))
       .exists(file => pieceAt(Square(file, kingStart.rank)).nonEmpty)
-    if (piecesInBetween) return Left(s"There are pieces between the king at $kingStart and the rook at $rookStart.")
+    if (piecesInBetween) return Failure(
+      new IllegalArgumentException(s"There are pieces between the king at $kingStart and the rook at $rookStart."))
 
     val kingMovesSafe: Boolean = (math.min(kingStart.file, kingDest.file) to
       math.max(kingStart.file, kingDest.file))
       .forall(file => getAttackers(Square(file, kingDest.rank), Color.opposite(turnColor)).isEmpty)
-    if (!kingMovesSafe) return Left(s"The king cannot safely move from $kingStart to $kingDest.")
+    if (!kingMovesSafe) return Failure(
+      new IllegalArgumentException(s"The king cannot safely move from $kingStart to $kingDest."))
 
     val newPieces = pieces - kingStart - rookStart + (rookDest -> Rook(turnColor, hasMoved = true)) +
       (kingDest -> King(turnColor, hasMoved = true))
-    Right(new StandardBoard(
+    Success(new StandardBoard(
       pieces = newPieces, Color.opposite(turnColor)))
   }
 
@@ -217,25 +221,25 @@ case class StandardBoard(
       .map(dest => castle(dest).map((CastleMove(dest), _)))
     (normalMoves ++ castleMoves)
       .flatMap {
-        case Left(error) => println(error); None // TODO make this optional a la VLOG
-        case Right((move, board)) => Some((move, board))
+        case Failure(e) => /*println(e);*/ None // TODO make this optional a la VLOG
+        case Success((move, board)) => Some((move, board))
       }
   }
 
-  /**
-   * Determine whether a square is on the board.
-   *
-   * @param square the square in question.
-   * @return true if the square is on the board, false otherwise.
-   */
-  def isInBounds(square: Square): Boolean = {
+  override def isInBounds(square: Square): Boolean = {
     val bounds = StandardBoard.RankAndFileMin to StandardBoard.RankAndFileMax
     bounds.contains(square.file) && bounds.contains(square.rank)
   }
 
-  def pieceAt(square: Square): Option[Piece] = {
+  override def pieceAt(square: Square): Option[Piece] = {
     pieces.get(square)
   }
 
-  override def id: String = s"$hashCode()"
+  override def id: String = s"$hashCode"
+
+  override def locatePiece(piece: Piece): Set[Square] = pieces.filter {
+    case (_, p) => p.isColor(piece.color) && p.getClass == piece.getClass
+  }.keys.toSet
+
+  override def isEnPassantPossible(square: Square): Boolean = enPassant.fold(false)(_ == square)
 }

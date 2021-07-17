@@ -6,11 +6,14 @@ object Move {
   private val normalMove = raw"([BKNQR])?([a-h])?x?([a-h][1-8])\+?".r
 
   /**
-   * Parse a move string written in Algebraic Notation.
+   * Parse a move string written in Algebraic Notation. Limited legality
+   * checking is performed to resolve ambiguity. Behavior is undefined for
+   * ambiguous moves.
    *
    * @param move  the move string.
    * @param board the board providing context for the move.
-   * @return a [[Move]] which is referred to by the move string
+   * @return a [[Move]] which is referred to by the move string, or a
+   *         [[Failure]] if the move is impossible or the string is malformed.
    */
   def fromStandardNotation(move: String, board: Board): Try[Move] = move match {
     case "O-O" => Success(CastleMove(if (board.turnColor == Color.White) Square(7, 1) else Square(7, 8)))
@@ -26,8 +29,8 @@ object Move {
           case null => Pawn(board.turnColor)
         }
         val startSquare = board.locatePiece(pieceToFind).find(
-          sq => pieceToFind.getLegalMoves(sq, board).contains(parsedDest) &&
-            (startFile == null || startFile == sq.standardFileName))
+          sq => (startFile == null || startFile == sq.standardFileName) &&
+            pieceToFind.getLegalMoves(sq, board).contains(parsedDest))
         startSquare match {
           case Some(start) => Success(NormalMove(start, parsedDest))
           case None => Failure(new IllegalArgumentException(s"Impossible move: $move"))

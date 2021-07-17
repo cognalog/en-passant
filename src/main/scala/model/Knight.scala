@@ -12,7 +12,7 @@ import model.Color.Color
 case class Knight(override val color: Color, override val hasMoved: Boolean = false) extends Piece {
   override def updateHasMoved(): Piece = Knight(color, hasMoved = true)
 
-  override def getLegalMoves(currentSquare: Square, board: StandardBoard): Set[Square] = {
+  override def getLegalMoves(currentSquare: Square, board: Board): Set[Square] = {
     val moves = for {
       x <- Set(1, -1)
       y <- Set(2, -2)

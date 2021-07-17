@@ -44,4 +44,29 @@ trait Board {
    * @return Some(piece) if there is a piece on the given square, [[None]] otherwise.
    */
   def pieceAt(square: Square): Option[Piece]
+
+  /**
+   * Get all Squares where a matching piece can be found.
+   * A piece matches if it has the same type and color as the given piece.
+   *
+   * @param piece the piece to find.
+   * @return all squares holding a matching piece.
+   */
+  def locatePiece(piece: Piece): Set[Square]
+
+  /**
+   * Determine whether a square is on the board.
+   *
+   * @param square the square in question.
+   * @return true if the square is on the board, false otherwise.
+   */
+  def isInBounds(square: Square): Boolean
+
+  /**
+   * Determine whether a square can be entered via the en passant rule.
+   *
+   * @param square the square in question.
+   * @return true iff a Pawn can enter this square via en passant.
+   */
+  def isEnPassantPossible(square: Square): Boolean
 }

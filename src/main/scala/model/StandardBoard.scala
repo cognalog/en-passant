@@ -5,23 +5,7 @@ import model.StandardBoard.{RankAndFileMax, RankAndFileMin}
 
 import scala.util.{Failure, Success, Try}
 
-/**
- * One of 64 squares on the board. Has coordinates in terms of rank (y) and file (x).
- * Files are numerical instead of alphabetical for easier processing. A-file is 1.
- * TODO(hinderson): swap rank and file order in ctor
- *
- * @param file x coordinate, 1-indexed
- * @param rank y coordinate, 1-indexed
- */
-case class Square(file: Int, rank: Int) {
-  def changeFile(delta: Int): Square = {
-    Square(file + delta, rank)
-  }
 
-  def changeRank(delta: Int): Square = {
-    Square(file, rank + delta)
-  }
-}
 
 /**
  * Companion object for board. Holds constants.
@@ -242,13 +226,7 @@ case class StandardBoard(
       }
   }
 
-  /**
-   * Determine whether a square is on the board.
-   *
-   * @param square the square in question.
-   * @return true if the square is on the board, false otherwise.
-   */
-  def isInBounds(square: Square): Boolean = {
+  override def isInBounds(square: Square): Boolean = {
     val bounds = StandardBoard.RankAndFileMin to StandardBoard.RankAndFileMax
     bounds.contains(square.file) && bounds.contains(square.rank)
   }
@@ -257,5 +235,11 @@ case class StandardBoard(
     pieces.get(square)
   }
 
-  override def id: String = s"$hashCode()"
+  override def id: String = s"$hashCode"
+
+  override def locatePiece(piece: Piece): Set[Square] = pieces.filter {
+    case (_, p) => p.isColor(piece.color) && p.getClass == piece.getClass
+  }.keys.toSet
+
+  override def isEnPassantPossible(square: Square): Boolean = enPassant.fold(false)(_ == square)
 }

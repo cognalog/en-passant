@@ -19,4 +19,10 @@ case class TreeBoard(id: String, turnColor: Color, children: Map[Move, TreeBoard
   override def move(move: Move): Try[Board] = Failure(new UnsupportedOperationException("TreeBoard can't apply moves."))
 
   override def pieceAt(square: Square): Option[Piece] = None
+
+  override def locatePiece(piece: Piece): Set[Square] = Set()
+
+  override def isInBounds(square: Square): Boolean = false
+
+  override def isEnPassantPossible(square: Square): Boolean = false
 }

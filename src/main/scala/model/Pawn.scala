@@ -14,15 +14,12 @@ case class Pawn(
     override val hasMoved: Boolean = false
 ) extends Piece {
 
-  override def getLegalMoves(
-                              currentSquare: Square,
-                              board: StandardBoard
-                            ): Set[Square] = {
+  override def getLegalMoves(currentSquare: Square, board: Board): Set[Square] = {
     (getForwardMoves(currentSquare, board)
       ++ getCaptures(currentSquare, board)).filter(board.isInBounds)
   }
 
-  private def getForwardMoves(currentSquare: Square, board: StandardBoard) = {
+  private def getForwardMoves(currentSquare: Square, board: Board): Set[Square] = {
     (Set(changeRankByColor(currentSquare, 2)).filter(_ =>
       board.pieceAt(changeRankByColor(currentSquare, 1)).isEmpty && !hasMoved
     ) ++ Set(
@@ -30,12 +27,12 @@ case class Pawn(
     )).filter(board.pieceAt(_).isEmpty)
   }
 
-  def getCaptures(currentSquare: Square, board: StandardBoard): Set[Square] = {
+  def getCaptures(currentSquare: Square, board: Board): Set[Square] = {
     Set(
       changeRankByColor(currentSquare, 1).changeFile(-1),
       changeRankByColor(currentSquare, 1).changeFile(1)
     ).filter(square =>
-      board.enPassant.fold(false)(_ == square) || board
+      board.isEnPassantPossible(square) || board
         .pieceAt(square)
         .fold(false)(!_.isColor(color))
     )

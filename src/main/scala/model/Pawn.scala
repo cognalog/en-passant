@@ -14,20 +14,20 @@ case class Pawn(
     override val hasMoved: Boolean = false
 ) extends Piece {
 
-  override def getLegalMoves(currentSquare: Square, board: Board): Set[Square] = {
+  override def getLegalMoves(currentSquare: Square, board: Board): Set[Move] = {
     (getForwardMoves(currentSquare, board)
-      ++ getCaptures(currentSquare, board)).filter(board.isInBounds)
+      ++ getCaptures(currentSquare, board)).filter(move => board.isInBounds(move.destination))
   }
 
-  private def getForwardMoves(currentSquare: Square, board: Board): Set[Square] = {
+  private def getForwardMoves(currentSquare: Square, board: Board): Set[Move] = {
     (Set(changeRankByColor(currentSquare, 2)).filter(_ =>
       board.pieceAt(changeRankByColor(currentSquare, 1)).isEmpty && !hasMoved
     ) ++ Set(
       changeRankByColor(currentSquare, 1)
-    )).filter(board.pieceAt(_).isEmpty)
+    )).filter(board.pieceAt(_).isEmpty).map(NormalMove(currentSquare, _))
   }
 
-  def getCaptures(currentSquare: Square, board: Board): Set[Square] = {
+  def getCaptures(currentSquare: Square, board: Board): Set[Move] = {
     Set(
       changeRankByColor(currentSquare, 1).changeFile(-1),
       changeRankByColor(currentSquare, 1).changeFile(1)
@@ -35,7 +35,7 @@ case class Pawn(
       board.isEnPassantPossible(square) || board
         .pieceAt(square)
         .fold(false)(!_.isColor(color))
-    )
+    ).map(NormalMove(currentSquare, _))
   }
 
   private def changeRankByColor(square: Square, delta: Int): Square = {

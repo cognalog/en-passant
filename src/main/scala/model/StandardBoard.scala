@@ -6,7 +6,6 @@ import model.StandardBoard.{RankAndFileMax, RankAndFileMin}
 import scala.util.{Failure, Success, Try}
 
 
-
 /**
  * Companion object for board. Holds constants.
  */
@@ -77,36 +76,38 @@ case class StandardBoard(
   def getAttackers(square: Square, color: Color): Set[Piece] = {
     // algo: find the attackers by checking whether each piece could capture its own kind from this square.
     val opposingColor = Color.opposite(color)
-    Rook(opposingColor).getLegalMoves(square, this).flatMap(pieceAt)
+    Rook(opposingColor).getLegalMoves(square, this).flatMap(move => pieceAt(move.destination))
       .filter {
         case Rook(_, _) => true
         case Queen(_, _) => true
         case _ => false
       } ++
-      Bishop(opposingColor).getLegalMoves(square, this).flatMap(pieceAt)
+      Bishop(opposingColor).getLegalMoves(square, this).flatMap(move => pieceAt(move.destination))
         .filter {
           case Bishop(_, _) => true
           case Queen(_, _) => true
           case _ => false
         } ++
-      Knight(opposingColor).getLegalMoves(square, this).flatMap(pieceAt)
+      Knight(opposingColor).getLegalMoves(square, this).flatMap(move => pieceAt(move.destination))
         .filter({
           case Knight(_, _) => true
           case _ => false
         }) ++
-      King(opposingColor).getLegalMoves(square, this).flatMap(pieceAt)
-        .filter {
-          case King(_, _) => true
-          case _ => false
-        } ++
-      Pawn(opposingColor).getCaptures(square, this).flatMap(pieceAt)
+      King(opposingColor).getLegalMoves(square, this).filter {
+        case NormalMove(_, _) => true
+        case _ => false
+      }.flatMap(move => pieceAt(move.destination)).filter {
+        case King(_, _) => true
+        case _ => false
+      } ++
+      Pawn(opposingColor).getCaptures(square, this).flatMap(move => pieceAt(move.destination))
         .filter {
           case Pawn(_, _) => true
           case _ => false
         }
   }
 
-  override def move(move: Move): Try[Board] = {
+  override def move(move: Move): Try[StandardBoard] = {
     move match {
       case NormalMove(start, dest) => normalMove(start, dest)
       case CastleMove(dest) => castle(dest)
@@ -213,16 +214,12 @@ case class StandardBoard(
   }
 
   override def getNextMoves: Iterable[(Move, StandardBoard)] = {
-    val normalMoves = pieces.filter(_._2.isColor(turnColor))
-      .map(sq_piece => (sq_piece._1, sq_piece._2.getLegalMoves(sq_piece._1, this))).toList
-      .flatMap(sq_pieces => sq_pieces._2.map(piece => (sq_pieces._1, piece)))
-      .map(start_dest => normalMove(start_dest._1, start_dest._2).map((NormalMove(start_dest._1, start_dest._2), _)))
-    val castleMoves = List(Square(3, 1), Square(7, 1), Square(3, 8), Square(7, 8))
-      .map(dest => castle(dest).map((CastleMove(dest), _)))
-    (normalMoves ++ castleMoves)
+    pieces.filter(_._2.isColor(turnColor))
+      .flatMap(sq_piece => sq_piece._2.getLegalMoves(sq_piece._1, this))
+      .map(new_move => (new_move, move(new_move)))
       .flatMap {
-        case Failure(e) => /*println(e);*/ None // TODO make this optional a la VLOG
-        case Success((move, board)) => Some((move, board))
+        case (_, Failure(e)) => /*println(e);*/ None // TODO make this optional a la VLOG
+        case (move, Success(board)) => Some((move, board))
       }
   }
 

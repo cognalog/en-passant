@@ -12,8 +12,11 @@ class RookTest extends AnyFunSuite with MockFactory {
     (sameColorPiece.isColor _).expects(Color.Black).returning(true).twice()
 
     assertResult(Set(
-      Square(1, 3), Square(2, 3), Square(4, 3), Square(5, 3), Square(3, 1), Square(3, 2), Square(3, 4),
-      Square(3, 5), Square(3, 6))) {
+      NormalMove(Square(3, 3), Square(1, 3)), NormalMove(Square(3, 3), Square(2, 3)),
+      NormalMove(Square(3, 3), Square(4, 3)), NormalMove(Square(3, 3), Square(5, 3)),
+      NormalMove(Square(3, 3), Square(3, 1)), NormalMove(Square(3, 3), Square(3, 2)),
+      NormalMove(Square(3, 3), Square(3, 4)),
+      NormalMove(Square(3, 3), Square(3, 5)), NormalMove(Square(3, 3), Square(3, 6)))) {
       rook.getLegalMoves(Square(3, 3), board)
     }
   }
@@ -25,8 +28,12 @@ class RookTest extends AnyFunSuite with MockFactory {
     (sameColorPiece.isColor _).expects(Color.Black).returning(false).twice()
 
     assertResult(Set(
-      Square(1, 3), Square(2, 3), Square(4, 3), Square(5, 3), Square(6, 3), Square(3, 1), Square(3, 2),
-      Square(3, 4), Square(3, 5), Square(3, 6), Square(3, 7))) {
+      NormalMove(Square(3, 3), Square(1, 3)), NormalMove(Square(3, 3), Square(2, 3)),
+      NormalMove(Square(3, 3), Square(4, 3)), NormalMove(Square(3, 3), Square(5, 3)),
+      NormalMove(Square(3, 3), Square(6, 3)), NormalMove(Square(3, 3), Square(3, 1)),
+      NormalMove(Square(3, 3), Square(3, 2)),
+      NormalMove(Square(3, 3), Square(3, 4)), NormalMove(Square(3, 3), Square(3, 5)),
+      NormalMove(Square(3, 3), Square(3, 6)), NormalMove(Square(3, 3), Square(3, 7)))) {
       rook.getLegalMoves(Square(3, 3), board)
     }
   }

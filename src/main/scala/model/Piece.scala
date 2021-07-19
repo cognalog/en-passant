@@ -45,7 +45,7 @@ trait Piece {
    * @param board         the board to consider.
    * @return All squares to which this piece can move on the board, not considering king safety.
    */
-  def getLegalMoves(currentSquare: Square, board: Board): Set[Square]
+  def getLegalMoves(currentSquare: Square, board: Board): Set[Move]
 
   /**
    * Generates available squares for this piece to move to, stopping upon encountering another piece or the edge of

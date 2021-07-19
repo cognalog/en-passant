@@ -107,65 +107,48 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
     }
   }
 
-  test("testCastle_OK") {
+  test("testCastle_WhiteQueensideOK") {
     val board = StandardBoard(
-      Map(
-        Square(1, 1) -> Rook(White), Square(5, 1) -> King(White), Square(8, 1) -> Rook(White),
-        Square(1, 8) -> Rook(White),
-        Square(5, 8) -> King(White), Square(8, 8) -> Rook(White)), turnColor = White)
+      Map(Square(1, 1) -> Rook(White), Square(5, 1) -> King(White), Square(8, 1) -> Rook(White)), turnColor = White)
 
-    val rank1QueensideResult = board.move(CastleMove(Square(3, 1)))
-    rank1QueensideResult.fold(
-      _ => fail(), resultBoard => {
-        assertResult(Some(King(White, hasMoved = true))) {
-          resultBoard.pieceAt(Square(3, 1))
-        }
-        assertResult(Some(Rook(White, hasMoved = true))) {
-          resultBoard.pieceAt(Square(4, 1))
-        }
-        assertResult(Black) {
-          resultBoard.turnColor
-        }
-      })
-    val rank1KingsideResult = board.move(CastleMove(Square(7, 1)))
-    rank1KingsideResult.fold(
-      _ => fail(), resultBoard => {
-        assertResult(Some(King(White, hasMoved = true))) {
-          resultBoard.pieceAt(Square(7, 1))
-        }
-        assertResult(Some(Rook(White, hasMoved = true))) {
-          resultBoard.pieceAt(Square(6, 1))
-        }
-        assertResult(Black) {
-          resultBoard.turnColor
-        }
-      })
-    val rank8QueensideResult = board.move(CastleMove(Square(3, 8)))
-    rank8QueensideResult.fold(
-      _ => fail(), resultBoard => {
-        assertResult(Some(King(White, hasMoved = true))) {
-          resultBoard.pieceAt(Square(3, 8))
-        }
-        assertResult(Some(Rook(White, hasMoved = true))) {
-          resultBoard.pieceAt(Square(4, 8))
-        }
-        assertResult(Black) {
-          resultBoard.turnColor
-        }
-      })
-    val rank8KingsideResult = board.move(CastleMove(Square(7, 8)))
-    rank8KingsideResult.fold(
-      _ => fail(), resultBoard => {
-        assertResult(Some(King(White, hasMoved = true))) {
-          resultBoard.pieceAt(Square(7, 8))
-        }
-        assertResult(Some(Rook(White, hasMoved = true))) {
-          resultBoard.pieceAt(Square(6, 8))
-        }
-        assertResult(Black) {
-          resultBoard.turnColor
-        }
-      })
+    assertResult(Success(StandardBoard(
+      Map(Square(3, 1) -> King(White, hasMoved = true), Square(4, 1) -> Rook(White, hasMoved = true),
+        Square(8, 1) -> Rook(White)), Black))) {
+      board.move(CastleMove(Square(3, 1)))
+    }
+  }
+
+  test("testCastle_WhiteKingsideOK") {
+    val board = StandardBoard(
+      Map(Square(1, 1) -> Rook(White), Square(5, 1) -> King(White), Square(8, 1) -> Rook(White)), turnColor = White)
+
+    assertResult(Success(StandardBoard(
+      Map(Square(7, 1) -> King(White, hasMoved = true), Square(6, 1) -> Rook(White, hasMoved = true),
+        Square(1, 1) -> Rook(White)), Black))) {
+      board.move(CastleMove(Square(7, 1)))
+    }
+  }
+
+  test("testCastle_BlackKingsideOK") {
+    val board = StandardBoard(
+      Map(Square(1, 8) -> Rook(Black), Square(5, 8) -> King(Black), Square(8, 8) -> Rook(Black)), turnColor = Black)
+
+    assertResult(Success(StandardBoard(
+      Map(Square(7, 8) -> King(Black, hasMoved = true), Square(6, 8) -> Rook(Black, hasMoved = true),
+        Square(1, 8) -> Rook(Black)), White))) {
+      board.move(CastleMove(Square(7, 8)))
+    }
+  }
+
+  test("testCastle_BlackQueensideOK") {
+    val board = StandardBoard(
+      Map(Square(1, 8) -> Rook(Black), Square(5, 8) -> King(Black), Square(8, 8) -> Rook(Black)), turnColor = Black)
+
+    assertResult(Success(StandardBoard(
+      Map(Square(3, 8) -> King(Black, hasMoved = true), Square(4, 8) -> Rook(Black, hasMoved = true),
+        Square(8, 8) -> Rook(Black)), White))) {
+      board.move(CastleMove(Square(3, 8)))
+    }
   }
 
   test("testCastle_WrongColorKing") {
@@ -269,13 +252,22 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
     val board =
       StandardBoard(Map(Square(8, 8) -> piece), Black)
 
-      assertResult(
-        Success(
-          StandardBoard(Map(Square(8, 6) -> Pawn(Black, hasMoved = true)), turnColor = White,
-            enPassant = Some(Square(8, 7))))
-      ) {
-        board.move(NormalMove(Square(8, 8), Square(8, 6)))
-      }
+    assertResult(
+      Success(
+        StandardBoard(Map(Square(8, 6) -> Pawn(Black, hasMoved = true)), turnColor = White,
+          enPassant = Some(Square(8, 7))))
+    ) {
+      board.move(NormalMove(Square(8, 8), Square(8, 6)))
+    }
+  }
+
+  test("testMove_Promotion") {
+    val board =
+      StandardBoard(Map(Square(1, 7) -> Pawn(Black)), Black)
+
+    assertResult(Success(StandardBoard(Map(Square(1, 8) -> Queen(Black)), White))) {
+      board.move(NormalMove(Square(1, 7), Square(1, 8), Some(Queen(Black))))
+    }
   }
 
   test("testGetNextMoves_NoCurrentCheck") {

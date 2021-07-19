@@ -30,7 +30,7 @@ object Move {
         }
         val startSquare = board.locatePiece(pieceToFind).find(
           sq => (startFile == null || startFile == sq.standardFileName) &&
-            pieceToFind.getLegalMoves(sq, board).contains(parsedDest))
+            pieceToFind.getLegalMoves(sq, board).exists(_.destination == parsedDest))
         startSquare match {
           case Some(start) => Success(NormalMove(start, parsedDest))
           case None => Failure(new IllegalArgumentException(s"Impossible move: $move"))
@@ -40,12 +40,27 @@ object Move {
   }
 }
 
+/**
+ * A chess move for a piece on a board.
+ */
 trait Move {
   // The square where a piece is moved.
   def destination: Square
 }
 
+/**
+ * A castling move where the king/rook move in tandem.
+ *
+ * @param destination the destination square for the King.
+ */
 case class CastleMove(override val destination: Square) extends Move
 
-case class NormalMove(start: Square, override val destination: Square) extends Move
+/**
+ * A "normal" move for a piece from one square to another square.
+ *
+ * @param start       the square holding the piece before the move.
+ * @param destination the square holding the piece after the move.
+ * @param promotion   the replacement piece, when promoting a pawn.
+ */
+case class NormalMove(start: Square, override val destination: Square, promotion: Option[Piece] = None) extends Move
 

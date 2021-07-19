@@ -69,4 +69,9 @@ trait Board {
    * @return true iff a Pawn can enter this square via en passant.
    */
   def isEnPassantPossible(square: Square): Boolean
+
+  /**
+   * @return whether the player whose turn it is has been checkmated.
+   */
+  def isCheckmate: Boolean
 }

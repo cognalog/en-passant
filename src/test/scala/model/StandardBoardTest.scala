@@ -362,4 +362,23 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
       board.getNextMoves.toSet
     }
   }
+
+  test("testIsCheckmate_true") {
+    val board = StandardBoard(
+      Map(Square(5, 8) -> King(Color.Black), Square(5, 7) -> Queen(Color.White), Square(3, 5) -> Bishop(Color.White)),
+      turnColor = Black)
+
+    assertResult(true) {
+      board.isCheckmate
+    }
+  }
+
+  test("testIsCheckmate_saveableByCapture") {
+    val board = StandardBoard(
+      Map(Square(5, 8) -> King(Color.Black), Square(5, 7) -> Queen(Color.White)), turnColor = Black)
+
+    assertResult(false) {
+      board.isCheckmate
+    }
+  }
 }

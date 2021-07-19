@@ -243,4 +243,9 @@ case class StandardBoard(
   }.keys.toSet
 
   override def isEnPassantPossible(square: Square): Boolean = enPassant.fold(false)(_ == square)
+
+  /**
+   * @return whether the player whose turn it is has been checkmated.
+   */
+  override def isCheckmate: Boolean = kingInCheck(turnColor) && getNextMoves.isEmpty
 }

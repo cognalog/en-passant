@@ -15,30 +15,32 @@ object Game {
   private val botGameMaxTurns = 25
   private val maxRetries = 2
 
-  def withRandomColors(player1: Player, player2: Player, maxTurns: Int = Int.MaxValue): Game = {
+  private def withRandomColors(player1: Player, player2: Player, maxTurns: Int = Int.MaxValue,
+                               printBoards: Boolean): Game = {
     val color1 = if (Random.nextBoolean()) Color.White else Color.Black
-    Game(Map(color1 -> player1, Color.opposite(color1) -> player2), maxTurns)
+    Game(Map(color1 -> player1, Color.opposite(color1) -> player2), maxTurns, printBoards)
   }
 
-  def humanVsBot(depth: Int = defaultMinimaxDepth): Game = withRandomColors(HumanPlayer(),
-    BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)))
+  def humanVsBot(depth: Int = defaultMinimaxDepth, printBoards: Boolean = false): Game = withRandomColors(HumanPlayer(),
+    BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)), Int.MaxValue, printBoards)
 
-  def botVsBotEven(depth: Int = defaultMinimaxDepth): Game = withRandomColors(
-    BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)),
-    BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)), botGameMaxTurns)
+  def botVsBotEven(depth: Int = defaultMinimaxDepth, printBoards: Boolean = false): Game = withRandomColors(
+    BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)), BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)),
+    botGameMaxTurns, printBoards)
 
-  def botVsBotUneven(depth: Int = defaultMinimaxDepth): Game = withRandomColors(
+  def botVsBotUneven(depth: Int = defaultMinimaxDepth, printBoards: Boolean = false): Game = withRandomColors(
     BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)),
-    BotPlayer(ABPruningMinimax(randomMinimaxDepth, RandomEvaluator)), botGameMaxTurns)
+    BotPlayer(ABPruningMinimax(randomMinimaxDepth, RandomEvaluator)), botGameMaxTurns, printBoards)
 }
 
-case class Game(players: Map[Color, Player], maxTurns: Int = Int.MaxValue) {
+case class Game(players: Map[Color, Player], maxTurns: Int = Int.MaxValue, printBoards: Boolean = false) {
 
   def play(): List[Board] = {
     var turns = 0
     val boardLog: ListBuffer[Board] = ListBuffer()
     var currentBoard: Board = StandardBoard.StartingPosition
     while (currentBoard.getNextMoves.nonEmpty && turns / 2 < maxTurns) {
+      if (printBoards) println(currentBoard)
       turns += 1
       boardLog.append(currentBoard)
       val turnColor = currentBoard.turnColor
@@ -61,6 +63,7 @@ case class Game(players: Map[Color, Player], maxTurns: Int = Int.MaxValue) {
           return boardLog.toList
       }
     }
+    if (printBoards) println(currentBoard)
     boardLog.append(currentBoard)
     boardLog.toList
   }

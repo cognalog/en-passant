@@ -2,7 +2,7 @@ package actor
 
 import actor.Game.maxRetries
 import ai.evaluator.{GeneralEvaluator, RandomEvaluator}
-import ai.search.Minimax
+import ai.search.ABPruningMinimax
 import model.Color.Color
 import model.{Board, Color, StandardBoard}
 
@@ -11,6 +11,7 @@ import scala.util.{Failure, Random, Success}
 
 object Game {
   private val defaultMinimaxDepth = 3
+  private val randomMinimaxDepth = 3
   private val botGameMaxTurns = 25
   private val maxRetries = 2
 
@@ -20,15 +21,15 @@ object Game {
   }
 
   def humanVsBot(depth: Int = defaultMinimaxDepth): Game = withRandomColors(HumanPlayer(),
-    BotPlayer(Minimax(depth, GeneralEvaluator)))
+    BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)))
 
   def botVsBotEven(depth: Int = defaultMinimaxDepth): Game = withRandomColors(
-    BotPlayer(Minimax(depth, GeneralEvaluator)),
-    BotPlayer(Minimax(depth, GeneralEvaluator)), botGameMaxTurns)
+    BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)),
+    BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)), botGameMaxTurns)
 
   def botVsBotUneven(depth: Int = defaultMinimaxDepth): Game = withRandomColors(
-    BotPlayer(Minimax(depth, GeneralEvaluator)),
-    BotPlayer(Minimax(depth, RandomEvaluator)), botGameMaxTurns)
+    BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)),
+    BotPlayer(ABPruningMinimax(randomMinimaxDepth, RandomEvaluator)), botGameMaxTurns)
 }
 
 case class Game(players: Map[Color, Player], maxTurns: Int = Int.MaxValue) {

@@ -8,6 +8,19 @@ import model.Color.Color
  *
  * @param map map from [[Board.id]] to a numeric score.
  */
-case class MapEvaluator(map: Map[String, Int]) extends Evaluator {
-  override def Evaluate(board: Board, color: Color): Int = map(board.id)
+class MapEvaluator(map: Map[String, Int]) extends Evaluator {
+  private var accessCounts: Map[String, Int] = Map()
+
+  override def Evaluate(board: Board, color: Color): Int = {
+    accessCounts += ((board.id, 1 + accessCounts.getOrElse(board.id, 0)))
+    map(board.id)
+  }
+
+  /**
+   * Report the number of times a board was evaluated
+   *
+   * @param boardId the id of the board in question.
+   * @return the number of times [[Evaluate()]] was called with the given board.
+   */
+  def getAccessCount(boardId: String): Int = accessCounts.getOrElse(boardId, 0)
 }

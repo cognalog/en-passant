@@ -1,6 +1,6 @@
 package model
 
-import model.Color.Color
+import model.Color.{Color, White}
 
 /**
  * A pawn piece
@@ -10,13 +10,25 @@ import model.Color.Color
  * @param hasMoved whether this Pawn has moved.
  */
 case class Pawn(
-    override val color: Color,
-    override val hasMoved: Boolean = false
-) extends Piece {
+                 override val color: Color,
+                 override val hasMoved: Boolean = false
+               ) extends Piece {
 
   override def getLegalMoves(currentSquare: Square, board: Board): Set[Move] = {
     (getForwardMoves(currentSquare, board)
       ++ getCaptures(currentSquare, board)).filter(move => board.isInBounds(move.destination))
+      .flatMap(generatePromotions)
+  }
+
+  private def generatePromotions(move: Move): Set[Move] = {
+    val maxRank = if (isColor(White)) StandardBoard.RankAndFileMax else StandardBoard.RankAndFileMin
+    move match {
+      case NormalMove(start, Square(destFile, destRank), None) if destRank == maxRank => Set(Knight(color),
+        Bishop(color), Rook(color), Queen(color))
+        .map(option => NormalMove(start,
+          Square(destFile, destRank), Some(option)))
+      case _ => Set(move)
+    }
   }
 
   private def getForwardMoves(currentSquare: Square, board: Board): Set[Move] = {

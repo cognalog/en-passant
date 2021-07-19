@@ -10,8 +10,8 @@ import scala.util.{Failure, Success, Try}
  * Companion object for board. Holds constants.
  */
 object StandardBoard {
-  private val RankAndFileMin = 1
-  private val RankAndFileMax = 8
+  val RankAndFileMin = 1
+  val RankAndFileMax = 8
 
   val StartingPosition: Board = StandardBoard(
     Map(Square(1, 1) -> Rook(Color.White), Square(2, 1) -> Knight(Color.White), Square(3, 1) -> Bishop(Color.White),
@@ -94,7 +94,7 @@ case class StandardBoard(
           case _ => false
         }) ++
       King(opposingColor).getLegalMoves(square, this).filter {
-        case NormalMove(_, _) => true
+        case NormalMove(_, _, _) => true
         case _ => false
       }.flatMap(move => pieceAt(move.destination)).filter {
         case King(_, _) => true
@@ -109,7 +109,7 @@ case class StandardBoard(
 
   override def move(move: Move): Try[StandardBoard] = {
     move match {
-      case NormalMove(start, dest) => normalMove(start, dest)
+      case NormalMove(start, dest, promotion) => normalMove(start, dest, promotion)
       case CastleMove(dest) => castle(dest)
       case _ => Failure(new IllegalArgumentException(s"Malformed move: $move"))
     }
@@ -119,14 +119,18 @@ case class StandardBoard(
    * Generate a new board reflecting the board state after the piece at the starting square moves to the destination
    * square.
    *
-   * @param start the starting square. There must be a piece here.
-   * @param dest  the destination square. The piece must be able to move here.
+   * @param start     the starting square. There must be a piece here.
+   * @param dest      the destination square. The piece must be able to move here.
+   * @param promotion the replacement piece, when promoting a pawn.
    * @return the resulting board after a legal move, or an error string if the move is illegal.
    */
-  private def normalMove(start: Square, dest: Square): Try[StandardBoard] = {
+  private def normalMove(start: Square, dest: Square, promotion: Option[Piece]): Try[StandardBoard] = {
     Try(checkLegalMove(start, dest))
     val piece = pieces(start).updateHasMoved()
-    val nextPieces = pieces - start + (dest -> piece)
+    val nextPieces = pieces - start + (promotion match {
+      case Some(newPiece) => dest -> newPiece
+      case _ => dest -> piece
+    })
     val nextTurnColor = Color.opposite(turnColor)
     // if it's a pawn that just moved 2 spaces, set the space behind it as en passant
     var nextEnPassant: Option[Square] = None
@@ -137,7 +141,7 @@ case class StandardBoard(
         nextEnPassant = Some(Square(start.file, start.rank - 1))
       case _ => ()
     }
-    val newBoard = new StandardBoard(nextPieces, nextTurnColor, nextEnPassant)
+    val newBoard = StandardBoard(nextPieces, nextTurnColor, nextEnPassant)
     if (newBoard.kingInCheck(turnColor)) return Failure(
       new IllegalArgumentException(s"Move $start -> $dest leaves the king in check."))
     Success(newBoard)

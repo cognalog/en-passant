@@ -261,6 +261,15 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
     }
   }
 
+  test("testMove_Promotion") {
+    val board =
+      StandardBoard(Map(Square(1, 7) -> Pawn(Black)), Black)
+
+    assertResult(Success(StandardBoard(Map(Square(1, 8) -> Queen(Black)), White))) {
+      board.move(NormalMove(Square(1, 7), Square(1, 8), Some(Queen(Black))))
+    }
+  }
+
   test("testGetNextMoves_NoCurrentCheck") {
     val board =
       StandardBoard(Map(Square(7, 1) -> King(White), Square(8, 1) -> Knight(Black),

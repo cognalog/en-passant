@@ -60,6 +60,7 @@ case class CastleMove(override val destination: Square) extends Move
  *
  * @param start       the square holding the piece before the move.
  * @param destination the square holding the piece after the move.
+ * @param promotion   the replacement piece, when promoting a pawn.
  */
-case class NormalMove(start: Square, override val destination: Square) extends Move
+case class NormalMove(start: Square, override val destination: Square, promotion: Option[Piece] = None) extends Move
 

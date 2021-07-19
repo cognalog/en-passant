@@ -1,16 +1,16 @@
 package actor
 
 import actor.Game.maxRetries
-import ai.evaluator.RandomEvaluator
+import ai.evaluator.{GeneralEvaluator, RandomEvaluator}
 import ai.search.Minimax
 import model.Color.Color
 import model.{Board, Color, StandardBoard}
 
 import scala.collection.mutable.ListBuffer
-import scala.util.{Failure, Random, Success, Try}
+import scala.util.{Failure, Random, Success}
 
 object Game {
-  private val minimax_depth = 3
+  private val defaultMinimaxDepth = 3
   private val botGameMaxTurns = 25
   private val maxRetries = 2
 
@@ -19,15 +19,21 @@ object Game {
     Game(Map(color1 -> player1, Color.opposite(color1) -> player2), maxTurns)
   }
 
-  def humanVsBot: Game = withRandomColors(HumanPlayer(), BotPlayer(Minimax(minimax_depth, RandomEvaluator)))
+  def humanVsBot(depth: Int = defaultMinimaxDepth): Game = withRandomColors(HumanPlayer(),
+    BotPlayer(Minimax(depth, GeneralEvaluator)))
 
-  def botVsBot: Game = withRandomColors(BotPlayer(Minimax(minimax_depth, RandomEvaluator)),
-    BotPlayer(Minimax(minimax_depth, RandomEvaluator)), botGameMaxTurns)
+  def botVsBotEven(depth: Int = defaultMinimaxDepth): Game = withRandomColors(
+    BotPlayer(Minimax(depth, GeneralEvaluator)),
+    BotPlayer(Minimax(depth, GeneralEvaluator)), botGameMaxTurns)
+
+  def botVsBotUneven(depth: Int = defaultMinimaxDepth): Game = withRandomColors(
+    BotPlayer(Minimax(depth, GeneralEvaluator)),
+    BotPlayer(Minimax(depth, RandomEvaluator)), botGameMaxTurns)
 }
 
 case class Game(players: Map[Color, Player], maxTurns: Int = Int.MaxValue) {
 
-  def Play(): Try[List[Board]] = {
+  def play(): List[Board] = {
     var turns = 0
     val boardLog: ListBuffer[Board] = ListBuffer()
     var currentBoard: Board = StandardBoard.StartingPosition
@@ -49,9 +55,13 @@ case class Game(players: Map[Color, Player], maxTurns: Int = Int.MaxValue) {
       val moveAttempt = nextMove.flatMap(currentBoard.move(_))
       moveAttempt match {
         case Success(board) => currentBoard = board
-        case Failure(e) => return Failure(e)
+        case Failure(e) =>
+          print(e)
+          return boardLog.toList
       }
     }
-    Success(boardLog.toList)
+    boardLog.append(currentBoard)
+    boardLog.toList
   }
+
 }

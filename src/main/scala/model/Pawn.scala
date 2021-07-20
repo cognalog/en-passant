@@ -60,9 +60,10 @@ case class Pawn(
   /**
    * NB: we use 'P' for printing pawns, but not for move notation per international standard.
    *
-   * @return the 1-character short name for this piece.
-   */
+   * @return the 1-character short name for this piece. */
   override def shortName: Char = 'P'
 
   override val canMateWithKing: Boolean = true
+
+  override val pointValue: Int = 1
 }

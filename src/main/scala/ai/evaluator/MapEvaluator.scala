@@ -11,7 +11,7 @@ import model.Color.Color
 class MapEvaluator(map: Map[String, Int]) extends Evaluator {
   private var accessCounts: Map[String, Int] = Map()
 
-  override def Evaluate(board: Board, color: Color): Int = {
+  override def Evaluate(board: Board, color: Color): Double = {
     accessCounts += ((board.id, 1 + accessCounts.getOrElse(board.id, 0)))
     map(board.id)
   }

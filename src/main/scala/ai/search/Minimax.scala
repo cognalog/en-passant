@@ -17,19 +17,19 @@ case class Minimax(depth: Int, evaluator: Evaluator) extends MoveSearch {
     MaxValue(board, color, depth)._1
   }
 
-  private def MaxValue(board: Board, color: Color, depth: Int): (Move, Int) = {
+  private def MaxValue(board: Board, color: Color, depth: Int): (Move, Double) = {
     if (depth <= 0) return (null, evaluator.Evaluate(board, color))
     val movesAndScores = board.getNextMoves.map { case (move, board) => (move, MinValue(board, color, depth - 1)._2) }
 
     if (movesAndScores.isEmpty) (null, evaluator.Evaluate(board, color)) else movesAndScores
-      .max(Ordering.by[(Move, Int), Int](_._2))
+      .max(Ordering.by[(Move, Double), Double](_._2))
   }
 
-  private def MinValue(board: Board, color: Color, depth: Int): (Move, Int) = {
+  private def MinValue(board: Board, color: Color, depth: Int): (Move, Double) = {
     if (depth <= 0) return (null, evaluator.Evaluate(board, color))
     val movesAndScores = board.getNextMoves.map { case (move, board) => (move, MaxValue(board, color, depth - 1)._2) }
 
     if (movesAndScores.isEmpty) (null, evaluator.Evaluate(board, color)) else movesAndScores
-      .min(Ordering.by[(Move, Int), Int](_._2))
+      .min(Ordering.by[(Move, Double), Double](_._2))
   }
 }

@@ -14,13 +14,13 @@ case class ABPruningMinimax(depth: Int, evaluator: Evaluator) extends MoveSearch
 
   override def GetBestMove(board: Board, color: Color): Move = {
     if (board.turnColor != color) throw new IllegalArgumentException(s"It isn't $color's turn'")
-    MaxValue(board, color, Int.MinValue, Int.MaxValue, depth)._1
+    MaxValue(board, color, Double.MinValue, Double.MaxValue, depth)._1
   }
 
-  private def MaxValue(board: Board, color: Color, alpha: Int, beta: Int, depth: Int): (Move, Int) = {
+  private def MaxValue(board: Board, color: Color, alpha: Double, beta: Double, depth: Int): (Move, Double) = {
     if (depth <= 0) return (null, evaluator.Evaluate(board, color))
     var a = alpha
-    var finalMax: (Move, Int) = (null, Int.MinValue)
+    var finalMax: (Move, Double) = (null, Double.MinValue)
     val successors = board.getNextMoves
     if (successors.isEmpty) return (null, evaluator.Evaluate(board, color))
     successors.foreach { case (move, board) =>
@@ -32,10 +32,10 @@ case class ABPruningMinimax(depth: Int, evaluator: Evaluator) extends MoveSearch
     finalMax
   }
 
-  private def MinValue(board: Board, color: Color, alpha: Int, beta: Int, depth: Int): (Move, Int) = {
+  private def MinValue(board: Board, color: Color, alpha: Double, beta: Double, depth: Int): (Move, Double) = {
     if (depth <= 0) return (null, evaluator.Evaluate(board, color))
     var b = beta
-    var finalMin: (Move, Int) = (null, Int.MaxValue)
+    var finalMin: (Move, Double) = (null, Double.MaxValue)
     val successors = board.getNextMoves
     if (successors.isEmpty) return (null, evaluator.Evaluate(board, color))
     successors.foreach { case (move, board) =>

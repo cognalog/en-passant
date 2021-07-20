@@ -16,5 +16,5 @@ trait Evaluator {
    * @param color the color for the player in question.
    * @return a numerical score corresponding to viability.
    */
-  def Evaluate(board: Board, color: Color): Int
+  def Evaluate(board: Board, color: Color): Double
 }

@@ -6,7 +6,7 @@ import model.{Bishop, Board, Color, Knight}
 object PieceDevelopmentEvaluator extends Evaluator {
   private val developmentValue = 5
 
-  override def Evaluate(board: Board, color: Color): Int = {
+  override def Evaluate(board: Board, color: Color): Double = {
     getPieceDevelopmentScore(board, color) - getPieceDevelopmentScore(board, Color.opposite(color))
   }
 

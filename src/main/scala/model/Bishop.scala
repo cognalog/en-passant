@@ -24,4 +24,6 @@ case class Bishop(override val color: Color, override val hasMoved: Boolean = fa
    * @return the 1-character short name for this piece.
    */
   override def shortName: Char = 'B'
+
+  override val canMateWithKing: Boolean = false
 }

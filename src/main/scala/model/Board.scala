@@ -74,4 +74,9 @@ trait Board {
    * @return whether the player whose turn it is has been checkmated.
    */
   def isCheckmate: Boolean
+
+  /**
+   * @return whether the game is drawn at this state.
+   */
+  def isDraw: Boolean
 }

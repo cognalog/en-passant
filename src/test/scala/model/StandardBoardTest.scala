@@ -381,4 +381,82 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
       board.isCheckmate
     }
   }
+
+  test("testIsDraw_stalemate") {
+    val board = StandardBoard(
+      Map(Square(1, 8) -> King(White), Square(2, 6) -> Queen(Black), Square(8, 8) -> King(Black)), turnColor = White)
+
+    assertResult(true) {
+      board.isDraw
+    }
+  }
+
+  test("testIsDraw_KingVsKing") {
+    val board = StandardBoard(
+      Map(Square(5, 1) -> King(White), Square(5, 8) -> King(Black)))
+
+    assertResult(true) {
+      board.isDraw
+    }
+  }
+
+  test("testIsDraw_BishopVsKnight") {
+    val board = StandardBoard(
+      Map(Square(5, 1) -> King(White), Square(6, 1) -> Bishop(White), Square(5, 8) -> King(Black),
+        Square(2, 8) -> Knight(Black)))
+
+    assertResult(true) {
+      board.isDraw
+    }
+  }
+
+  test("testIsDraw_RookVsKing") {
+    val board = StandardBoard(
+      Map(Square(5, 1) -> King(White), Square(5, 8) -> King(Black),
+        Square(1, 8) -> Rook(Black)))
+
+    assertResult(false) {
+      board.isDraw
+    }
+  }
+
+  test("testIsDraw_PawnVsKing") {
+    val board = StandardBoard(
+      Map(Square(5, 1) -> King(White), Square(5, 8) -> King(Black),
+        Square(1, 7) -> Pawn(White)))
+
+    assertResult(false) {
+      board.isDraw
+    }
+  }
+
+  test("testIsDraw_TwoBishopsVsKing") {
+    val board = StandardBoard(
+      Map(Square(5, 1) -> King(White), Square(5, 8) -> King(Black),
+        Square(1, 8) -> Bishop(White), Square(1, 7) -> Bishop(White)))
+
+    assertResult(false) {
+      board.isDraw
+    }
+  }
+
+  test("testIsDraw_TwoKnightsVsKing") {
+    val board = StandardBoard(
+      Map(Square(5, 1) -> King(White), Square(5, 8) -> King(Black),
+        Square(1, 8) -> Knight(White), Square(1, 7) -> Knight(White)))
+
+    assertResult(false) {
+      board.isDraw
+    }
+  }
+
+  test("testIsDraw_QueenVsKing") {
+    val board = StandardBoard(
+      Map(Square(5, 1) -> King(White), Square(5, 8) -> King(Black),
+        Square(1, 7) -> Queen(Black)))
+
+    assertResult(false) {
+      board.isDraw
+    }
+  }
 }

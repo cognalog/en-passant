@@ -244,8 +244,15 @@ case class StandardBoard(
 
   override def isEnPassantPossible(square: Square): Boolean = enPassant.fold(false)(_ == square)
 
-  /**
-   * @return whether the player whose turn it is has been checkmated.
-   */
   override def isCheckmate: Boolean = kingInCheck(turnColor) && getNextMoves.isEmpty
+
+  override def isDraw: Boolean = isMaterialInsufficient || isStalemate
+
+  private def isStalemate: Boolean = !kingInCheck(turnColor) && getNextMoves.isEmpty
+
+  private def isMaterialInsufficient: Boolean = {
+    val (whitePieces, blackPieces) = pieces.partition(_._2.isColor(Color.White))
+    whitePieces.size < 3 && blackPieces.size < 3 &&
+      !whitePieces.exists(_._2.canMateWithKing) && !blackPieces.exists(_._2.canMateWithKing)
+  }
 }

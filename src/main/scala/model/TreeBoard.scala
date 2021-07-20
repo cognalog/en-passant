@@ -13,7 +13,8 @@ import scala.util.{Failure, Success, Try}
  * @param children  a map of possible next boards, keyed by corresponding moves.
  *                  The move/board pairs don't need to make sense.
  */
-case class TreeBoard(id: String, turnColor: Color, children: Map[Move, TreeBoard]) extends Board {
+case class TreeBoard(id: String, turnColor: Color, isCheckmate: Boolean = false,
+                     isDraw: Boolean = false, children: Map[Move, TreeBoard] = Map()) extends Board {
   override def getNextMoves: Iterable[(Move, Board)] = children.toList
 
   override def move(move: Move): Try[Board] = children.get(move) match {
@@ -28,9 +29,4 @@ case class TreeBoard(id: String, turnColor: Color, children: Map[Move, TreeBoard
   override def isInBounds(square: Square): Boolean = false
 
   override def isEnPassantPossible(square: Square): Boolean = false
-
-  /* TODO: make the below settable in the constructor w/ default values) */
-  override def isCheckmate: Boolean = false
-
-  override def isDraw: Boolean = false
 }

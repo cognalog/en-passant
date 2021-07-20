@@ -32,14 +32,14 @@ class MinimaxTest extends AnyFunSuite {
       new MapEvaluator(Map("a" -> 4, "b" -> 1, "c" -> 2, "b1" -> 5, "b2" -> 6, "b3" -> 7, "c1" -> 3, "c2" -> 9))
     )
     val board = TreeBoard("root", Color.White,
-      Map(NormalMove(Square(1, 1), Square(2, 2)) -> TreeBoard("a", Color.Black, Map()),
+      children = Map(NormalMove(Square(1, 1), Square(2, 2)) -> TreeBoard("a", Color.Black),
         NormalMove(Square(1, 1), Square(3, 3)) -> TreeBoard("b", Color.Black,
-          Map(NormalMove(Square(3, 3), Square(3, 4)) -> TreeBoard("b1", Color.Black, Map()),
-            NormalMove(Square(3, 3), Square(3, 2)) -> TreeBoard("b2", Color.Black, Map()),
-            NormalMove(Square(3, 3), Square(2, 2)) -> TreeBoard("b3", Color.Black, Map()))),
+          children = Map(NormalMove(Square(3, 3), Square(3, 4)) -> TreeBoard("b1", Color.Black),
+            NormalMove(Square(3, 3), Square(3, 2)) -> TreeBoard("b2", Color.Black),
+            NormalMove(Square(3, 3), Square(2, 2)) -> TreeBoard("b3", Color.Black))),
         NormalMove(Square(1, 1), Square(4, 4)) -> TreeBoard("c", Color.Black,
-          Map(NormalMove(Square(4, 4), Square(5, 5)) -> TreeBoard("c1", Color.Black, Map()),
-            CastleMove(Square(5, 5)) -> TreeBoard("c2", Color.Black, Map())))))
+          children = Map(NormalMove(Square(4, 4), Square(5, 5)) -> TreeBoard("c1", Color.Black),
+            CastleMove(Square(5, 5)) -> TreeBoard("c2", Color.Black)))))
     assertResult(NormalMove(Square(1, 1), Square(3, 3)) /* move "b" */) {
       minimax.GetBestMove(board, Color.White)
     }
@@ -49,14 +49,14 @@ class MinimaxTest extends AnyFunSuite {
     val minimax = Minimax(1,
       new MapEvaluator(Map("a" -> 4, "b" -> 1, "c" -> 2, "b1" -> 5, "b2" -> 6, "b3" -> 7, "c1" -> 3, "c2" -> 9)))
     val board = TreeBoard("root", Color.White,
-      Map(NormalMove(Square(1, 1), Square(2, 2)) -> TreeBoard("a", Color.Black, Map()),
+      children = Map(NormalMove(Square(1, 1), Square(2, 2)) -> TreeBoard("a", Color.Black),
         NormalMove(Square(1, 1), Square(3, 3)) -> TreeBoard("b", Color.Black,
-          Map(NormalMove(Square(3, 3), Square(3, 4)) -> TreeBoard("b1", Color.Black, Map()),
-            NormalMove(Square(3, 3), Square(3, 2)) -> TreeBoard("b2", Color.Black, Map()),
-            NormalMove(Square(3, 3), Square(2, 2)) -> TreeBoard("b3", Color.Black, Map()))),
+          children = Map(NormalMove(Square(3, 3), Square(3, 4)) -> TreeBoard("b1", Color.Black),
+            NormalMove(Square(3, 3), Square(3, 2)) -> TreeBoard("b2", Color.Black),
+            NormalMove(Square(3, 3), Square(2, 2)) -> TreeBoard("b3", Color.Black))),
         NormalMove(Square(1, 1), Square(4, 4)) -> TreeBoard("c", Color.Black,
-          Map(NormalMove(Square(4, 4), Square(5, 5)) -> TreeBoard("c1", Color.Black, Map()),
-            CastleMove(Square(5, 5)) -> TreeBoard("c2", Color.Black, Map())))))
+          children = Map(NormalMove(Square(4, 4), Square(5, 5)) -> TreeBoard("c1", Color.Black),
+            CastleMove(Square(5, 5)) -> TreeBoard("c2", Color.Black)))))
     assertResult(NormalMove(Square(1, 1), Square(2, 2)) /* move "a" */) {
       minimax.GetBestMove(board, Color.White)
     }

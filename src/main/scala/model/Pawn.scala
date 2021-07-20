@@ -63,4 +63,6 @@ case class Pawn(
    * @return the 1-character short name for this piece.
    */
   override def shortName: Char = 'P'
+
+  override val canMateWithKing: Boolean = true
 }

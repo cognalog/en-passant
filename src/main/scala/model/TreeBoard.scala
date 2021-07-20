@@ -29,8 +29,8 @@ case class TreeBoard(id: String, turnColor: Color, children: Map[Move, TreeBoard
 
   override def isEnPassantPossible(square: Square): Boolean = false
 
-  /**
-   * @return whether the player whose turn it is has been checkmated.
-   */
+  /* TODO: make the below settable in the constructor w/ default values) */
   override def isCheckmate: Boolean = false
+
+  override def isDraw: Boolean = false
 }

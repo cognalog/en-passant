@@ -26,4 +26,6 @@ case class Knight(override val color: Color, override val hasMoved: Boolean = fa
    * @return the 1-character short name for this piece.
    */
   override def shortName: Char = 'N'
+
+  override val canMateWithKing: Boolean = false
 }

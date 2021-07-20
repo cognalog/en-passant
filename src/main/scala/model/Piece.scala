@@ -10,6 +10,7 @@ object Color extends Enumeration {
   val White, Black = Value
 
   def opposite(color: Color): Color = if (color == White) Black else White
+
   def shortName(color: Color): Char = if (color == White) 'W' else 'B'
 }
 
@@ -73,4 +74,9 @@ trait Piece {
   def isColor(color: Color): Boolean = {
     color == this.color
   }
+
+  /**
+   * @return whether this piece, alone with the king, can mate
+   */
+  def canMateWithKing: Boolean
 }

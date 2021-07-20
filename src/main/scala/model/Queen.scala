@@ -28,4 +28,6 @@ case class Queen(override val color: Color, override val hasMoved: Boolean = fal
    * @return the 1-character short name for this piece.
    */
   override def shortName: Char = 'Q'
+
+  override val canMateWithKing: Boolean = true
 }

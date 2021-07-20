@@ -68,4 +68,12 @@ class MoveTest extends AnyFunSuite {
         Map(Square(1, 4) -> Knight(Color.White), Square(4, 5) -> Knight(Color.White))))
     }
   }
+
+  test("testFromStandardNotation_ambiguous") {
+    assertResult("Ambiguous move: Nb6") {
+      Move.fromStandardNotation("Nb6", StandardBoard(
+        Map(Square(1, 4) -> Knight(Color.White), Square(4, 5) -> Knight(Color.White))))
+        .fold(t => t.getMessage, _ => fail())
+    }
+  }
 }

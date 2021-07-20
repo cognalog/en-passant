@@ -3,6 +3,9 @@ package ai.evaluator
 import model.Board
 import model.Color.Color
 
+/**
+ * [[Evaluator]] to reward checkmating and penalize being checkmated (heavily, in either case).
+ */
 object CheckmateEvaluator extends Evaluator {
   private val checkmateValue = 9999999
 

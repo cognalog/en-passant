@@ -3,6 +3,9 @@ package ai.evaluator
 import model.Color.Color
 import model.{Bishop, Board, Color, Knight}
 
+/**
+ * [[Evaluator]] meant to measure the development of a player's minor pieces (knights and bishops).
+ */
 object PieceDevelopmentEvaluator extends Evaluator {
 
   override def Evaluate(board: Board, color: Color): Double = {

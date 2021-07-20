@@ -3,6 +3,9 @@ package ai.evaluator
 import model.Board
 import model.Color.Color
 
+/**
+ * [[Evaluator]] composing several, more focused [[Evaluator]]s
+ */
 object GeneralEvaluator extends Evaluator {
   val pieceDevelopmentCoef = 0.5
 

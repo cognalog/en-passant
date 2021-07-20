@@ -3,6 +3,9 @@ package ai.evaluator
 import model.Color.Color
 import model._
 
+/**
+ * [[Evaluator]] of the combined score of a player's remaining pieces, contrasted against the opponent's.
+ */
 object PieceScoreEvaluator extends Evaluator {
   private val pawnScore = 1
   private val minorPieceScore = 3

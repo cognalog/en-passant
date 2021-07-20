@@ -9,7 +9,8 @@ import model.Color.Color
  * @param color    the color of this piece.
  * @param hasMoved whether the king has moved in a game.
  */
-case class King(override val color: Color, override val hasMoved: Boolean = false) extends Piece {
+case class King(override val color: Color, override val hasMoved: Boolean = false, hasCastled: Boolean = false)
+  extends Piece {
   override def updateHasMoved(): Piece = King(color, hasMoved = true)
 
   override def getLegalMoves(currentSquare: Square, board: Board): Set[Move] = {

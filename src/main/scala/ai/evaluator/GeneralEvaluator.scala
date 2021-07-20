@@ -7,8 +7,10 @@ import model.Color.Color
  * [[Evaluator]] composing several, more focused [[Evaluator]]s
  */
 object GeneralEvaluator extends Evaluator {
-  val pieceDevelopmentCoef = 0.5
+  val pieceScoreCoef = 3
 
   override def Evaluate(board: Board, color: Color): Double = CheckmateEvaluator.Evaluate(board, color) +
-    PieceScoreEvaluator.Evaluate(board, color) + pieceDevelopmentCoef * PieceDevelopmentEvaluator.Evaluate(board, color)
+    pieceScoreCoef * PieceScoreEvaluator.Evaluate(board, color) +
+    PieceDevelopmentEvaluator.Evaluate(board, color) +
+    KingSafetyEvaluator.Evaluate(board, color)
 }

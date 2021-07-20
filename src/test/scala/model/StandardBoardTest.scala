@@ -112,7 +112,7 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
       Map(Square(1, 1) -> Rook(White), Square(5, 1) -> King(White), Square(8, 1) -> Rook(White)), turnColor = White)
 
     assertResult(Success(StandardBoard(
-      Map(Square(3, 1) -> King(White, hasMoved = true), Square(4, 1) -> Rook(White, hasMoved = true),
+      Map(Square(3, 1) -> King(White, hasMoved = true, hasCastled = true), Square(4, 1) -> Rook(White, hasMoved = true),
         Square(8, 1) -> Rook(White)), Black))) {
       board.move(CastleMove(Square(3, 1)))
     }
@@ -123,7 +123,7 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
       Map(Square(1, 1) -> Rook(White), Square(5, 1) -> King(White), Square(8, 1) -> Rook(White)), turnColor = White)
 
     assertResult(Success(StandardBoard(
-      Map(Square(7, 1) -> King(White, hasMoved = true), Square(6, 1) -> Rook(White, hasMoved = true),
+      Map(Square(7, 1) -> King(White, hasMoved = true, hasCastled = true), Square(6, 1) -> Rook(White, hasMoved = true),
         Square(1, 1) -> Rook(White)), Black))) {
       board.move(CastleMove(Square(7, 1)))
     }
@@ -134,7 +134,7 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
       Map(Square(1, 8) -> Rook(Black), Square(5, 8) -> King(Black), Square(8, 8) -> Rook(Black)), turnColor = Black)
 
     assertResult(Success(StandardBoard(
-      Map(Square(7, 8) -> King(Black, hasMoved = true), Square(6, 8) -> Rook(Black, hasMoved = true),
+      Map(Square(7, 8) -> King(Black, hasMoved = true, hasCastled = true), Square(6, 8) -> Rook(Black, hasMoved = true),
         Square(1, 8) -> Rook(Black)), White))) {
       board.move(CastleMove(Square(7, 8)))
     }
@@ -145,7 +145,7 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
       Map(Square(1, 8) -> Rook(Black), Square(5, 8) -> King(Black), Square(8, 8) -> Rook(Black)), turnColor = Black)
 
     assertResult(Success(StandardBoard(
-      Map(Square(3, 8) -> King(Black, hasMoved = true), Square(4, 8) -> Rook(Black, hasMoved = true),
+      Map(Square(3, 8) -> King(Black, hasMoved = true, hasCastled = true), Square(4, 8) -> Rook(Black, hasMoved = true),
         Square(8, 8) -> Rook(Black)), White))) {
       board.move(CastleMove(Square(3, 8)))
     }
@@ -343,7 +343,8 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
 
     val expectedMoves: Set[(Move, StandardBoard)] = Set(
       (CastleMove(Square(7, 1)), StandardBoard(
-        Map(Square(7, 1) -> King(White, hasMoved = true), Square(6, 1) -> Rook(White, hasMoved = true),
+        Map(Square(7, 1) -> King(White, hasMoved = true, hasCastled = true),
+          Square(6, 1) -> Rook(White, hasMoved = true),
           Square(8, 2) -> Rook(Black), Square(4, 8) -> Rook(Black)), turnColor = Black)),
       (NormalMove(Square(5, 1), Square(6, 1)), StandardBoard(
         Map(Square(6, 1) -> King(White, hasMoved = true), Square(8, 1) -> Rook(White), Square(8, 2) -> Rook(Black),

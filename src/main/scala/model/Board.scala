@@ -79,4 +79,13 @@ trait Board {
    * @return whether the game is drawn at this state.
    */
   def isDraw: Boolean
+
+  /**
+   * Determine whether the king of the given color is in check on this board. Undefined behavior if there are
+   * multiple kings of that color.
+   *
+   * @param color the color of the king in question.
+   * @return true if the king of given color is in check, false otherwise.
+   */
+  def kingInCheck(color: Color): Boolean
 }

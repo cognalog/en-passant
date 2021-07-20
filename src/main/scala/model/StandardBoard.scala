@@ -50,14 +50,7 @@ case class StandardBoard(
         }).mkString(" | ")).reverse.mkString("\n") + "\n"
   }
 
-  /**
-   * Determine whether the king of the given color is in check on this board. Undefined behavior if there are
-   * multiple kings of that color.
-   *
-   * @param color the color of the king in question.
-   * @return true if the king of given color is in check, false otherwise.
-   */
-  def kingInCheck(color: Color): Boolean = {
+  override def kingInCheck(color: Color): Boolean = {
     val kingSquare: Option[Square] = pieces.filter {
       case (_, King(kingColor, _)) if kingColor == color => true
       case _ => false

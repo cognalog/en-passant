@@ -29,4 +29,6 @@ case class TreeBoard(id: String, turnColor: Color, isCheckmate: Boolean = false,
   override def isInBounds(square: Square): Boolean = false
 
   override def isEnPassantPossible(square: Square): Boolean = false
+
+  override def kingInCheck(color: Color): Boolean = false
 }

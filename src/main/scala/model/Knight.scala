@@ -17,15 +17,15 @@ case class Knight(override val color: Color, override val hasMoved: Boolean = fa
       x <- Set(1, -1)
       y <- Set(2, -2)
     } yield Set(currentSquare.changeFile(x).changeRank(y), currentSquare.changeFile(y).changeRank(x))
-    moves.flatten
-      .filter(board.isInBounds)
-      .filter(sq => board.pieceAt(sq).forall(!_.isColor(color))).map(NormalMove(currentSquare, _))
+    moves.flatten.filter(board.isInBounds).filter(sq => board.pieceAt(sq).forall(!_.isColor(color)))
+      .map(NormalMove(currentSquare, _))
   }
 
   /**
-   * @return the 1-character short name for this piece.
-   */
+   * @return the 1-character short name for this piece. */
   override def shortName: Char = 'N'
 
   override val canMateWithKing: Boolean = false
+
+  override val pointValue: Int = 3
 }

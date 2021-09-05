@@ -69,14 +69,16 @@ trait Piece {
 
   /**
    * @param color the color in question.
-   * @return true if this piece is the given color, false otherwise.
-   */
+   * @return true if this piece is the given color, false otherwise. */
   def isColor(color: Color): Boolean = {
     color == this.color
   }
 
   /**
-   * @return whether this piece, alone with the king, can mate
-   */
+   * @return whether this piece, alone with the king, can mate */
   def canMateWithKing: Boolean
+
+  /**
+   * @return the canonical score for this piece. */
+  def pointValue: Int
 }

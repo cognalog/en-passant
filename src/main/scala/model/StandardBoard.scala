@@ -50,16 +50,9 @@ case class StandardBoard(
         }).mkString(" | ")).reverse.mkString("\n") + "\n"
   }
 
-  /**
-   * Determine whether the king of the given color is in check on this board. Undefined behavior if there are
-   * multiple kings of that color.
-   *
-   * @param color the color of the king in question.
-   * @return true if the king of given color is in check, false otherwise.
-   */
-  def kingInCheck(color: Color): Boolean = {
+  override def kingInCheck(color: Color): Boolean = {
     val kingSquare: Option[Square] = pieces.filter {
-      case (_, King(kingColor, _)) if kingColor == color => true
+      case (_, King(kingColor, _, _)) if kingColor == color => true
       case _ => false
     }.keys.headOption
     kingSquare.fold(false)(getAttackers(_, Color.opposite(color)).nonEmpty)
@@ -97,7 +90,7 @@ case class StandardBoard(
         case NormalMove(_, _, _) => true
         case _ => false
       }.flatMap(move => pieceAt(move.destination)).filter {
-        case King(_, _) => true
+        case King(_, _, _) => true
         case _ => false
       } ++
       Pawn(opposingColor).getCaptures(square, this).flatMap(move => pieceAt(move.destination))
@@ -164,7 +157,7 @@ case class StandardBoard(
     val kingStart = Square(5, kingDest.rank)
     val rookStart = if (kingDest.file == 3) Square(1, kingDest.rank) else Square(8, kingDest.rank)
     val validKing: Boolean = pieceAt(kingStart) match {
-      case Some(King(this.turnColor, false)) => true
+      case Some(King(this.turnColor, false, false)) => true
       case _ => false
     }
     if (!validKing) return Failure(new IllegalArgumentException(s"There is no unmoved $turnColor king at $kingStart."))
@@ -189,7 +182,7 @@ case class StandardBoard(
       new IllegalArgumentException(s"The king cannot safely move from $kingStart to $kingDest."))
 
     val newPieces = pieces - kingStart - rookStart + (rookDest -> Rook(turnColor, hasMoved = true)) +
-      (kingDest -> King(turnColor, hasMoved = true))
+      (kingDest -> King(turnColor, hasMoved = true, hasCastled = true))
     Success(new StandardBoard(
       pieces = newPieces, Color.opposite(turnColor)))
   }

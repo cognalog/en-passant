@@ -20,9 +20,10 @@ case class Rook(override val color: Color, override val hasMoved: Boolean = fals
   }
 
   /**
-   * @return the 1-character short name for this piece.
-   */
+   * @return the 1-character short name for this piece. */
   override def shortName: Char = 'R'
 
   override val canMateWithKing: Boolean = true
+
+  override val pointValue: Int = 5
 }

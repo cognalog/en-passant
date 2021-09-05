@@ -4,6 +4,8 @@ import model.Board
 import model.Color.Color
 
 object GeneralEvaluator extends Evaluator {
-  override def Evaluate(board: Board, color: Color): Int = CheckmateEvaluator.Evaluate(board, color) +
-    PieceScoreEvaluator.Evaluate(board, color)
+  val pieceDevelopmentCoef = 0.5
+
+  override def Evaluate(board: Board, color: Color): Double = CheckmateEvaluator.Evaluate(board, color) +
+    PieceScoreEvaluator.Evaluate(board, color) + pieceDevelopmentCoef * PieceDevelopmentEvaluator.Evaluate(board, color)
 }

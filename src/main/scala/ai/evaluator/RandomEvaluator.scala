@@ -8,5 +8,5 @@ import model.Color.Color
  * baseline evaluator for demo purposes.
  */
 object RandomEvaluator extends Evaluator {
-  override def Evaluate(board: Board, color: Color): Int = scala.util.Random.nextInt()
+  override def Evaluate(board: Board, color: Color): Double = scala.util.Random.nextInt()
 }

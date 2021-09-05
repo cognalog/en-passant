@@ -9,7 +9,7 @@ object PieceScoreEvaluator extends Evaluator {
   private val rookScore = 5
   private val queenScore = 9
 
-  override def Evaluate(board: Board, color: Color): Int = {
+  override def Evaluate(board: Board, color: Color): Double = {
     PieceScoreSum(board, color) - PieceScoreSum(board, Color.opposite(color))
   }
 

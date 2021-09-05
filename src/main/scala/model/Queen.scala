@@ -31,4 +31,6 @@ case class Queen(override val color: Color, override val hasMoved: Boolean = fal
   override val canMateWithKing: Boolean = true
 
   override val pointValue: Int = 9
+
+  override def getCaptures(currentSquare: Square, board: Board): Set[Move] = getLegalMoves(currentSquare, board)
 }

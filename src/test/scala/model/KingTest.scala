@@ -31,11 +31,19 @@ class KingTest extends AnyFunSuite with MockFactory {
   test("testGetLegalMoves_someOOB") {
     val board = new StandardBoard(Map())
     val king = King(Color.White)
-    assertResult(Set(
-      NormalMove(Square(3, 1), Square(2, 2)), NormalMove(Square(3, 1), Square(3, 2)),
+    assertResult(Set(NormalMove(Square(3, 1), Square(2, 2)), NormalMove(Square(3, 1), Square(3, 2)),
       NormalMove(Square(3, 1), Square(4, 2)), NormalMove(Square(3, 1), Square(4, 1)),
       NormalMove(Square(3, 1), Square(2, 1)), CastleMove(Square(1, 1)), CastleMove(Square(5, 1)))) {
       king.getLegalMoves(Square(3, 1), board)
+    }
+  }
+
+  test("testGetCaptures_castleAvailable") {
+    val board = new StandardBoard(Map(Square(1, 1) -> Pawn(Color.White)), turnColor = Color.Black)
+    assertResult(Set(NormalMove(Square(2, 1), Square(1, 1)), NormalMove(Square(2, 1), Square(3, 1)),
+      NormalMove(Square(2, 1), Square(3, 2)), NormalMove(Square(2, 1), Square(1, 2)),
+      NormalMove(Square(2, 1), Square(2, 2)))) {
+      King(Color.Black).getCaptures(Square(2, 1), board)
     }
   }
 }

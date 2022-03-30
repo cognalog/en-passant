@@ -3,7 +3,7 @@ package model
 import scala.util.{Failure, Success, Try}
 
 object Move {
-  private val normalMove = raw"([BKNQR])?([a-h])?x?([a-h][1-8])\+?".r
+  private val normalMovePattern = raw"([BKNQR])?([a-h])?x?([a-h][1-8])(=[BNQR])?\+?".r
 
   /**
    * Parse a move string written in Algebraic Notation. Limited legality
@@ -18,7 +18,7 @@ object Move {
   def fromStandardNotation(move: String, board: Board): Try[Move] = move match {
     case "O-O" => Success(CastleMove(if (board.turnColor == Color.White) Square(7, 1) else Square(7, 8)))
     case "O-O-O" => Success(CastleMove(if (board.turnColor == Color.White) Square(3, 1) else Square(3, 8)))
-    case normalMove(piece, startFile, destSquare) =>
+    case normalMovePattern(piece, startFile, destSquare, promotion) =>
       Square.fromStandardName(destSquare).flatMap(parsedDest => {
         val pieceToFind = piece match {
           case "B" => Bishop(board.turnColor)
@@ -31,9 +31,15 @@ object Move {
         val startSquares = board.locatePiece(pieceToFind).filter(
           sq => (startFile == null || startFile == sq.standardFileName) &&
             pieceToFind.getLegalMoves(sq, board).exists(_.destination == parsedDest))
+        val promotionPiece = Option(promotion).map {
+          case "=B" => Bishop(board.turnColor)
+          case "=N" => Knight(board.turnColor)
+          case "=Q" => Queen(board.turnColor)
+          case "=R" => Rook(board.turnColor)
+        }
         if (startSquares.size > 1) return Failure(new IllegalArgumentException(s"Ambiguous move: $move"))
         startSquares.headOption match {
-          case Some(start) => Success(NormalMove(start, parsedDest))
+          case Some(start) => Success(NormalMove(start, parsedDest, promotionPiece))
           case None => Failure(new IllegalArgumentException(s"Impossible move: $move"))
         }
       })

@@ -71,9 +71,18 @@ class MoveTest extends AnyFunSuite {
 
   test("testFromStandardNotation_ambiguous") {
     assertResult("Ambiguous move: Nb6") {
-      Move.fromStandardNotation("Nb6", StandardBoard(
-        Map(Square(1, 4) -> Knight(Color.White), Square(4, 5) -> Knight(Color.White))))
-        .fold(t => t.getMessage, _ => fail())
+      Move.fromStandardNotation(
+        "Nb6", StandardBoard(
+          Map(Square(1, 4) -> Knight(Color.White), Square(4, 5) -> Knight(Color.White))))
+          .fold(t => t.getMessage, _ => fail())
+    }
+  }
+
+  test("testFromStandardNotation_promotion") {
+    assertResult(Success(NormalMove(Square(5, 7), Square(5, 8), Some(Queen(Color.White))))) {
+      Move.fromStandardNotation(
+        "e8=Q+", StandardBoard(
+          Map(Square(5, 7) -> Pawn(Color.White), Square(5, 2) -> King(Color.Black))))
     }
   }
 }

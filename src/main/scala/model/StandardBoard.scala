@@ -118,11 +118,14 @@ case class StandardBoard(
    * @return the resulting board after a legal move, or an error string if the move is illegal.
    */
   private def normalMove(start: Square, dest: Square, promotion: Option[Piece]): Try[StandardBoard] = {
-    Try(checkLegalMove(start, dest))
+    Try(checkLegalMove(start, dest)) match {
+      case Failure(ex) => return Failure(ex)
+      case _ => ()
+    }
     val piece = pieces(start).updateHasMoved()
     val nextPieces = pieces - start + (promotion match {
       case Some(newPiece) => dest -> newPiece
-      case _ => dest -> piece
+      case _              => dest -> piece
     })
     val nextTurnColor = Color.opposite(turnColor)
     // if it's a pawn that just moved 2 spaces, set the space behind it as en passant

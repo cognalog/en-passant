@@ -32,22 +32,15 @@ case class Pawn(
   }
 
   private def getForwardMoves(currentSquare: Square, board: Board): Set[Move] = {
-    (Set(changeRankByColor(currentSquare, 2)).filter(_ =>
-      board.pieceAt(changeRankByColor(currentSquare, 1)).isEmpty && !hasMoved
-    ) ++ Set(
-      changeRankByColor(currentSquare, 1)
-    )).filter(board.pieceAt(_).isEmpty).map(NormalMove(currentSquare, _))
+    (Set(changeRankByColor(currentSquare, 2))
+       .filter(_ => board.pieceAt(changeRankByColor(currentSquare, 1)).isEmpty && !hasMoved) ++
+     Set(changeRankByColor(currentSquare, 1))).filter(board.pieceAt(_).isEmpty).map(NormalMove(currentSquare, _))
   }
 
-  def getCaptures(currentSquare: Square, board: Board): Set[Move] = {
-    Set(
-      changeRankByColor(currentSquare, 1).changeFile(-1),
-      changeRankByColor(currentSquare, 1).changeFile(1)
-    ).filter(square =>
-      board.isEnPassantPossible(square) || board
-        .pieceAt(square)
-        .fold(false)(!_.isColor(color))
-    ).map(NormalMove(currentSquare, _))
+  override def getCaptures(currentSquare: Square, board: Board): Set[Move] = {
+    Set(changeRankByColor(currentSquare, 1).changeFile(-1), changeRankByColor(currentSquare, 1).changeFile(1))
+      .filter(square => board.isEnPassantPossible(square) || board.pieceAt(square).fold(false)(!_.isColor(color)))
+      .map(NormalMove(currentSquare, _))
   }
 
   private def changeRankByColor(square: Square, delta: Int): Square = {

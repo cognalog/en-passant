@@ -27,4 +27,6 @@ case class Bishop(override val color: Color, override val hasMoved: Boolean = fa
   override val canMateWithKing: Boolean = false
 
   override val pointValue: Int = 3
+
+  override def getCaptures(currentSquare: Square, board: Board): Set[Move] = getLegalMoves(currentSquare, board)
 }

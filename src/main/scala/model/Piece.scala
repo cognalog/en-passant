@@ -44,9 +44,18 @@ trait Piece {
    *
    * @param currentSquare the piece's starting square on the board.
    * @param board         the board to consider.
-   * @return All squares to which this piece can move on the board, not considering king safety.
-   */
+   * @return All squares to which this piece can move on the board, not considering king safety. */
   def getLegalMoves(currentSquare: Square, board: Board): Set[Move]
+
+  /**
+   * Calculate the squares this piece may legally capture on. This functionality is distinct from [[getLegalMoves()]]
+   * only for pawns.
+   *
+   * @param currentSquare the piece's starting square on the board.
+   * @param board         the board to consider.
+   * @return All squares to which this piece can move to capture, regardless king safety or whether there is a
+   *         capturable piece at the destination. */
+  def getCaptures(currentSquare: Square, board: Board): Set[Move]
 
   /**
    * Generates available squares for this piece to move to, stopping upon encountering another piece or the edge of
@@ -55,8 +64,7 @@ trait Piece {
    * @param currentSquare the current square, which should not be included in the result.
    * @param board         the board to consider.
    * @param nextFn        the function for generating the next square.
-   * @return the set of squares between currentSquare and the first piece encountered or the board's edge.
-   */
+   * @return the set of squares between currentSquare and the first piece encountered or the board's edge. */
   def getAvailableLinearSquares(currentSquare: Square, board: Board, nextFn: Square => Square): Set[Square] = {
     val nextSquare = nextFn(currentSquare)
     if (!board.isInBounds(nextSquare)) return Set()

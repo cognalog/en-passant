@@ -23,12 +23,12 @@ case class King(override val color: Color, override val hasMoved: Boolean = fals
   }
 
   private def getNormalMoves(currentSquare: Square, board: Board): Set[Move] = {
-    Set(
-      currentSquare.changeRank(1), currentSquare.changeFile(1).changeRank(1), currentSquare.changeFile(1),
+    Set(currentSquare.changeRank(1), currentSquare.changeFile(1).changeRank(1), currentSquare.changeFile(1),
       currentSquare.changeFile(1).changeRank(-1), currentSquare.changeRank(-1),
       currentSquare.changeFile(-1).changeRank(-1), currentSquare.changeFile(-1),
       currentSquare.changeFile(-1).changeRank(1)).filter(board.isInBounds)
-      .filter(sq => board.pieceAt(sq).forall(!_.isColor(color))).map(NormalMove(currentSquare, _))
+                                                 .filter(sq => board.pieceAt(sq).forall(!_.isColor(color)))
+                                                 .map(NormalMove(currentSquare, _))
   }
 
   /**
@@ -38,4 +38,10 @@ case class King(override val color: Color, override val hasMoved: Boolean = fals
   override val canMateWithKing: Boolean = false
 
   override val pointValue: Int = Int.MaxValue
+
+  override def getCaptures(currentSquare: Square, board: Board): Set[Move] = getLegalMoves(currentSquare, board)
+    .filter {
+      case NormalMove(_, _, _) => true
+      case _ => false
+    }
 }

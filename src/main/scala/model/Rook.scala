@@ -14,9 +14,9 @@ case class Rook(override val color: Color, override val hasMoved: Boolean = fals
 
   override def getLegalMoves(currentSquare: Square, board: Board): Set[Move] = {
     (getAvailableLinearSquares(currentSquare, board, _.changeFile(1)) ++
-      getAvailableLinearSquares(currentSquare, board, _.changeFile(-1)) ++
-      getAvailableLinearSquares(currentSquare, board, _.changeRank(1)) ++
-      getAvailableLinearSquares(currentSquare, board, _.changeRank(-1))).map(NormalMove(currentSquare, _))
+     getAvailableLinearSquares(currentSquare, board, _.changeFile(-1)) ++
+     getAvailableLinearSquares(currentSquare, board, _.changeRank(1)) ++
+     getAvailableLinearSquares(currentSquare, board, _.changeRank(-1))).map(NormalMove(currentSquare, _))
   }
 
   /**
@@ -26,4 +26,6 @@ case class Rook(override val color: Color, override val hasMoved: Boolean = fals
   override val canMateWithKing: Boolean = true
 
   override val pointValue: Int = 5
+
+  override def getCaptures(currentSquare: Square, board: Board): Set[Move] = getLegalMoves(currentSquare, board)
 }

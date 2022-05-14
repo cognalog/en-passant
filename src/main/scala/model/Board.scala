@@ -2,17 +2,25 @@ package model
 
 import model.Color.Color
 
-import scala.util.Try
+import scala.util.{Success, Try}
+
+object Board {
+  def standardFromMoves(moves: Seq[Move]): Try[Board] = moves
+    .foldLeft[Try[Board]](Success(StandardBoard.StartingPosition))(
+      (boardTry, move) => boardTry.flatMap(board => board.move(move)))
+
+  def standardFromMoveStrings(moves: Seq[String]): Try[Board] = moves
+    .foldLeft[Try[Board]](Success(StandardBoard.StartingPosition))(
+      (boardTry, move) => boardTry.flatMap(board => Move.fromStandardNotation(move, board).flatMap(board.move)))
+}
 
 /**
- * The representation of a chess board.
- */
+ * The representation of a chess board. */
 trait Board {
   /**
    * A string identifier for the board. Useful for debugging or testing.
    *
-   * @return a suitable string identifier.
-   */
+   * @return a suitable string identifier. */
   def id: String
 
   /**

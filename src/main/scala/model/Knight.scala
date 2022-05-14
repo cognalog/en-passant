@@ -18,7 +18,7 @@ case class Knight(override val color: Color, override val hasMoved: Boolean = fa
       y <- Set(2, -2)
     } yield Set(currentSquare.changeFile(x).changeRank(y), currentSquare.changeFile(y).changeRank(x))
     moves.flatten.filter(board.isInBounds).filter(sq => board.pieceAt(sq).forall(!_.isColor(color)))
-      .map(NormalMove(currentSquare, _))
+         .map(NormalMove(currentSquare, _))
   }
 
   /**
@@ -28,4 +28,6 @@ case class Knight(override val color: Color, override val hasMoved: Boolean = fa
   override val canMateWithKing: Boolean = false
 
   override val pointValue: Int = 3
+
+  override def getCaptures(currentSquare: Square, board: Board): Set[Move] = getLegalMoves(currentSquare, board)
 }

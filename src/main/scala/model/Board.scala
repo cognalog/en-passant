@@ -5,9 +5,13 @@ import model.Color.Color
 import scala.util.{Success, Try}
 
 object Board {
-  def standardWithMoves(moves: List[Move]): Try[Board] = moves
+  def standardFromMoves(moves: Seq[Move]): Try[Board] = moves
     .foldLeft[Try[Board]](Success(StandardBoard.StartingPosition))(
       (boardTry, move) => boardTry.flatMap(board => board.move(move)))
+
+  def standardFromMoveStrings(moves: Seq[String]): Try[Board] = moves
+    .foldLeft[Try[Board]](Success(StandardBoard.StartingPosition))(
+      (boardTry, move) => boardTry.flatMap(board => Move.fromStandardNotation(move, board).flatMap(board.move)))
 }
 
 /**

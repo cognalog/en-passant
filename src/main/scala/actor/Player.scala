@@ -14,9 +14,4 @@ trait Player {
    * @param board the current state of the board.
    * @param color the piece color for this player. */
   def GetNextMove(board: Board, color: Color): Try[Move]
-
-  def GetNextMove(moves: List[Move]): Try[Move] = {
-    val triedBoard = Board.standardWithMoves(moves)
-    triedBoard.flatMap(board => GetNextMove(board, board.turnColor))
-  }
 }

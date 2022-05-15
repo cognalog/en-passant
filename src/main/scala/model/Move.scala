@@ -21,21 +21,21 @@ object Move {
     case normalMovePattern(piece, startFile, destSquare, promotion) =>
       Square.fromStandardName(destSquare).flatMap(parsedDest => {
         val pieceToFind = piece match {
-          case "B" => Bishop(board.turnColor)
-          case "K" => King(board.turnColor)
-          case "N" => Knight(board.turnColor)
-          case "Q" => Queen(board.turnColor)
-          case "R" => Rook(board.turnColor)
-          case null => Pawn(board.turnColor)
+          case Bishop.standardNotation => Bishop(board.turnColor)
+          case King.standardNotation   => King(board.turnColor)
+          case Knight.standardNotation => Knight(board.turnColor)
+          case Queen.standardNotation  => Queen(board.turnColor)
+          case Rook.standardNotation  => Rook(board.turnColor)
+          case null                    => Pawn(board.turnColor)
         }
         val startSquares = board.locatePiece(pieceToFind).filter(
           sq => (startFile == null || startFile == sq.standardFileName) &&
             pieceToFind.getLegalMoves(sq, board).exists(_.destination == parsedDest))
         val promotionPiece = Option(promotion).map {
-          case "=B" => Bishop(board.turnColor)
-          case "=N" => Knight(board.turnColor)
-          case "=Q" => Queen(board.turnColor)
-          case "=R" => Rook(board.turnColor)
+          case s"=${Bishop.standardNotation}" => Bishop(board.turnColor)
+          case s"=${Knight.standardNotation}" => Knight(board.turnColor)
+          case s"=${Queen.standardNotation}"  => Queen(board.turnColor)
+          case s"=${Rook.standardNotation}"   => Rook(board.turnColor)
         }
         if (startSquares.size > 1) return Failure(new IllegalArgumentException(s"Ambiguous move: $move"))
         startSquares.headOption match {

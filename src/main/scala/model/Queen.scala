@@ -2,6 +2,10 @@ package model
 
 import model.Color.Color
 
+object Queen {
+  val standardNotation = "Q"
+}
+
 /**
  * A Queen piece.
  *

@@ -2,6 +2,10 @@ package model
 
 import model.Color.Color
 
+object Rook {
+  val standardNotation = "R"
+}
+
 /**
  * A Rook Piece.
  *

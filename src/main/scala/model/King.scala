@@ -2,6 +2,10 @@ package model
 
 import model.Color.Color
 
+object King {
+  val standardNotation = "K"
+}
+
 /**
  * The King piece.
  *

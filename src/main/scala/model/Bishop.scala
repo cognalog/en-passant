@@ -2,6 +2,10 @@ package model
 
 import model.Color.Color
 
+object Bishop {
+  val standardNotation = "B"
+}
+
 /**
  * The Bishop piece.
  *

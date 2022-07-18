@@ -234,30 +234,58 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
     }
   }
 
-  test("testMove_EnPassantWhite") {
-    val piece = Pawn(White)
+  test("testMove_signalEnPassantWhite") {
     val board =
-      StandardBoard(Map(Square(1, 1) -> piece), White)
+      StandardBoard(Map(Square(1, 1) -> Pawn(White)), White)
     assertResult(
       Success(
-        StandardBoard(Map(Square(1, 3) -> Pawn(White, hasMoved = true)), turnColor = Black,
+        StandardBoard(
+          Map(Square(1, 3) -> Pawn(White, hasMoved = true)), turnColor = Black,
           enPassant = Some(Square(1, 2))))
-    ) {
+      ) {
       board.move(NormalMove(Square(1, 1), Square(1, 3)))
     }
   }
 
-  test("testMove_EnPassantBlack") {
-    val piece = Pawn(Black)
+  test("testMove_signalEnPassantBlack") {
     val board =
-      StandardBoard(Map(Square(8, 8) -> piece), Black)
+      StandardBoard(Map(Square(8, 8) -> Pawn(Black)), Black)
 
     assertResult(
       Success(
-        StandardBoard(Map(Square(8, 6) -> Pawn(Black, hasMoved = true)), turnColor = White,
+        StandardBoard(
+          Map(Square(8, 6) -> Pawn(Black, hasMoved = true)), turnColor = White,
           enPassant = Some(Square(8, 7))))
-    ) {
+      ) {
       board.move(NormalMove(Square(8, 8), Square(8, 6)))
+    }
+  }
+
+  test("testMove_enPassantMoveBlack") {
+    val board =
+      StandardBoard(
+        Map(Square(1, 3) -> Pawn(White), Square(2, 3) -> Pawn(Black)), turnColor = Black,
+        enPassant = Some(Square(1, 2)))
+    assertResult(
+      Success(
+        StandardBoard(
+          Map(Square(1, 2) -> Pawn(Black, hasMoved = true)), turnColor = White))
+      ) {
+      board.move(NormalMove(Square(2, 3), Square(1, 2)))
+    }
+  }
+
+  test("testMove_enPassantMoveWhite") {
+    val board =
+      StandardBoard(
+        Map(Square(5, 5) -> Pawn(Black), Square(4, 5) -> Pawn(White)), turnColor = White,
+        enPassant = Some(Square(5, 6)))
+    assertResult(
+      Success(
+        StandardBoard(
+          Map(Square(5, 6) -> Pawn(White, hasMoved = true)), turnColor = Black))
+      ) {
+      board.move(NormalMove(Square(4, 5), Square(5, 6)))
     }
   }
 

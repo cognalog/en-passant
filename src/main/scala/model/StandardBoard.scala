@@ -120,13 +120,14 @@ case class StandardBoard(
   private def normalMove(start: Square, dest: Square, promotion: Option[Piece]): Try[StandardBoard] = {
     Try(checkLegalMove(start, dest)) match {
       case Failure(ex) => return Failure(ex)
-      case _ => ()
+      case _           => ()
     }
     val piece = pieces(start).updateHasMoved()
-    val nextPieces = pieces - start + (promotion match {
+    val nextPieces = pieces - start - getEnPassantVictim(dest).orNull + (promotion match {
       case Some(newPiece) => dest -> newPiece
       case _              => dest -> piece
     })
+
     val nextTurnColor = Color.opposite(turnColor)
     // if it's a pawn that just moved 2 spaces, set the space behind it as en passant
     var nextEnPassant: Option[Square] = None
@@ -135,12 +136,18 @@ case class StandardBoard(
         nextEnPassant = Some(Square(start.file, start.rank + 1))
       case Pawn(Color.Black, _) if start.rank - dest.rank == 2 =>
         nextEnPassant = Some(Square(start.file, start.rank - 1))
-      case _ => ()
+      case _                                                   => ()
     }
     val newBoard = StandardBoard(nextPieces, nextTurnColor, nextEnPassant)
     if (newBoard.kingInCheck(turnColor)) return Failure(
       new IllegalArgumentException(s"Move $start -> $dest leaves the king in check."))
     Success(newBoard)
+  }
+
+  private def getEnPassantVictim(dest: Square): Option[Square] = enPassant flatMap {
+    case Square(file, rank) if dest == Square(file, rank) => Some(
+      Square(file, if (turnColor == Color.White) rank - 1 else rank + 1))
+    case _                                                => None
   }
 
   /**

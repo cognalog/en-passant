@@ -50,6 +50,7 @@ case class Game(players: Map[Color, Player], maxTurns: Int = Int.MaxValue, print
       while (nextMove.isFailure && retries < maxRetries) {
         nextMove match {
           case Failure(e) => println(e);
+          case Success(move) => throw new Exception("impossible")
         }
         retries += 1
         nextMove = players(turnColor).GetNextMove(currentBoard, turnColor)

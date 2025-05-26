@@ -4,20 +4,30 @@ import ai.evaluator.Evaluator
 import model.Color.Color
 import model.{Board, Move}
 
-/**
- * The minimax search algorithm with alpha/beta pruning, applied to a chess board.
- *
- * @param depth     the maximum depth for the DFS.
- * @param evaluator the evaluator to use.
- */
-case class ABPruningMinimax(depth: Int, evaluator: Evaluator) extends MoveSearch {
+/** The minimax search algorithm with alpha/beta pruning, applied to a chess
+  * board.
+  *
+  * @param depth
+  *   the maximum depth for the DFS.
+  * @param evaluator
+  *   the evaluator to use.
+  */
+case class ABPruningMinimax(depth: Int, evaluator: Evaluator)
+    extends MoveSearch {
 
   override def GetBestMove(board: Board, color: Color): Move = {
-    if (board.turnColor != color) throw new IllegalArgumentException(s"It isn't $color's turn'")
+    if (board.turnColor != color)
+      throw new IllegalArgumentException(s"It isn't $color's turn'")
     MaxValue(board, color, Double.MinValue, Double.MaxValue, depth)._1
   }
 
-  private def MaxValue(board: Board, color: Color, alpha: Double, beta: Double, depth: Int): (Move, Double) = {
+  private def MaxValue(
+      board: Board,
+      color: Color,
+      alpha: Double,
+      beta: Double,
+      depth: Int
+  ): (Move, Double) = {
     if (depth <= 0) return (null, evaluator.Evaluate(board, color))
     var a = alpha
     var finalMax: (Move, Double) = (null, Double.MinValue)
@@ -32,7 +42,13 @@ case class ABPruningMinimax(depth: Int, evaluator: Evaluator) extends MoveSearch
     finalMax
   }
 
-  private def MinValue(board: Board, color: Color, alpha: Double, beta: Double, depth: Int): (Move, Double) = {
+  private def MinValue(
+      board: Board,
+      color: Color,
+      alpha: Double,
+      beta: Double,
+      depth: Int
+  ): (Move, Double) = {
     if (depth <= 0) return (null, evaluator.Evaluate(board, color))
     var b = beta
     var finalMin: (Move, Double) = (null, Double.MaxValue)

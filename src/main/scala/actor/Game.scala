@@ -11,29 +11,59 @@ import scala.util.{Failure, Random, Success}
 
 object Game {
   private val defaultMinimaxDepth = 3
-  private val randomMinimaxDepth = 3
-  private val botGameMaxTurns = 25
+  private val botGameMaxTurns = 100
   private val maxRetries = 2
 
-  private def withRandomColors(player1: Player, player2: Player, maxTurns: Int = Int.MaxValue,
-                               printBoards: Boolean): Game = {
+  private def withRandomColors(
+      player1: Player,
+      player2: Player,
+      maxTurns: Int = Int.MaxValue,
+      printBoards: Boolean
+  ): Game = {
     val color1 = if (Random.nextBoolean()) Color.White else Color.Black
-    Game(Map(color1 -> player1, Color.opposite(color1) -> player2), maxTurns, printBoards)
+    Game(
+      Map(color1 -> player1, Color.opposite(color1) -> player2),
+      maxTurns,
+      printBoards
+    )
   }
 
-  def humanVsBot(depth: Int = defaultMinimaxDepth, printBoards: Boolean = false): Game = withRandomColors(HumanPlayer(),
-    BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)), Int.MaxValue, printBoards)
-
-  def botVsBotEven(depth: Int = defaultMinimaxDepth, printBoards: Boolean = false): Game = withRandomColors(
-    BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)), BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)),
-    botGameMaxTurns, printBoards)
-
-  def botVsBotUneven(depth: Int = defaultMinimaxDepth, printBoards: Boolean = false): Game = withRandomColors(
+  def humanVsBot(
+      depth: Int = defaultMinimaxDepth,
+      printBoards: Boolean = false
+  ): Game = withRandomColors(
+    HumanPlayer(),
     BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)),
-    BotPlayer(ABPruningMinimax(randomMinimaxDepth, RandomEvaluator)), botGameMaxTurns, printBoards)
+    Int.MaxValue,
+    printBoards
+  )
+
+  def botVsBotEven(
+      depth: Int = defaultMinimaxDepth,
+      printBoards: Boolean = false
+  ): Game = withRandomColors(
+    BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)),
+    BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)),
+    botGameMaxTurns,
+    printBoards
+  )
+
+  def botVsBotUneven(
+      depth: Int = defaultMinimaxDepth,
+      printBoards: Boolean = false
+  ): Game = withRandomColors(
+    BotPlayer(ABPruningMinimax(depth, GeneralEvaluator)),
+    BotPlayer(ABPruningMinimax(depth, RandomEvaluator)),
+    botGameMaxTurns,
+    printBoards
+  )
 }
 
-case class Game(players: Map[Color, Player], maxTurns: Int = Int.MaxValue, printBoards: Boolean = false) {
+case class Game(
+    players: Map[Color, Player],
+    maxTurns: Int = Int.MaxValue,
+    printBoards: Boolean = false
+) {
 
   def play(): List[Board] = {
     var turns = 0
@@ -49,7 +79,7 @@ case class Game(players: Map[Color, Player], maxTurns: Int = Int.MaxValue, print
       var retries = 0
       while (nextMove.isFailure && retries < maxRetries) {
         nextMove match {
-          case Failure(e) => println(e);
+          case Failure(e)    => println(e);
           case Success(move) => throw new Exception("impossible")
         }
         retries += 1
@@ -64,9 +94,18 @@ case class Game(players: Map[Color, Player], maxTurns: Int = Int.MaxValue, print
           return boardLog.toList
       }
     }
+    // print final board
     if (printBoards) println(currentBoard)
     boardLog.append(currentBoard)
+
+    if (turns == maxTurns) {
+      println("Game over after reaching max turns.")
+    } else {
+      println(
+        s"Game over after ${turns / 2} turns. ${Color.opposite(currentBoard.turnColor)} wins!"
+      )
+    }
+
     boardLog.toList
   }
-
 }

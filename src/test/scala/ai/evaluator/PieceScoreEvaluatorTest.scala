@@ -13,9 +13,16 @@ class PieceScoreEvaluatorTest extends AnyFunSuite {
 
   test("testEvaluateArbitraryWhite") {
     val board = StandardBoard(
-      Map(Square(1, 1) -> Pawn(Color.White), Square(1, 2) -> Knight(Color.White), Square(1, 3) -> Bishop(Color.White),
-        Square(1, 4) -> Rook(Color.White), Square(1, 5) -> Queen(Color.Black), Square(1, 6) -> Bishop(Color.Black),
-        Square(1, 7) -> Knight(Color.Black)))
+      Map(
+        Square(1, 1) -> Pawn(Color.White),
+        Square(1, 2) -> Knight(Color.White),
+        Square(1, 3) -> Bishop(Color.White),
+        Square(1, 4) -> Rook(Color.White),
+        Square(1, 5) -> Queen(Color.Black),
+        Square(1, 6) -> Bishop(Color.Black),
+        Square(1, 7) -> Knight(Color.Black)
+      )
+    )
     assertResult(-3) {
       PieceScoreEvaluator.Evaluate(board, Color.White)
     }
@@ -29,9 +36,16 @@ class PieceScoreEvaluatorTest extends AnyFunSuite {
 
   test("testEvaluateArbitraryBlack") {
     val board = StandardBoard(
-      Map(Square(1, 1) -> Pawn(Color.White), Square(1, 2) -> Knight(Color.White), Square(1, 3) -> Bishop(Color.White),
-        Square(1, 4) -> Rook(Color.White), Square(1, 5) -> Queen(Color.Black), Square(1, 6) -> Bishop(Color.Black),
-        Square(1, 7) -> Knight(Color.Black)))
+      Map(
+        Square(1, 1) -> Pawn(Color.White),
+        Square(1, 2) -> Knight(Color.White),
+        Square(1, 3) -> Bishop(Color.White),
+        Square(1, 4) -> Rook(Color.White),
+        Square(1, 5) -> Queen(Color.Black),
+        Square(1, 6) -> Bishop(Color.Black),
+        Square(1, 7) -> Knight(Color.Black)
+      )
+    )
     assertResult(3) {
       PieceScoreEvaluator.Evaluate(board, Color.Black)
     }

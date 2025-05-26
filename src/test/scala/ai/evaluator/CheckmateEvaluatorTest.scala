@@ -7,8 +7,13 @@ class CheckmateEvaluatorTest extends AnyFunSuite {
 
   test("testEvaluate_forMatedPlayer") {
     val board = StandardBoard(
-      Map(Square(5, 8) -> King(Color.Black), Square(5, 7) -> Queen(Color.White), Square(3, 5) -> Bishop(Color.White)),
-      turnColor = Color.Black)
+      Map(
+        Square(5, 8) -> King(Color.Black),
+        Square(5, 7) -> Queen(Color.White),
+        Square(3, 5) -> Bishop(Color.White)
+      ),
+      turnColor = Color.Black
+    )
 
     assertResult(-9999999) {
       CheckmateEvaluator.Evaluate(board, Color.Black)
@@ -17,8 +22,13 @@ class CheckmateEvaluatorTest extends AnyFunSuite {
 
   test("testEvaluate_forMatingPlayer") {
     val board = StandardBoard(
-      Map(Square(5, 8) -> King(Color.Black), Square(5, 7) -> Queen(Color.White), Square(3, 5) -> Bishop(Color.White)),
-      turnColor = Color.Black)
+      Map(
+        Square(5, 8) -> King(Color.Black),
+        Square(5, 7) -> Queen(Color.White),
+        Square(3, 5) -> Bishop(Color.White)
+      ),
+      turnColor = Color.Black
+    )
 
     assertResult(9999999) {
       CheckmateEvaluator.Evaluate(board, Color.White)

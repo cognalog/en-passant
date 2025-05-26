@@ -11,7 +11,7 @@ import scala.util.{Failure, Random, Success}
 
 object Game {
   private val defaultMinimaxDepth = 3
-  private val botGameMaxTurns = 100
+  private val botGameMaxTurns = 1000
   private val maxRetries = 2
 
   private def withRandomColors(
@@ -98,7 +98,7 @@ case class Game(
     if (printBoards) println(currentBoard)
     boardLog.append(currentBoard)
 
-    if (turns == maxTurns) {
+    if (turns / 2 >= maxTurns) {
       println("Game over after reaching max turns.")
     } else {
       println(

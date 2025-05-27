@@ -28,7 +28,7 @@ case class Knight(
     moves.flatten
       .filter(board.isInBounds)
       .filter(sq => board.pieceAt(sq).forall(!_.isColor(color)))
-      .map(NormalMove(currentSquare, _))
+      .map(NormalMove(currentSquare, _, this))
   }
 
   /** @return

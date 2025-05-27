@@ -61,13 +61,13 @@ class MoveTest extends AnyFunSuite {
   }
 
   test("testFromStandardNotation_standardOpeningPawnMove") {
-    assertResult(Success(NormalMove(Square(4, 2), Square(4, 4)))) {
+    assertResult(Success(NormalMove(Square(4, 2), Square(4, 4), Pawn(Color.White)))) {
       Move.fromStandardNotation("d4", StandardBoard.StartingPosition)
     }
   }
 
   test("testFromStandardNotation_pawnCaptureVsMove") {
-    assertResult(Success(NormalMove(Square(4, 4), Square(5, 5)))) {
+    assertResult(Success(NormalMove(Square(4, 4), Square(5, 5), Pawn(Color.White)))) {
       Move.fromStandardNotation(
         "dxe5",
         StandardBoard(
@@ -82,7 +82,7 @@ class MoveTest extends AnyFunSuite {
   }
 
   test("testFromStandardNotation_pieceObstructingItsTwin") {
-    assertResult(Success(NormalMove(Square(3, 3), Square(3, 8)))) {
+    assertResult(Success(NormalMove(Square(3, 3), Square(3, 8), Rook(Color.White)))) {
       Move.fromStandardNotation(
         "Rc8",
         StandardBoard(
@@ -96,7 +96,7 @@ class MoveTest extends AnyFunSuite {
   }
 
   test("testFromStandardNotation_startColSpecified") {
-    assertResult(Success(NormalMove(Square(4, 5), Square(2, 6)))) {
+    assertResult(Success(NormalMove(Square(4, 5), Square(2, 6), Knight(Color.White)))) {
       Move.fromStandardNotation(
         "Ndb6",
         StandardBoard(
@@ -127,7 +127,7 @@ class MoveTest extends AnyFunSuite {
 
   test("testFromStandardNotation_promotion") {
     assertResult(
-      Success(NormalMove(Square(5, 7), Square(5, 8), Some(Queen(Color.White))))
+      Success(NormalMove(Square(5, 7), Square(5, 8), Pawn(Color.White), Some(Queen(Color.White))))
     ) {
       Move.fromStandardNotation(
         "e8=Q+",

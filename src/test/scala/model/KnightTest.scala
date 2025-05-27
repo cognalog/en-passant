@@ -12,13 +12,13 @@ class KnightTest extends AnyFunSuite {
     val knight = Knight(Color.White)
     assertResult(
       Set(
-        NormalMove(Square(4, 4), Square(6, 5)),
-        NormalMove(Square(4, 4), Square(2, 5)),
-        NormalMove(Square(4, 4), Square(5, 2)),
-        NormalMove(Square(4, 4), Square(3, 6)),
-        NormalMove(Square(4, 4), Square(6, 3)),
-        NormalMove(Square(4, 4), Square(2, 3)),
-        NormalMove(Square(4, 4), Square(3, 2))
+        NormalMove(Square(4, 4), Square(6, 5), knight),
+        NormalMove(Square(4, 4), Square(2, 5), knight),
+        NormalMove(Square(4, 4), Square(5, 2), knight),
+        NormalMove(Square(4, 4), Square(3, 6), knight),
+        NormalMove(Square(4, 4), Square(6, 3), knight),
+        NormalMove(Square(4, 4), Square(2, 3), knight),
+        NormalMove(Square(4, 4), Square(3, 2), knight)
       )
     ) {
       knight.getLegalMoves(Square(4, 4), board)
@@ -30,10 +30,10 @@ class KnightTest extends AnyFunSuite {
     val knight = Knight(Color.White)
     assertResult(
       Set(
-        NormalMove(Square(1, 4), Square(2, 6)),
-        NormalMove(Square(1, 4), Square(2, 2)),
-        NormalMove(Square(1, 4), Square(3, 5)),
-        NormalMove(Square(1, 4), Square(3, 3))
+        NormalMove(Square(1, 4), Square(2, 6), knight),
+        NormalMove(Square(1, 4), Square(2, 2), knight),
+        NormalMove(Square(1, 4), Square(3, 5), knight),
+        NormalMove(Square(1, 4), Square(3, 3), knight)
       )
     ) {
       knight.getLegalMoves(Square(1, 4), board)

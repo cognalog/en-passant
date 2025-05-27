@@ -28,11 +28,11 @@ case class Pawn(
       if (isColor(White)) StandardBoard.RankAndFileMax
       else StandardBoard.RankAndFileMin
     move match {
-      case NormalMove(start, Square(destFile, destRank), None)
+      case NormalMove(start, Square(destFile, destRank), piece, None)
           if destRank == maxRank =>
         Set(Knight(color), Bishop(color), Rook(color), Queen(color))
           .map(option =>
-            NormalMove(start, Square(destFile, destRank), Some(option))
+            NormalMove(start, Square(destFile, destRank), piece, Some(option))
           )
       case _ => Set(move)
     }
@@ -48,7 +48,7 @@ case class Pawn(
       ) ++
       Set(changeRankByColor(currentSquare, 1)))
       .filter(board.pieceAt(_).isEmpty)
-      .map(NormalMove(currentSquare, _))
+      .map(NormalMove(currentSquare, _, this))
   }
 
   override def getCaptures(currentSquare: Square, board: Board): Set[Move] = {
@@ -61,7 +61,7 @@ case class Pawn(
           .pieceAt(square)
           .fold(false)(!_.isColor(color))
       )
-      .map(NormalMove(currentSquare, _))
+      .map(NormalMove(currentSquare, _, this))
   }
 
   private def changeRankByColor(square: Square, delta: Int): Square = {

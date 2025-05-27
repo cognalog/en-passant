@@ -17,8 +17,8 @@ class BoardTest extends AnyFunSuite {
       Board
         .standardFromMoves(
           Seq(
-            NormalMove(Square(5, 2), Square(5, 4)),
-            NormalMove(Square(5, 5), Square(5, 6))
+            NormalMove(Square(5, 2), Square(5, 4), Pawn(Color.White)),
+            NormalMove(Square(5, 5), Square(5, 6), Pawn(Color.Black))
           )
         )
         .fold(ex => ex.getMessage, _ => fail())
@@ -26,8 +26,8 @@ class BoardTest extends AnyFunSuite {
   }
 
   test("testStandardFromMoves_validMoves") {
-    val move1 = NormalMove(Square(5, 2), Square(5, 4))
-    val move2 = NormalMove(Square(5, 7), Square(5, 5))
+    val move1 = NormalMove(Square(5, 2), Square(5, 4), Pawn(Color.White))
+    val move2 = NormalMove(Square(5, 7), Square(5, 5), Pawn(Color.Black))
     assertResult(
       Success(StandardBoard.StartingPosition.move(move1).get.move(move2).get)
     ) {
@@ -50,8 +50,8 @@ class BoardTest extends AnyFunSuite {
   }
 
   test("testStandardFromMoveStrings_validMoves") {
-    val move1 = NormalMove(Square(5, 2), Square(5, 4))
-    val move2 = NormalMove(Square(5, 7), Square(5, 5))
+    val move1 = NormalMove(Square(5, 2), Square(5, 4), Pawn(Color.White))
+    val move2 = NormalMove(Square(5, 7), Square(5, 5), Pawn(Color.Black))
     assertResult(
       Success(StandardBoard.StartingPosition.move(move1).get.move(move2).get)
     ) {

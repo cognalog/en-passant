@@ -27,8 +27,8 @@ class InterestingMovesFirstTest extends AnyFunSuite {
 
     assertResult(9) {
       InterestingMovesFirst(startBoard).compare(
-        (NormalMove(Square(2, 3), Square(1, 2)), nextBoard1),
-        (NormalMove(Square(2, 3), Square(2, 2)), nextBoard2)
+        (NormalMove(Square(2, 3), Square(1, 2), Pawn(Color.Black)), nextBoard1),
+        (NormalMove(Square(2, 3), Square(2, 2), Pawn(Color.Black)), nextBoard2)
       )
     }
   }
@@ -58,8 +58,8 @@ class InterestingMovesFirstTest extends AnyFunSuite {
 
     assertResult(5) {
       InterestingMovesFirst(startBoard).compare(
-        (NormalMove(Square(3, 2), Square(2, 3)), nextBoard1),
-        (NormalMove(Square(3, 2), Square(1, 4)), nextBoard2)
+        (NormalMove(Square(3, 2), Square(2, 3), Bishop(Color.Black)), nextBoard1),
+        (NormalMove(Square(3, 2), Square(1, 4), Bishop(Color.Black)), nextBoard2)
       )
     }
   }
@@ -91,8 +91,8 @@ class InterestingMovesFirstTest extends AnyFunSuite {
 
     assertResult(6) {
       InterestingMovesFirst(startBoard).compare(
-        (NormalMove(Square(3, 2), Square(2, 3)), nextBoard1),
-        (NormalMove(Square(3, 2), Square(1, 4)), nextBoard2)
+        (NormalMove(Square(3, 2), Square(2, 3), Bishop(Color.Black)), nextBoard1),
+        (NormalMove(Square(3, 2), Square(1, 4), Bishop(Color.Black)), nextBoard2)
       )
     }
   }

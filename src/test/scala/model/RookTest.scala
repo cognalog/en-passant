@@ -16,15 +16,15 @@ class RookTest extends AnyFunSuite with MockFactory {
 
     assertResult(
       Set(
-        NormalMove(Square(3, 3), Square(1, 3)),
-        NormalMove(Square(3, 3), Square(2, 3)),
-        NormalMove(Square(3, 3), Square(4, 3)),
-        NormalMove(Square(3, 3), Square(5, 3)),
-        NormalMove(Square(3, 3), Square(3, 1)),
-        NormalMove(Square(3, 3), Square(3, 2)),
-        NormalMove(Square(3, 3), Square(3, 4)),
-        NormalMove(Square(3, 3), Square(3, 5)),
-        NormalMove(Square(3, 3), Square(3, 6))
+        NormalMove(Square(3, 3), Square(1, 3), rook),
+        NormalMove(Square(3, 3), Square(2, 3), rook),
+        NormalMove(Square(3, 3), Square(4, 3), rook),
+        NormalMove(Square(3, 3), Square(5, 3), rook),
+        NormalMove(Square(3, 3), Square(3, 1), rook),
+        NormalMove(Square(3, 3), Square(3, 2), rook),
+        NormalMove(Square(3, 3), Square(3, 4), rook),
+        NormalMove(Square(3, 3), Square(3, 5), rook),
+        NormalMove(Square(3, 3), Square(3, 6), rook)
       )
     ) {
       rook.getLegalMoves(Square(3, 3), board)
@@ -42,17 +42,17 @@ class RookTest extends AnyFunSuite with MockFactory {
 
     assertResult(
       Set(
-        NormalMove(Square(3, 3), Square(1, 3)),
-        NormalMove(Square(3, 3), Square(2, 3)),
-        NormalMove(Square(3, 3), Square(4, 3)),
-        NormalMove(Square(3, 3), Square(5, 3)),
-        NormalMove(Square(3, 3), Square(6, 3)),
-        NormalMove(Square(3, 3), Square(3, 1)),
-        NormalMove(Square(3, 3), Square(3, 2)),
-        NormalMove(Square(3, 3), Square(3, 4)),
-        NormalMove(Square(3, 3), Square(3, 5)),
-        NormalMove(Square(3, 3), Square(3, 6)),
-        NormalMove(Square(3, 3), Square(3, 7))
+        NormalMove(Square(3, 3), Square(1, 3), rook),
+        NormalMove(Square(3, 3), Square(2, 3), rook),
+        NormalMove(Square(3, 3), Square(4, 3), rook),
+        NormalMove(Square(3, 3), Square(5, 3), rook),
+        NormalMove(Square(3, 3), Square(6, 3), rook),
+        NormalMove(Square(3, 3), Square(3, 1), rook),
+        NormalMove(Square(3, 3), Square(3, 2), rook),
+        NormalMove(Square(3, 3), Square(3, 4), rook),
+        NormalMove(Square(3, 3), Square(3, 5), rook),
+        NormalMove(Square(3, 3), Square(3, 6), rook),
+        NormalMove(Square(3, 3), Square(3, 7), rook)
       )
     ) {
       rook.getLegalMoves(Square(3, 3), board)

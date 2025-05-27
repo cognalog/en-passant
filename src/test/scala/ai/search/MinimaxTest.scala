@@ -52,34 +52,37 @@ class MinimaxTest extends AnyFunSuite {
         )
       )
     )
+    // Create test pieces
+    val piece1 = Pawn(Color.White)
+    val piece2 = Pawn(Color.Black)
     val board = TreeBoard(
       "root",
       Color.White,
       children = Map(
-        NormalMove(Square(1, 1), Square(2, 2)) -> TreeBoard("a", Color.Black),
-        NormalMove(Square(1, 1), Square(3, 3)) -> TreeBoard(
+        NormalMove(Square(1, 1), Square(2, 2), piece1) -> TreeBoard("a", Color.Black),
+        NormalMove(Square(1, 1), Square(3, 3), piece1) -> TreeBoard(
           "b",
           Color.Black,
           children = Map(
-            NormalMove(Square(3, 3), Square(3, 4)) -> TreeBoard(
+            NormalMove(Square(3, 3), Square(3, 4), piece2) -> TreeBoard(
               "b1",
               Color.Black
             ),
-            NormalMove(Square(3, 3), Square(3, 2)) -> TreeBoard(
+            NormalMove(Square(3, 3), Square(3, 2), piece2) -> TreeBoard(
               "b2",
               Color.Black
             ),
-            NormalMove(Square(3, 3), Square(2, 2)) -> TreeBoard(
+            NormalMove(Square(3, 3), Square(2, 2), piece2) -> TreeBoard(
               "b3",
               Color.Black
             )
           )
         ),
-        NormalMove(Square(1, 1), Square(4, 4)) -> TreeBoard(
+        NormalMove(Square(1, 1), Square(4, 4), piece1) -> TreeBoard(
           "c",
           Color.Black,
           children = Map(
-            NormalMove(Square(4, 4), Square(5, 5)) -> TreeBoard(
+            NormalMove(Square(4, 4), Square(5, 5), piece2) -> TreeBoard(
               "c1",
               Color.Black
             ),
@@ -88,7 +91,7 @@ class MinimaxTest extends AnyFunSuite {
         )
       )
     )
-    assertResult(NormalMove(Square(1, 1), Square(3, 3)) /* move "b" */ ) {
+    assertResult(NormalMove(Square(1, 1), Square(3, 3), piece1) /* move "b" */ ) {
       minimax.GetBestMove(board, Color.White)
     }
   }
@@ -109,34 +112,37 @@ class MinimaxTest extends AnyFunSuite {
         )
       )
     )
+    // Create test pieces
+    val piece1 = Pawn(Color.White)
+    val piece2 = Pawn(Color.Black)
     val board = TreeBoard(
       "root",
       Color.White,
       children = Map(
-        NormalMove(Square(1, 1), Square(2, 2)) -> TreeBoard("a", Color.Black),
-        NormalMove(Square(1, 1), Square(3, 3)) -> TreeBoard(
+        NormalMove(Square(1, 1), Square(2, 2), piece1) -> TreeBoard("a", Color.Black),
+        NormalMove(Square(1, 1), Square(3, 3), piece1) -> TreeBoard(
           "b",
           Color.Black,
           children = Map(
-            NormalMove(Square(3, 3), Square(3, 4)) -> TreeBoard(
+            NormalMove(Square(3, 3), Square(3, 4), piece2) -> TreeBoard(
               "b1",
               Color.Black
             ),
-            NormalMove(Square(3, 3), Square(3, 2)) -> TreeBoard(
+            NormalMove(Square(3, 3), Square(3, 2), piece2) -> TreeBoard(
               "b2",
               Color.Black
             ),
-            NormalMove(Square(3, 3), Square(2, 2)) -> TreeBoard(
+            NormalMove(Square(3, 3), Square(2, 2), piece2) -> TreeBoard(
               "b3",
               Color.Black
             )
           )
         ),
-        NormalMove(Square(1, 1), Square(4, 4)) -> TreeBoard(
+        NormalMove(Square(1, 1), Square(4, 4), piece1) -> TreeBoard(
           "c",
           Color.Black,
           children = Map(
-            NormalMove(Square(4, 4), Square(5, 5)) -> TreeBoard(
+            NormalMove(Square(4, 4), Square(5, 5), piece2) -> TreeBoard(
               "c1",
               Color.Black
             ),
@@ -145,7 +151,7 @@ class MinimaxTest extends AnyFunSuite {
         )
       )
     )
-    assertResult(NormalMove(Square(1, 1), Square(2, 2)) /* move "a" */ ) {
+    assertResult(NormalMove(Square(1, 1), Square(2, 2), piece1) /* move "a" */ ) {
       minimax.GetBestMove(board, Color.White)
     }
   }

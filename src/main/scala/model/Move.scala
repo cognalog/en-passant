@@ -64,7 +64,7 @@ object Move {
             )
           startSquares.headOption match {
             case Some(start) =>
-              Success(NormalMove(start, parsedDest, promotionPiece))
+              Success(NormalMove(start, parsedDest, pieceToFind, promotionPiece))
             case None =>
               Failure(new IllegalArgumentException(s"Impossible move: $move"))
           }
@@ -93,11 +93,14 @@ case class CastleMove(override val destination: Square) extends Move
   *   the square holding the piece before the move.
   * @param destination
   *   the square holding the piece after the move.
+  * @param piece
+  *   the piece making the move.
   * @param promotion
   *   the replacement piece, when promoting a pawn.
   */
 case class NormalMove(
     start: Square,
     override val destination: Square,
+    piece: Piece,
     promotion: Option[Piece] = None
 ) extends Move

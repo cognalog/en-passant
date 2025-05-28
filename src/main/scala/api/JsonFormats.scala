@@ -41,7 +41,9 @@ object JsonFormats extends DefaultJsonProtocol {
     def write(board: Board): JsValue = JsString(board.toString)
     def read(value: JsValue): Board = value match {
       case JsString(str) =>
-        Board.standardFromMoveStrings(str.split(" ").toSeq) match {
+        Board.standardFromMoveStrings(
+          str.split(" ").filter(_.nonEmpty).toSeq
+        ) match {
           case scala.util.Success(board) => board
           case scala.util.Failure(ex) =>
             deserializationError(s"Failed to parse board: ${ex.getMessage}")

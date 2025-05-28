@@ -12,13 +12,13 @@ class KingTest extends AnyFunSuite with MockFactory {
     (sameColorPiece.isColor _).expects(Color.White).returning(true)
     assertResult(
       Set(
-        NormalMove(Square(3, 3), Square(2, 4)),
-        NormalMove(Square(3, 3), Square(4, 4)),
-        NormalMove(Square(3, 3), Square(4, 3)),
-        NormalMove(Square(3, 3), Square(4, 2)),
-        NormalMove(Square(3, 3), Square(3, 2)),
-        NormalMove(Square(3, 3), Square(2, 2)),
-        NormalMove(Square(3, 3), Square(2, 3)),
+        NormalMove(Square(3, 3), Square(2, 4), king),
+        NormalMove(Square(3, 3), Square(4, 4), king),
+        NormalMove(Square(3, 3), Square(4, 3), king),
+        NormalMove(Square(3, 3), Square(4, 2), king),
+        NormalMove(Square(3, 3), Square(3, 2), king),
+        NormalMove(Square(3, 3), Square(2, 2), king),
+        NormalMove(Square(3, 3), Square(2, 3), king),
         CastleMove(Square(1, 3)),
         CastleMove(Square(5, 3))
       )
@@ -34,11 +34,11 @@ class KingTest extends AnyFunSuite with MockFactory {
     )
     assertResult(
       Set(
-        NormalMove(Square(2, 1), Square(1, 1)),
-        NormalMove(Square(2, 1), Square(3, 1)),
-        NormalMove(Square(2, 1), Square(3, 2)),
-        NormalMove(Square(2, 1), Square(1, 2)),
-        NormalMove(Square(2, 1), Square(2, 2)),
+        NormalMove(Square(2, 1), Square(1, 1), King(Color.Black), true),
+        NormalMove(Square(2, 1), Square(3, 1), King(Color.Black)),
+        NormalMove(Square(2, 1), Square(3, 2), King(Color.Black)),
+        NormalMove(Square(2, 1), Square(1, 2), King(Color.Black)),
+        NormalMove(Square(2, 1), Square(2, 2), King(Color.Black)),
         CastleMove(Square(4, 1))
       )
     ) {
@@ -51,11 +51,11 @@ class KingTest extends AnyFunSuite with MockFactory {
     val king = King(Color.White)
     assertResult(
       Set(
-        NormalMove(Square(3, 1), Square(2, 2)),
-        NormalMove(Square(3, 1), Square(3, 2)),
-        NormalMove(Square(3, 1), Square(4, 2)),
-        NormalMove(Square(3, 1), Square(4, 1)),
-        NormalMove(Square(3, 1), Square(2, 1)),
+        NormalMove(Square(3, 1), Square(2, 2), king),
+        NormalMove(Square(3, 1), Square(3, 2), king),
+        NormalMove(Square(3, 1), Square(4, 2), king),
+        NormalMove(Square(3, 1), Square(4, 1), king),
+        NormalMove(Square(3, 1), Square(2, 1), king),
         CastleMove(Square(1, 1)),
         CastleMove(Square(5, 1))
       )
@@ -65,20 +65,21 @@ class KingTest extends AnyFunSuite with MockFactory {
   }
 
   test("testGetCaptures_castleAvailable") {
+    val king = King(Color.Black)
     val board = new StandardBoard(
       Map(Square(1, 1) -> Pawn(Color.White)),
       turnColor = Color.Black
     )
     assertResult(
       Set(
-        NormalMove(Square(2, 1), Square(1, 1)),
-        NormalMove(Square(2, 1), Square(3, 1)),
-        NormalMove(Square(2, 1), Square(3, 2)),
-        NormalMove(Square(2, 1), Square(1, 2)),
-        NormalMove(Square(2, 1), Square(2, 2))
+        NormalMove(Square(2, 1), Square(1, 1), king, true),
+        NormalMove(Square(2, 1), Square(3, 1), king),
+        NormalMove(Square(2, 1), Square(3, 2), king),
+        NormalMove(Square(2, 1), Square(1, 2), king),
+        NormalMove(Square(2, 1), Square(2, 2), king)
       )
     ) {
-      King(Color.Black).getCaptures(Square(2, 1), board)
+      king.getCaptures(Square(2, 1), board)
     }
   }
 }

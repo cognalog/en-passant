@@ -43,7 +43,7 @@ case class King(
       currentSquare.changeFile(-1).changeRank(1)
     ).filter(board.isInBounds)
       .filter(sq => board.pieceAt(sq).forall(!_.isColor(color)))
-      .map(NormalMove(currentSquare, _))
+      .map(dest => createMove(currentSquare, dest, board))
   }
 
   /** @return
@@ -58,7 +58,7 @@ case class King(
   override def getCaptures(currentSquare: Square, board: Board): Set[Move] =
     getLegalMoves(currentSquare, board)
       .filter {
-        case NormalMove(_, _, _) => true
-        case _                   => false
+        case NormalMove(_, _, _, _, _) => true
+        case _                                 => false
       }
 }

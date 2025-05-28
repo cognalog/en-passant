@@ -87,14 +87,18 @@ case class StandardBoard(
   }
 
   override def kingInCheck(color: Color): Boolean = {
-    val kingSquare: Option[Square] = pieces
-      .filter {
-        case (_, King(kingColor, _, _)) if kingColor == color => true
-        case _                                                => false
-      }
-      .keys
-      .headOption
-    kingSquare.fold(false)(getAttackers(_, Color.opposite(color)).nonEmpty)
+    val kingSquare = locatePiece(King(color)).headOption
+    kingSquare.exists(square =>
+      pieces.exists(piece_square =>
+        piece_square._2.isColor(Color.opposite(color)) &&
+          piece_square._2
+            .getCaptures(piece_square._1, this)
+            .exists {
+              case NormalMove(_, dest, _, _, _) => dest == square
+              case _                                    => false
+            }
+      )
+    )
   }
 
   /** Get the set of pieces attacking this square.
@@ -136,7 +140,7 @@ case class StandardBoard(
       King(opposingColor)
         .getLegalMoves(square, this)
         .filter {
-          case NormalMove(_, _, _) => true
+          case NormalMove(_, _, _, _, _) => true
           case _                   => false
         }
         .flatMap(move => pieceAt(move.destination))
@@ -155,7 +159,7 @@ case class StandardBoard(
 
   override def move(move: Move): Try[StandardBoard] = {
     move match {
-      case NormalMove(start, dest, promotion) =>
+      case NormalMove(start, dest, _, _, promotion) =>
         normalMove(start, dest, promotion)
       case CastleMove(dest) => castle(dest)
       case _ => Failure(new IllegalArgumentException(s"Malformed move: $move"))
@@ -211,12 +215,10 @@ case class StandardBoard(
     Success(newBoard)
   }
 
-  private def getEnPassantVictim(dest: Square): Option[Square] =
-    enPassant flatMap {
-      case Square(file, rank) if dest == Square(file, rank) =>
-        Some(Square(file, if (turnColor == Color.White) rank - 1 else rank + 1))
-      case _ => None
-    }
+  private def getEnPassantVictim(dest: Square): Option[Square] = {
+    if (!isEnPassantPossible(dest)) return None
+    Some(Square(dest.file, if (turnColor == Color.White) dest.rank - 1 else dest.rank + 1))
+  }
 
   /** Castle the king to the destination square, moving the rook as well
     * according to the rules.
@@ -353,18 +355,20 @@ case class StandardBoard(
 
   override def id: String = s"$hashCode"
 
-  override def locatePiece(piece: Piece): Set[Square] = pieces
-    .filter { case (_, p) =>
-      p.isColor(piece.color) && p.getClass == piece.getClass
-    }
-    .keys
-    .toSet
+  override def locatePiece(piece: Piece): Set[Square] = {
+    pieces
+      .filter(_._2.shortName == piece.shortName)
+      .filter(_._2.color == piece.color)
+      .keySet
+  }
 
-  override def isEnPassantPossible(square: Square): Boolean =
-    enPassant.fold(false)(_ == square)
+  override def isEnPassantPossible(square: Square): Boolean = {
+    enPassant.contains(square)
+  }
 
-  override def isCheckmate: Boolean =
+  override def isCheckmate: Boolean = {
     kingInCheck(turnColor) && getNextMoves.isEmpty
+  }
 
   override def isDraw: Boolean = isMaterialInsufficient || isStalemate
 

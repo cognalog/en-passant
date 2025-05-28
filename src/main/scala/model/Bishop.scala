@@ -38,7 +38,7 @@ case class Bishop(
         board,
         _.changeFile(-1).changeRank(-1)
       ))
-      .map(NormalMove(currentSquare, _))
+      .map(dest => createMove(currentSquare, dest, board))
   }
 
   /** @return

@@ -1,0 +1,11 @@
+.metals/
+.bloop/
+.bsp/
+target/
+project/target/
+project/project/
+.idea/
+*.iml
+.vscode/
+.git/
+.gitignore 

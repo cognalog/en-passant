@@ -7,7 +7,8 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import scala.concurrent.ExecutionContextExecutor
-import scala.io.StdIn
+import scala.concurrent.duration.Duration
+import scala.concurrent.Await
 
 object ChessServer {
   def main(args: Array[String]): Unit = {
@@ -22,14 +23,12 @@ object ChessServer {
     val chessService = new ChessService(botPlayer)
 
     val bindingFuture =
-      Http().newServerAt("localhost", 8080).bind(chessService.routes)
+      Http().newServerAt("0.0.0.0", 8080).bind(chessService.routes)
     println(
-      s"Server now online at http://localhost:8080/\nPress RETURN to stop..."
+      s"Server now online at http://0.0.0.0:8080/"
     )
-    StdIn.readLine()
 
-    bindingFuture
-      .flatMap(_.unbind())
-      .onComplete(_ => system.terminate())
+    // Keep the server running indefinitely
+    Await.result(system.whenTerminated, Duration.Inf)
   }
 }

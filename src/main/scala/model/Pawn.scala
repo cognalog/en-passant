@@ -79,6 +79,8 @@ case class Pawn(
     */
   override def shortName: Char = 'P'
 
+  override def standardName: String = ""
+
   override val canMateWithKing: Boolean = true
 
   override val pointValue: Int = 1

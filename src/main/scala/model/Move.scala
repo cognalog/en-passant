@@ -88,9 +88,11 @@ object Move {
 
 /** A chess move for a piece on a board.
   */
-trait Move {
+sealed trait Move {
   // The square where a piece is moved.
   def destination: Square
+  // The standard notation for the move.
+  def toStandardNotation: String
 }
 
 /** A castling move where the king/rook move in tandem.
@@ -98,7 +100,10 @@ trait Move {
   * @param destination
   *   the destination square for the King.
   */
-case class CastleMove(override val destination: Square) extends Move
+case class CastleMove(override val destination: Square) extends Move {
+  override def toStandardNotation: String =
+    if (destination.file == 7) "O-O" else "O-O-O"
+}
 
 /** A "normal" move for a piece from one square to another square.
   *
@@ -117,4 +122,13 @@ case class NormalMove(
     piece: Piece,
     isCapture: Boolean = false,
     promotion: Option[Piece] = None
-) extends Move
+) extends Move {
+  override def toStandardNotation: String = {
+    val maybeStartSquare =
+      if (piece.isInstanceOf[Pawn] && !isCapture) "" else start.standardName
+    val maybeX = if (isCapture) "x" else ""
+    val maybePromotion = promotion.map(p => s"=${p.standardName}").getOrElse("")
+    // Note: we always include the disambiguating start square because doing otherwise requires a board state
+    s"${piece.standardName}${maybeStartSquare}${maybeX}${destination.standardName}${maybePromotion}"
+  }
+}

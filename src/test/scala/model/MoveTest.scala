@@ -140,4 +140,51 @@ class MoveTest extends AnyFunSuite {
       )
     }
   }
+  test("testToStandardNotation_castle_kingside") {
+    assertResult("O-O") {
+      CastleMove(Square(7, 8)).toStandardNotation
+    }
+    assertResult("O-O") {
+      CastleMove(Square(7, 1)).toStandardNotation
+    }
+  }
+
+  test("testToStandardNotation_castle_queenside") {
+    assertResult("O-O-O") {
+      CastleMove(Square(3, 1)).toStandardNotation  
+    }
+    assertResult("O-O-O") {
+      CastleMove(Square(3, 8)).toStandardNotation  
+    }
+  }
+
+  test("testToStandardNotation_normal_pawn") {
+    assertResult("e4") {
+      NormalMove(Square(5, 2), Square(5, 4), Pawn(Color.White)).toStandardNotation
+    }
+  }
+
+  test("testToStandardNotation_normal_piece") {
+    assertResult("Ne4d6") {
+      NormalMove(Square(5, 4), Square(4, 6), Knight(Color.White)).toStandardNotation
+    }
+  }
+
+  test("testToStandardNotation_capture") {
+    assertResult("Ne4xd6") {
+      NormalMove(Square(5, 4), Square(4, 6), Knight(Color.White), isCapture = true).toStandardNotation
+    }
+  }
+
+  test("testToStandardNotation_promotion") {
+    assertResult("e8=Q") {
+      NormalMove(Square(5, 7), Square(5, 8), Pawn(Color.White), promotion = Some(Queen(Color.White))).toStandardNotation
+    }
+  }
+
+  test("testToStandardNotation_capture_and_promotion") {
+    assertResult("e7xf8=Q") {
+      NormalMove(Square(5, 7), Square(6, 8), Pawn(Color.White), isCapture = true, promotion = Some(Queen(Color.White))).toStandardNotation
+    }
+  }
 }

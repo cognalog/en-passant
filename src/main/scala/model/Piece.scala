@@ -33,6 +33,12 @@ trait Piece {
   def shortName: Char
 
   /** @return
+    *   the standard notation for the piece. Usually the short name, except for
+    *   pawns.
+    */
+  def standardName: String = shortName.toString
+
+  /** @return
     *   a copy of the piece where hasMoved will return true
     */
   def updateHasMoved(): Piece
@@ -113,14 +119,22 @@ trait Piece {
 
   /** Helper method to create a NormalMove with the correct isCapture flag
     *
-    * @param start the starting square
-    * @param dest the destination square
-    * @param board the current board state
-    * @return a NormalMove with isCapture set based on whether there's a piece at dest
+    * @param start
+    *   the starting square
+    * @param dest
+    *   the destination square
+    * @param board
+    *   the current board state
+    * @return
+    *   a NormalMove with isCapture set based on whether there's a piece at dest
     */
-  protected def createMove(start: Square, dest: Square, board: Board): NormalMove = {
-    val isCapture = board.pieceAt(dest).exists(!_.isColor(color)) || 
-                   (this.isInstanceOf[Pawn] && board.isEnPassantPossible(dest))
+  protected def createMove(
+      start: Square,
+      dest: Square,
+      board: Board
+  ): NormalMove = {
+    val isCapture = board.pieceAt(dest).exists(!_.isColor(color)) ||
+      (this.isInstanceOf[Pawn] && board.isEnPassantPossible(dest))
     NormalMove(start, dest, this, isCapture)
   }
 }

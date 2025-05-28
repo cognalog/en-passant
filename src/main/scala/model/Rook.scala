@@ -22,7 +22,7 @@ case class Rook(
       getAvailableLinearSquares(currentSquare, board, _.changeFile(-1)) ++
       getAvailableLinearSquares(currentSquare, board, _.changeRank(1)) ++
       getAvailableLinearSquares(currentSquare, board, _.changeRank(-1)))
-      .map(NormalMove(currentSquare, _, this))
+      .map(dest => createMove(currentSquare, dest, board))
   }
 
   /** @return

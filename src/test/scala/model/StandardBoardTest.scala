@@ -461,7 +461,7 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
     assertResult(
       Success(StandardBoard(Map(Square(1, 8) -> Queen(Black)), White))
     ) {
-      board.move(NormalMove(Square(1, 7), Square(1, 8), pawn, Some(promotionPiece)))
+      board.move(NormalMove(Square(1, 7), Square(1, 8), pawn, promotion = Some(promotionPiece)))
     }
   }
 
@@ -498,7 +498,7 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
         )
       ),
       (
-        NormalMove(Square(7, 1), Square(8, 1), king),
+        NormalMove(Square(7, 1), Square(8, 1), king, true),
         StandardBoard(
           Map(
             Square(8, 1) -> King(White, hasMoved = true),
@@ -525,7 +525,7 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
         )
       ),
       (
-        NormalMove(Square(7, 2), Square(7, 4), queen),
+        NormalMove(Square(7, 2), Square(7, 4), queen, true),
         StandardBoard(
           Map(
             Square(7, 1) -> king,
@@ -552,7 +552,7 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
         )
       ),
       (
-        NormalMove(Square(8, 3), Square(7, 4), pawn),
+        NormalMove(Square(8, 3), Square(7, 4), pawn, true),
         StandardBoard(
           Map(
             Square(7, 1) -> king,
@@ -629,7 +629,7 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
         )
       ),
       (
-        NormalMove(Square(4, 3), Square(7, 3), queen),
+        NormalMove(Square(4, 3), Square(7, 3), queen, true),
         StandardBoard(
           Map(
             Square(7, 1) -> king,
@@ -708,7 +708,7 @@ class StandardBoardTest extends AnyFunSuite with MockFactory {
         )
       ),
       (
-        NormalMove(Square(8, 1), Square(8, 2), rook),
+        NormalMove(Square(8, 1), Square(8, 2), rook, true),
         StandardBoard(
           Map(
             Square(5, 1) -> king,

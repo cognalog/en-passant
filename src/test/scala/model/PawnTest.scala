@@ -65,7 +65,7 @@ class PawnTest extends AnyFunSuite {
     assertResult(
       Set(
         NormalMove(Square(4, 2), Square(4, 3), pawn),
-        NormalMove(Square(4, 2), Square(3, 3), pawn)
+        NormalMove(Square(4, 2), Square(3, 3), pawn, true)
       )
     ) {
       pawn.getLegalMoves(Square(4, 2), board)
@@ -78,7 +78,7 @@ class PawnTest extends AnyFunSuite {
     assertResult(
       Set(
         NormalMove(Square(4, 2), Square(4, 3), pawn),
-        NormalMove(Square(4, 2), Square(5, 3), pawn)
+        NormalMove(Square(4, 2), Square(5, 3), pawn, true)
       )
     ) {
       pawn.getLegalMoves(Square(4, 2), board)
@@ -91,7 +91,7 @@ class PawnTest extends AnyFunSuite {
     assertResult(
       Set(
         NormalMove(Square(4, 7), Square(4, 6), pawn),
-        NormalMove(Square(4, 7), Square(5, 6), pawn)
+        NormalMove(Square(4, 7), Square(5, 6), pawn, true)
       )
     ) {
       pawn.getLegalMoves(Square(4, 7), board)
@@ -104,7 +104,7 @@ class PawnTest extends AnyFunSuite {
     assertResult(
       Set(
         NormalMove(Square(4, 2), Square(4, 3), pawn),
-        NormalMove(Square(4, 2), Square(5, 3), pawn)
+        NormalMove(Square(4, 2), Square(5, 3), pawn, true)
       )
     ) {
       pawn.getLegalMoves(Square(4, 2), board)
@@ -117,14 +117,14 @@ class PawnTest extends AnyFunSuite {
 
     assertResult(
       Set(
-        NormalMove(Square(5, 7), Square(5, 8), pawn, Some(Knight(Color.White))),
-        NormalMove(Square(5, 7), Square(5, 8), pawn, Some(Bishop(Color.White))),
-        NormalMove(Square(5, 7), Square(5, 8), pawn, Some(Rook(Color.White))),
-        NormalMove(Square(5, 7), Square(5, 8), pawn, Some(Queen(Color.White))),
-        NormalMove(Square(5, 7), Square(4, 8), pawn, Some(Knight(Color.White))),
-        NormalMove(Square(5, 7), Square(4, 8), pawn, Some(Bishop(Color.White))),
-        NormalMove(Square(5, 7), Square(4, 8), pawn, Some(Rook(Color.White))),
-        NormalMove(Square(5, 7), Square(4, 8), pawn, Some(Queen(Color.White)))
+        NormalMove(Square(5, 7), Square(5, 8), pawn, promotion = Some(Knight(Color.White))),
+        NormalMove(Square(5, 7), Square(5, 8), pawn, promotion = Some(Bishop(Color.White))),
+        NormalMove(Square(5, 7), Square(5, 8), pawn, promotion = Some(Rook(Color.White))),
+        NormalMove(Square(5, 7), Square(5, 8), pawn, promotion = Some(Queen(Color.White))),
+        NormalMove(Square(5, 7), Square(4, 8), pawn, true, Some(Knight(Color.White))),
+        NormalMove(Square(5, 7), Square(4, 8), pawn, true, Some(Bishop(Color.White))),
+        NormalMove(Square(5, 7), Square(4, 8), pawn, true, Some(Rook(Color.White))),
+        NormalMove(Square(5, 7), Square(4, 8), pawn, true, Some(Queen(Color.White)))
       )
     ) {
       pawn.getLegalMoves(Square(5, 7), board)
@@ -136,14 +136,14 @@ class PawnTest extends AnyFunSuite {
     val pawn = Pawn(Color.Black)
     assertResult(
       Set(
-        NormalMove(Square(5, 2), Square(5, 1), pawn, Some(Knight(Color.Black))),
-        NormalMove(Square(5, 2), Square(5, 1), pawn, Some(Bishop(Color.Black))),
-        NormalMove(Square(5, 2), Square(5, 1), pawn, Some(Rook(Color.Black))),
-        NormalMove(Square(5, 2), Square(5, 1), pawn, Some(Queen(Color.Black))),
-        NormalMove(Square(5, 2), Square(4, 1), pawn, Some(Knight(Color.Black))),
-        NormalMove(Square(5, 2), Square(4, 1), pawn, Some(Bishop(Color.Black))),
-        NormalMove(Square(5, 2), Square(4, 1), pawn, Some(Rook(Color.Black))),
-        NormalMove(Square(5, 2), Square(4, 1), pawn, Some(Queen(Color.Black)))
+        NormalMove(Square(5, 2), Square(5, 1), pawn, promotion = Some(Knight(Color.Black))),
+        NormalMove(Square(5, 2), Square(5, 1), pawn, promotion = Some(Bishop(Color.Black))),
+        NormalMove(Square(5, 2), Square(5, 1), pawn, promotion = Some(Rook(Color.Black))),
+        NormalMove(Square(5, 2), Square(5, 1), pawn, promotion = Some(Queen(Color.Black))),
+        NormalMove(Square(5, 2), Square(4, 1), pawn, true, Some(Knight(Color.Black))),
+        NormalMove(Square(5, 2), Square(4, 1), pawn, true, Some(Bishop(Color.Black))),
+        NormalMove(Square(5, 2), Square(4, 1), pawn, true, Some(Rook(Color.Black))),
+        NormalMove(Square(5, 2), Square(4, 1), pawn, true, Some(Queen(Color.Black)))
       )
     ) {
       pawn.getLegalMoves(Square(5, 2), board)

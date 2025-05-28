@@ -12,7 +12,7 @@ class KnightTest extends AnyFunSuite {
     val knight = Knight(Color.White)
     assertResult(
       Set(
-        NormalMove(Square(4, 4), Square(6, 5), knight),
+        NormalMove(Square(4, 4), Square(6, 5), knight, true),
         NormalMove(Square(4, 4), Square(2, 5), knight),
         NormalMove(Square(4, 4), Square(5, 2), knight),
         NormalMove(Square(4, 4), Square(3, 6), knight),

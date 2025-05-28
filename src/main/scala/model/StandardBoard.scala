@@ -94,8 +94,8 @@ case class StandardBoard(
           piece_square._2
             .getCaptures(piece_square._1, this)
             .exists {
-              case NormalMove(_, dest, _, _) => dest == square
-              case _                         => false
+              case NormalMove(_, dest, _, _, _) => dest == square
+              case _                                    => false
             }
       )
     )
@@ -140,7 +140,7 @@ case class StandardBoard(
       King(opposingColor)
         .getLegalMoves(square, this)
         .filter {
-          case NormalMove(_, _, _, _) => true
+          case NormalMove(_, _, _, _, _) => true
           case _                   => false
         }
         .flatMap(move => pieceAt(move.destination))
@@ -159,7 +159,7 @@ case class StandardBoard(
 
   override def move(move: Move): Try[StandardBoard] = {
     move match {
-      case NormalMove(start, dest, piece, promotion) =>
+      case NormalMove(start, dest, _, _, promotion) =>
         normalMove(start, dest, promotion)
       case CastleMove(dest) => castle(dest)
       case _ => Failure(new IllegalArgumentException(s"Malformed move: $move"))

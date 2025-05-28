@@ -64,7 +64,20 @@ object Move {
             )
           startSquares.headOption match {
             case Some(start) =>
-              Success(NormalMove(start, parsedDest, pieceToFind, promotionPiece))
+              val isCapture = move.contains('x') || board
+                .pieceAt(parsedDest)
+                .exists(!_.isColor(board.turnColor)) ||
+                (pieceToFind
+                  .isInstanceOf[Pawn] && board.isEnPassantPossible(parsedDest))
+              Success(
+                NormalMove(
+                  start,
+                  parsedDest,
+                  pieceToFind,
+                  isCapture,
+                  promotionPiece
+                )
+              )
             case None =>
               Failure(new IllegalArgumentException(s"Impossible move: $move"))
           }
@@ -102,5 +115,6 @@ case class NormalMove(
     start: Square,
     override val destination: Square,
     piece: Piece,
+    isCapture: Boolean = false,
     promotion: Option[Piece] = None
 ) extends Move

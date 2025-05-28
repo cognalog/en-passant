@@ -67,7 +67,7 @@ class MoveTest extends AnyFunSuite {
   }
 
   test("testFromStandardNotation_pawnCaptureVsMove") {
-    assertResult(Success(NormalMove(Square(4, 4), Square(5, 5), Pawn(Color.White)))) {
+    assertResult(Success(NormalMove(Square(4, 4), Square(5, 5), Pawn(Color.White), true))) {
       Move.fromStandardNotation(
         "dxe5",
         StandardBoard(
@@ -127,7 +127,7 @@ class MoveTest extends AnyFunSuite {
 
   test("testFromStandardNotation_promotion") {
     assertResult(
-      Success(NormalMove(Square(5, 7), Square(5, 8), Pawn(Color.White), Some(Queen(Color.White))))
+      Success(NormalMove(Square(5, 7), Square(5, 8), Pawn(Color.White), promotion = Some(Queen(Color.White))))
     ) {
       Move.fromStandardNotation(
         "e8=Q+",

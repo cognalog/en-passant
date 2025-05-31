@@ -87,28 +87,6 @@ object Frontend {
             println(s"Current position FEN: ${g.fen()}") // Debug log
             println(s"Current turn: ${g.turn()}") // Debug log
 
-            // Try different move formats until one works
-            def tryMove(moveAttempt: js.Dynamic): Option[js.Dynamic] = {
-              println(
-                s"Attempting move with: ${js.Dynamic.global.JSON.stringify(moveAttempt)}"
-              ) // Debug log
-              val move = g.move(moveAttempt)
-              println(
-                s"Move result: ${if (move != null) "success" else "failed"}"
-              ) // Debug log
-              if (move != null) Some(move.asInstanceOf[js.Dynamic]) else None
-            }
-
-            // Handle castling moves directly
-            if (moveStr == "O-O" || moveStr == "O-O-O") {
-              tryMove(js.Dynamic.literal(san = moveStr)).foreach { move =>
-                moveHistory = moveHistory :+ move.san.asInstanceOf[String]
-                board.foreach(_.position(g.fen()))
-                updateGameStatus()
-              }
-              return
-            }
-
             // If direct move failed, try to parse it
             val movePattern =
               """([NBRQK])?([a-h][1-8])?x?([a-h][1-8])(?:=([NBRQ]))?""".r
@@ -148,9 +126,9 @@ object Frontend {
                     )
                     .toSeq
                 } else {
-                  // For pieces, try multiple formats
-                  val moveAttempts = Seq(
-                    // Try with explicit from-to if start square is provided
+                  // For pieces, try multiple formats in order of preference
+                  Seq(
+                    // Try with explicit from-to if start square is provided (most reliable)
                     Option(start).map(s =>
                       js.Dynamic.literal(
                         from = s.asInstanceOf[js.Any],
@@ -174,19 +152,24 @@ object Frontend {
                       )
                     )
                   ).flatten
-
-                  println(
-                    s"Piece move attempts: ${moveAttempts.map(m => js.Dynamic.global.JSON.stringify(m)).mkString(", ")}"
-                  ) // Debug log
-                  moveAttempts
                 }
 
-                println(
-                  s"Attempting moves: ${attempts.map(m => js.Dynamic.global.JSON.stringify(m)).mkString(", ")}"
-                ) // Debug log
+                // Try each move format until one succeeds
+                val moveResult = attempts.foldLeft[Option[js.Dynamic]](None) { (acc, moveAttempt) =>
+                  acc.orElse {
+                    println(
+                      s"Attempting move with: ${js.Dynamic.global.JSON.stringify(moveAttempt)}"
+                    ) // Debug log
+                    val move = g.move(moveAttempt)
+                    println(
+                      s"Move result: ${if (move != null) "success" else "failed"}"
+                    ) // Debug log
+                    if (move != null) Some(move.asInstanceOf[js.Dynamic])
+                    else None
+                  }
+                }
 
-                val successfulMove = attempts.flatMap(tryMove).headOption
-                successfulMove match {
+                moveResult match {
                   case Some(move) =>
                     moveHistory = moveHistory :+ move.san.asInstanceOf[String]
                     board.foreach(_.position(g.fen()))

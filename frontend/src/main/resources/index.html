@@ -89,6 +89,8 @@
 
         const board = Chessboard('board', config);
 
+        let moveHistory = [];
+
         function onDragStart(source, piece) {
             // Only allow white pieces to be dragged when it's white's turn
             // and black pieces when it's black's turn
@@ -111,9 +113,12 @@
             // If illegal move, snap back
             if (move === null) return 'snapback';
 
+            // Add move to history in standard algebraic notation
+            moveHistory.push(move.san);
+
             // Make computer move after a short delay
             if (!game.game_over()) {
-                setTimeout(makeRandomMove, 250);
+                setTimeout(makeBotMove, 250);
             }
             updateStatus();
         }
@@ -122,12 +127,59 @@
             board.position(game.fen());
         }
 
-        function makeRandomMove() {
-            const moves = game.moves();
-            const move = moves[Math.floor(Math.random() * moves.length)];
-            game.move(move);
-            board.position(game.fen());
-            updateStatus();
+        async function makeBotMove() {
+            try {
+                const response = await fetch('/api/chess/move', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        board: moveHistory.join(' '),
+                        color: 'Black'  // Bot always plays as Black
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const moveStr = data.move;
+
+                if (moveStr) {
+                    // Handle castling moves directly
+                    if (moveStr === "O-O" || moveStr === "O-O-O") {
+                        const move = game.move(moveStr);
+                        if (move) {
+                            moveHistory.push(move.san);
+                            board.position(game.fen());
+                            updateStatus();
+                        }
+                        return;
+                    }
+
+                    // For normal moves, extract just the essential parts:
+                    // 1. The piece letter (if any)
+                    // 2. The destination square
+                    // 3. Any capture or promotion information
+                    const match = moveStr.match(/([NBRQK])?([a-h][1-8])?([a-h][1-8])(=[NBRQ])?/);
+                    if (match) {
+                        const [_, piece = "", , dest, promotion = ""] = match;
+                        const simplifiedMove = piece + dest + promotion;
+
+                        const move = game.move(simplifiedMove);
+                        if (move) {
+                            moveHistory.push(move.san);
+                            board.position(game.fen());
+                            updateStatus();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error making bot move:', error);
+                document.getElementById('status').textContent = 'Error: Failed to get bot move';
+            }
         }
 
         function updateStatus() {
@@ -151,14 +203,19 @@
         document.getElementById('startBtn').addEventListener('click', () => {
             game.reset();
             board.start();
+            moveHistory = [];
             updateStatus();
         });
 
         document.getElementById('undoBtn').addEventListener('click', () => {
-            game.undo();
-            game.undo(); // Undo twice to undo both player and computer moves
-            board.position(game.fen());
-            updateStatus();
+            if (moveHistory.length >= 2) {
+                game.undo();
+                game.undo(); // Undo twice to undo both player and computer moves
+                moveHistory.pop(); // Remove computer's move
+                moveHistory.pop(); // Remove player's move
+                board.position(game.fen());
+                updateStatus();
+            }
         });
 
         // Initialize status

@@ -8,6 +8,7 @@ import scala.scalajs.js.annotation.{JSExportTopLevel, JSImport}
 object Frontend {
   private var board: Option[Chessboard] = None
   private var game: Option[Chess] = None
+  private var moveHistory: List[String] = List.empty
   private val startPosition =
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
@@ -55,6 +56,8 @@ object Frontend {
             )
 
             if (move != null) {
+              // Add move to history in SAN format
+              moveHistory = moveHistory :+ move.san.asInstanceOf[String]
               // If move was legal, make bot move
               makeBotMove()
               s"$source-$target"
@@ -77,24 +80,125 @@ object Frontend {
   private def makeBotMove(): Unit = {
     game.foreach { g =>
       if (!g.game_over()) {
-        val fen = g.fen()
         ApiClient
-          .getBotMove(fen)
+          .getBotMove(moveHistory.mkString(" "))
           .`then`[Unit]({ moveStr =>
-            // Parse the move string (e.g., "e7-e5") into from/to
-            val parts = moveStr.split("-")
-            if (parts.length == 2) {
-              val move = g.move(
-                js.Dynamic.literal(
-                  from = parts(0),
-                  to = parts(1),
-                  promotion = "q" // Always promote to queen for simplicity
-                )
-              )
-              if (move != null) {
+            println(s"Received move from backend: $moveStr") // Debug log
+            println(s"Current position FEN: ${g.fen()}") // Debug log
+            println(s"Current turn: ${g.turn()}") // Debug log
+
+            // Try different move formats until one works
+            def tryMove(moveAttempt: js.Dynamic): Option[js.Dynamic] = {
+              println(
+                s"Attempting move with: ${js.Dynamic.global.JSON.stringify(moveAttempt)}"
+              ) // Debug log
+              val move = g.move(moveAttempt)
+              println(
+                s"Move result: ${if (move != null) "success" else "failed"}"
+              ) // Debug log
+              if (move != null) Some(move.asInstanceOf[js.Dynamic]) else None
+            }
+
+            // Handle castling moves directly
+            if (moveStr == "O-O" || moveStr == "O-O-O") {
+              tryMove(js.Dynamic.literal(san = moveStr)).foreach { move =>
+                moveHistory = moveHistory :+ move.san.asInstanceOf[String]
                 board.foreach(_.position(g.fen()))
                 updateGameStatus()
               }
+              return
+            }
+
+            // If direct move failed, try to parse it
+            val movePattern =
+              """([NBRQK])?([a-h][1-8])?x?([a-h][1-8])(?:=([NBRQ]))?""".r
+            moveStr match {
+              case movePattern(piece, start, dest, promotion) =>
+                println(
+                  s"Parsed move: piece=$piece, start=$start, dest=$dest, promotion=$promotion"
+                ) // Debug log
+
+                // For pawn moves, try all possible source squares
+                val attempts = if (piece == null) {
+                  // Get all legal moves
+                  val legalMoves = g
+                    .moves(js.Dynamic.literal(verbose = true))
+                    .asInstanceOf[js.Array[js.Dynamic]]
+                  println(
+                    s"Legal moves: ${js.Dynamic.global.JSON.stringify(legalMoves)}"
+                  ) // Debug log
+
+                  // Find moves that match our destination
+                  val matchingMoves =
+                    legalMoves.filter(m => m.to.asInstanceOf[String] == dest)
+                  println(
+                    s"Matching moves: ${js.Dynamic.global.JSON.stringify(matchingMoves)}"
+                  ) // Debug log
+
+                  matchingMoves
+                    .map(m =>
+                      js.Dynamic.literal(
+                        from = m.from.asInstanceOf[String],
+                        to = m.to.asInstanceOf[String],
+                        promotion = Option(promotion)
+                          .map(_.tail)
+                          .getOrElse("q")
+                          .asInstanceOf[js.Any]
+                      )
+                    )
+                    .toSeq
+                } else {
+                  // For pieces, try multiple formats
+                  val moveAttempts = Seq(
+                    // Try with explicit from-to if start square is provided
+                    Option(start).map(s =>
+                      js.Dynamic.literal(
+                        from = s.asInstanceOf[js.Any],
+                        to = dest.asInstanceOf[js.Any]
+                      )
+                    ),
+                    // Try SAN format without start square
+                    Some(
+                      js.Dynamic.literal(
+                        san =
+                          s"${piece}${dest}${Option(promotion).getOrElse("")}"
+                            .asInstanceOf[js.Any]
+                      )
+                    ),
+                    // Try SAN format with start square if provided
+                    Option(start).map(s =>
+                      js.Dynamic.literal(
+                        san =
+                          s"${piece}${s}${dest}${Option(promotion).getOrElse("")}"
+                            .asInstanceOf[js.Any]
+                      )
+                    )
+                  ).flatten
+
+                  println(
+                    s"Piece move attempts: ${moveAttempts.map(m => js.Dynamic.global.JSON.stringify(m)).mkString(", ")}"
+                  ) // Debug log
+                  moveAttempts
+                }
+
+                println(
+                  s"Attempting moves: ${attempts.map(m => js.Dynamic.global.JSON.stringify(m)).mkString(", ")}"
+                ) // Debug log
+
+                val successfulMove = attempts.flatMap(tryMove).headOption
+                successfulMove match {
+                  case Some(move) =>
+                    moveHistory = moveHistory :+ move.san.asInstanceOf[String]
+                    board.foreach(_.position(g.fen()))
+                    updateGameStatus()
+                  case None =>
+                    println(
+                      s"All move attempts failed for: $moveStr"
+                    ) // Debug log
+                }
+
+              case _ =>
+                println(s"Move didn't match pattern: $moveStr") // Debug log
             }
           })
       }
@@ -149,6 +253,7 @@ object Frontend {
             game.foreach { g =>
               g.load(startPosition)
               board.foreach(_.position(startPosition))
+              moveHistory = List.empty
               updateGameStatus()
             }
           }

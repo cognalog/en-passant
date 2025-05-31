@@ -8,7 +8,7 @@ import scala.scalajs.js.Promise
 object ApiClient {
   private val baseUrl = "http://localhost:8080/api/chess"
 
-  def getBotMove(fen: String): Promise[String] = {
+  def getBotMove(moves: String): Promise[String] = {
     new Promise[String]((resolve, reject) => {
       val xhr = new dom.XMLHttpRequest()
       xhr.open("POST", s"$baseUrl/move")
@@ -28,7 +28,7 @@ object ApiClient {
       xhr.send(
         JSON.stringify(
           js.Dynamic.literal(
-            board = fen,
+            board = moves,
             color = "Black" // Bot always plays as Black
           )
         )

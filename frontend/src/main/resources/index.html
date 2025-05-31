@@ -48,15 +48,122 @@
             font-size: 18px;
             color: #666;
         }
+
+        /* Ensure the board container has a specific size */
+        #board {
+            width: 400px;
+            margin: 0 auto;
+        }
     </style>
 </head>
 
 <body>
-    <div id="app"></div>
+    <div class="chess-app">
+        <h1>En Passant Chess Bot</h1>
+        <div id="board"></div>
+        <div class="controls">
+            <button id="startBtn">New Game</button>
+            <button id="undoBtn">Undo</button>
+        </div>
+        <div class="game-info">
+            <p id="status">Game in progress...</p>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-    <script type="module" src="/main.js"></script>
+    <script type="module">
+        // Initialize the chess game
+        const game = new Chess();
+
+        // Configure the board
+        const config = {
+            draggable: true,
+            position: 'start',
+            pieceTheme: 'https://chessboardjs.com/img/chesspieces/alpha/{piece}.png',
+            onDragStart: onDragStart,
+            onDrop: onDrop,
+            onSnapEnd: onSnapEnd
+        };
+
+        const board = Chessboard('board', config);
+
+        function onDragStart(source, piece) {
+            // Only allow white pieces to be dragged when it's white's turn
+            // and black pieces when it's black's turn
+            if (game.game_over()) return false;
+
+            if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+                (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+                return false;
+            }
+        }
+
+        function onDrop(source, target) {
+            // Try to make the move
+            const move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q' // Always promote to queen for simplicity
+            });
+
+            // If illegal move, snap back
+            if (move === null) return 'snapback';
+
+            // Make computer move after a short delay
+            if (!game.game_over()) {
+                setTimeout(makeRandomMove, 250);
+            }
+            updateStatus();
+        }
+
+        function onSnapEnd() {
+            board.position(game.fen());
+        }
+
+        function makeRandomMove() {
+            const moves = game.moves();
+            const move = moves[Math.floor(Math.random() * moves.length)];
+            game.move(move);
+            board.position(game.fen());
+            updateStatus();
+        }
+
+        function updateStatus() {
+            let status = '';
+
+            if (game.in_checkmate()) {
+                status = 'Game over, ' + (game.turn() === 'w' ? 'black' : 'white') + ' wins by checkmate.';
+            } else if (game.in_draw()) {
+                status = 'Game over, drawn position';
+            } else {
+                status = (game.turn() === 'w' ? 'White' : 'Black') + ' to move';
+                if (game.in_check()) {
+                    status += ', ' + (game.turn() === 'w' ? 'white' : 'black') + ' is in check';
+                }
+            }
+
+            document.getElementById('status').textContent = status;
+        }
+
+        // Event listeners for buttons
+        document.getElementById('startBtn').addEventListener('click', () => {
+            game.reset();
+            board.start();
+            updateStatus();
+        });
+
+        document.getElementById('undoBtn').addEventListener('click', () => {
+            game.undo();
+            game.undo(); // Undo twice to undo both player and computer moves
+            board.position(game.fen());
+            updateStatus();
+        });
+
+        // Initialize status
+        updateStatus();
+    </script>
 </body>
 
 </html>

@@ -36,11 +36,10 @@ lazy val frontend = project
       "org.scala-js" %%% "scalajs-dom" % "2.4.0",
       "com.raquo" %%% "laminar" % "15.0.1"
     ),
+    Compile / fastLinkJS / artifactPath := baseDirectory.value / "target" / "scala-2.13" / "en-passant-frontend-fastopt" / "main.js",
     scalaJSLinkerConfig ~= {
       _.withModuleKind(ModuleKind.ESModule)
-        .withModuleSplitStyle(
-          ModuleSplitStyle.SmallModulesFor(List("enpassant"))
-        )
+        .withModuleSplitStyle(ModuleSplitStyle.FewestModules)
     }
   )
 

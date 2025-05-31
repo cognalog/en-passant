@@ -9,22 +9,14 @@
 </head>
 
 <body>
-    <div class="chess-app">
-        <h1>En Passant Chess Bot</h1>
-        <div id="board"></div>
-        <div class="controls">
-            <button id="startBtn">New Game</button>
-            <button id="undoBtn">Undo</button>
-        </div>
-        <div class="game-info">
-            <p id="status">Game in progress...</p>
-        </div>
+    <div id="app">
+        <!-- Laminar will mount the application here -->
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-    <script type="module" src="chess.js"></script>
+    <script type="module" src="main.js"></script>
 </body>
 
 </html>

@@ -30,6 +30,9 @@ object Frontend {
     val config = ChessboardConfig(
       position = startPosition,
       draggable = js.defined(true),
+      pieceTheme = js.defined(
+        "https://chessboardjs.com/img/chesspieces/alpha/{piece}.png"
+      ),
       onDragStart =
         js.defined({ (source: String, piece: String, _: js.Object) =>
           game match {

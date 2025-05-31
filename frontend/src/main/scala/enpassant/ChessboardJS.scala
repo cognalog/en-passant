@@ -17,6 +17,7 @@ class Chessboard(element: String, config: ChessboardConfig) extends js.Object {
 trait ChessboardConfig extends js.Object {
   var position: js.UndefOr[String] = js.undefined
   var draggable: js.UndefOr[Boolean] = js.undefined
+  var pieceTheme: js.UndefOr[String] = js.undefined
   var onDragStart
       : js.UndefOr[js.Function3[String, String, js.Object, Boolean]] =
     js.undefined
@@ -29,6 +30,7 @@ object ChessboardConfig {
   def apply(
       position: js.UndefOr[String] = js.undefined,
       draggable: js.UndefOr[Boolean] = js.undefined,
+      pieceTheme: js.UndefOr[String] = js.undefined,
       onDragStart: js.UndefOr[
         js.Function3[String, String, js.Object, Boolean]
       ] = js.undefined,
@@ -39,6 +41,7 @@ object ChessboardConfig {
     val config = js.Object().asInstanceOf[ChessboardConfig]
     config.position = position
     config.draggable = draggable
+    config.pieceTheme = pieceTheme
     config.onDragStart = onDragStart
     config.onDrop = onDrop
     config.onSnapEnd = onSnapEnd

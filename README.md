@@ -6,65 +6,46 @@ combined with modular heuristics.
 ## System requirements
 
 * Docker
+* Docker Compose
 
-## Server turn-up
+## Running the application
 
 ```shell
-# Build and run the Docker container
-docker build -t en-passant .
-docker run -p 8080:8080 en-passant
+# Build and run both frontend and backend using Docker Compose
+docker-compose up --build
 
-# The server will be available at http://localhost:8080
+# The application will be available at http://localhost:3000
 ```
 
-## API Endpoints
+## Playing against the bot
 
-The server exposes the following REST endpoints:
+1. Open http://localhost:3000 in your web browser
+2. You play as White, and the bot plays as Black
+3. Make your move by dragging and dropping pieces
+4. The bot will automatically respond with its move
+5. The game status is shown below the board
 
-### POST /api/chess/move
+## Features
 
-Get the bot's next move for a given board position. 
+- Beautiful, responsive chess GUI
+- Automatic move validation
+- Real-time game status updates
+- Visual move highlighting
+- Automatic pawn promotion to queen
+- Support for all standard chess moves including castling and en passant
 
-```powershell
-# Example using PowerShell
-Invoke-RestMethod -Uri "http://localhost:8080/api/chess/move" -Method Post -Headers @{"Content-Type"="application/json"} -Body '{"board":"","color":"White"}'
-```
+## Development
 
-Request body:
-- `board`: String representation of the board position. Empty string (`""`) for initial position, or space-separated moves for a specific position
-- `color`: The color to move ("White" or "Black")
+The project consists of two main components:
 
-Returns:
-- A move in standard chess notation (e.g. "Ne2e4" for Knight from e2 to e4)
+### Frontend (Scala.js)
+- Located in `/frontend`
+- Uses Scala.js for type-safe JavaScript
+- Chess.js for move validation
+- Chessboard.js for the UI
 
-### POST /api/chess/printBoard
-
-Get a string representation of any board position.
-
-```powershell
-# Example using PowerShell
-Invoke-RestMethod -Uri "http://localhost:8080/api/chess/printBoard" -Method Post -Headers @{"Content-Type"="application/json"} -Body '{"board":""}'
-```
-
-Request body:
-- `board`: String representation of the board position. Empty string (`""`) for initial position, or space-separated moves for a specific position
-
-Returns:
-- A string representation of the current board state
-
-## Examples
-
-1. Get bot's move from starting position:
-```powershell
-Invoke-RestMethod -Uri "http://localhost:8080/api/chess/move" -Method Post -Headers @{"Content-Type"="application/json"} -Body '{"board":"","color":"White"}'
-```
-
-2. Print the starting position:
-```powershell
-Invoke-RestMethod -Uri "http://localhost:8080/api/chess/printBoard" -Method Post -Headers @{"Content-Type"="application/json"} -Body '{"board":""}'
-```
-
-3. Get bot's move after a specific sequence of moves:
-```powershell
-Invoke-RestMethod -Uri "http://localhost:8080/api/chess/move" -Method Post -Headers @{"Content-Type"="application/json"} -Body '{"board":"e2e4 e7e5","color":"White"}'
-```
+### Backend (Scala)
+- Located in `/backend`
+- Implements the chess bot logic
+- Various search algorithms and heuristics
+- RESTful API for move generation

@@ -19,7 +19,7 @@ object ChessServer {
 
     // Create a bot player with default settings
     // TODO: make this configurable
-    val botPlayer = BotPlayer(ABPruningMinimax(3, GeneralEvaluator))
+    val botPlayer = BotPlayer(ABPruningMinimax(4, GeneralEvaluator))
     val chessService = new ChessService(botPlayer)
 
     val bindingFuture =

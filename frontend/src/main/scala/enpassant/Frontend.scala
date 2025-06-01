@@ -87,101 +87,140 @@ object Frontend {
             println(s"Current position FEN: ${g.fen()}") // Debug log
             println(s"Current turn: ${g.turn()}") // Debug log
 
-            // If direct move failed, try to parse it
-            val movePattern =
-              """([NBRQK])?([a-h][1-8])?x?([a-h][1-8])(?:=([NBRQ]))?""".r
-            moveStr match {
-              case movePattern(piece, start, dest, promotion) =>
-                println(
-                  s"Parsed move: piece=$piece, start=$start, dest=$dest, promotion=$promotion"
-                ) // Debug log
+            // Try to make the move, handling both castling and regular moves
+            val moveResult = if (moveStr == "O-O" || moveStr == "O-O-O") {
+              // Handle castling moves
+              println(s"Attempting castling move: $moveStr") // Debug log
+              val legalMoves = g.moves(js.Dynamic.literal(verbose = true))
+              println(
+                s"Legal moves: ${js.Dynamic.global.JSON.stringify(legalMoves)}"
+              ) // Debug log
 
-                // For pawn moves, try all possible source squares
-                val attempts = if (piece == null) {
-                  // Get all legal moves
-                  val legalMoves = g
-                    .moves(js.Dynamic.literal(verbose = true))
-                    .asInstanceOf[js.Array[js.Dynamic]]
-                  println(
-                    s"Legal moves: ${js.Dynamic.global.JSON.stringify(legalMoves)}"
-                  ) // Debug log
-
-                  // Find moves that match our destination
-                  val matchingMoves =
-                    legalMoves.filter(m => m.to.asInstanceOf[String] == dest)
-                  println(
-                    s"Matching moves: ${js.Dynamic.global.JSON.stringify(matchingMoves)}"
-                  ) // Debug log
-
-                  matchingMoves
-                    .map(m =>
-                      js.Dynamic.literal(
-                        from = m.from.asInstanceOf[String],
-                        to = m.to.asInstanceOf[String],
-                        promotion = Option(promotion)
-                          .map(_.tail)
-                          .getOrElse("q")
-                          .asInstanceOf[js.Any]
-                      )
-                    )
-                    .toSeq
-                } else {
-                  // For pieces, try multiple formats in order of preference
-                  Seq(
-                    // Try with explicit from-to if start square is provided (most reliable)
-                    Option(start).map(s =>
-                      js.Dynamic.literal(
-                        from = s.asInstanceOf[js.Any],
-                        to = dest.asInstanceOf[js.Any]
-                      )
-                    ),
-                    // Try SAN format without start square
-                    Some(
-                      js.Dynamic.literal(
-                        san =
-                          s"${piece}${dest}${Option(promotion).getOrElse("")}"
-                            .asInstanceOf[js.Any]
-                      )
-                    ),
-                    // Try SAN format with start square if provided
-                    Option(start).map(s =>
-                      js.Dynamic.literal(
-                        san =
-                          s"${piece}${s}${dest}${Option(promotion).getOrElse("")}"
-                            .asInstanceOf[js.Any]
-                      )
-                    )
-                  ).flatten
+              // Find the castling move in legal moves
+              val castlingMove =
+                legalMoves.asInstanceOf[js.Array[js.Dynamic]].find { move =>
+                  (moveStr == "O-O" && move.san
+                    .asInstanceOf[String] == "O-O") ||
+                  (moveStr == "O-O-O" && move.san
+                    .asInstanceOf[String] == "O-O-O")
                 }
 
-                // Try each move format until one succeeds
-                val moveResult = attempts.foldLeft[Option[js.Dynamic]](None) { (acc, moveAttempt) =>
-                  acc.orElse {
+              castlingMove match {
+                case Some(move) =>
+                  // Use the from/to squares from the legal move
+                  val result = g.move(
+                    js.Dynamic.literal(
+                      from = move.from.asInstanceOf[String],
+                      to = move.to.asInstanceOf[String]
+                    )
+                  )
+                  println(
+                    s"Move result: ${if (result != null) "success"
+                      else "failed - castling not allowed (check console for details)"}"
+                  ) // Debug log
+                  if (result != null) Some(result.asInstanceOf[js.Dynamic])
+                  else None
+                case None =>
+                  println("Castling move not found in legal moves") // Debug log
+                  None
+              }
+            } else {
+              // Handle regular moves
+              val movePattern =
+                """([NBRQK])?([a-h][1-8])?x?([a-h][1-8])(?:=([NBRQ]))?""".r
+              moveStr match {
+                case movePattern(piece, start, dest, promotion) =>
+                  println(
+                    s"Parsed move: piece=$piece, start=$start, dest=$dest, promotion=$promotion"
+                  ) // Debug log
+
+                  // For pawn moves, try all possible source squares
+                  val attempts = if (piece == null) {
+                    // Get all legal moves
+                    val legalMoves = g
+                      .moves(js.Dynamic.literal(verbose = true))
+                      .asInstanceOf[js.Array[js.Dynamic]]
                     println(
-                      s"Attempting move with: ${js.Dynamic.global.JSON.stringify(moveAttempt)}"
+                      s"Legal moves: ${js.Dynamic.global.JSON.stringify(legalMoves)}"
                     ) // Debug log
-                    val move = g.move(moveAttempt)
+
+                    // Find moves that match our destination
+                    val matchingMoves =
+                      legalMoves.filter(m => m.to.asInstanceOf[String] == dest)
                     println(
-                      s"Move result: ${if (move != null) "success" else "failed"}"
+                      s"Matching moves: ${js.Dynamic.global.JSON.stringify(matchingMoves)}"
                     ) // Debug log
-                    if (move != null) Some(move.asInstanceOf[js.Dynamic])
-                    else None
+
+                    matchingMoves
+                      .map(m =>
+                        js.Dynamic.literal(
+                          from = m.from.asInstanceOf[String],
+                          to = m.to.asInstanceOf[String],
+                          promotion = Option(promotion)
+                            .map(_.tail)
+                            .getOrElse("q")
+                            .asInstanceOf[js.Any]
+                        )
+                      )
+                      .toSeq
+                  } else {
+                    // For pieces, try multiple formats in order of preference
+                    Seq(
+                      // Try with explicit from-to if start square is provided (most reliable)
+                      Option(start).map(s =>
+                        js.Dynamic.literal(
+                          from = s.asInstanceOf[js.Any],
+                          to = dest.asInstanceOf[js.Any]
+                        )
+                      ),
+                      // Try SAN format without start square
+                      Some(
+                        js.Dynamic.literal(
+                          san =
+                            s"${piece}${dest}${Option(promotion).getOrElse("")}"
+                              .asInstanceOf[js.Any]
+                        )
+                      ),
+                      // Try SAN format with start square if provided
+                      Option(start).map(s =>
+                        js.Dynamic.literal(
+                          san =
+                            s"${piece}${s}${dest}${Option(promotion).getOrElse("")}"
+                              .asInstanceOf[js.Any]
+                        )
+                      )
+                    ).flatten
                   }
-                }
 
-                moveResult match {
-                  case Some(move) =>
-                    moveHistory = moveHistory :+ move.san.asInstanceOf[String]
-                    board.foreach(_.position(g.fen()))
-                    updateGameStatus()
-                  case None =>
-                    println(
-                      s"All move attempts failed for: $moveStr"
-                    ) // Debug log
-                }
+                  // Try each move format until one succeeds
+                  attempts.foldLeft[Option[js.Dynamic]](None) {
+                    (acc, moveAttempt) =>
+                      acc.orElse {
+                        println(
+                          s"Attempting move with: ${js.Dynamic.global.JSON.stringify(moveAttempt)}"
+                        ) // Debug log
+                        val move = g.move(moveAttempt)
+                        println(s"Move result: ${if (move != null) "success"
+                          else "failed"}") // Debug log
+                        if (move != null) Some(move.asInstanceOf[js.Dynamic])
+                        else None
+                      }
+                  }
 
-              case _ =>
-                println(s"Move didn't match pattern: $moveStr") // Debug log
+                case _ =>
+                  println(s"Move didn't match pattern: $moveStr") // Debug log
+                  None
+              }
+            }
+
+            // Apply the successful move or log failure
+            moveResult match {
+              case Some(move) =>
+                moveHistory = moveHistory :+ move.san.asInstanceOf[String]
+                board.foreach(_.position(g.fen()))
+                updateGameStatus()
+              case None =>
+                println(s"Move failed: $moveStr") // Debug log
             }
           })
       }

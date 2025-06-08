@@ -12,16 +12,71 @@ object Frontend {
   private val startPosition =
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
+  // Initialize signal with empty list
+  private val moveHistorySignal: Var[List[String]] = Var(List.empty[String])
+
+  // Helper method to format moves in pairs
+  private def formatMovePairs(
+      moves: List[String]
+  ): List[(Int, String, String)] = {
+    moves.grouped(2).toList.zipWithIndex.map { case (pair, idx) =>
+      val moveNumber = idx + 1
+      val whitePart = pair.headOption.getOrElse("")
+      val blackPart = pair.lift(1).getOrElse("")
+      (moveNumber, whitePart, blackPart)
+    }
+  }
+
+  private def moveLogElement: Element = {
+    val moveLogStyles = Seq(
+      "display" -> "flex",
+      "overflow-x" -> "auto",
+      "padding" -> "10px",
+      "margin-top" -> "20px",
+      "background-color" -> "#f5f5f5",
+      "border-radius" -> "4px",
+      "font-family" -> "monospace"
+    )
+
+    val moveItemStyles = Seq(
+      "margin-right" -> "20px",
+      "white-space" -> "nowrap"
+    )
+
+    div(
+      cls := "move-log",
+      styleAttr := moveLogStyles.map { case (k, v) => s"$k: $v" }.mkString(";"),
+      children <-- moveHistorySignal.signal.map { moves =>
+        formatMovePairs(moves).map { case (moveNumber, white, black) =>
+          div(
+            cls := "move-pair",
+            styleAttr := moveItemStyles
+              .map { case (k, v) => s"$k: $v" }
+              .mkString(";"),
+            span(s"$moveNumber."),
+            span(cls := "white-move", s" $white"),
+            span(cls := "black-move", if (black.nonEmpty) s" $black" else "")
+          )
+        }
+      }
+    )
+  }
+
   def main(args: Array[String]): Unit = {
+    println("Starting application initialization") // Debug log
     val containerNode = dom.document.querySelector("#app")
     render(containerNode, appElement)
 
     // Initialize the chessboard after the DOM is ready
     dom.window.setTimeout(
       { () =>
+        println("Initializing board and game") // Debug log
         initializeBoard()
         game = Some(new Chess())
-        game.foreach(_.load(startPosition))
+        game.foreach { g =>
+          g.load(startPosition)
+          println(s"Game initialized with FEN: ${g.fen()}") // Debug log
+        }
       },
       100
     )
@@ -38,12 +93,20 @@ object Frontend {
         js.defined({ (source: String, piece: String, _: js.Object) =>
           game match {
             case Some(g) =>
-              // Only allow white pieces to be moved and only on white's turn
-              piece.charAt(0) == 'w' && g.turn() == "w"
-            case None => false
+              val canMove = piece.charAt(0) == 'w' && g.turn() == "w"
+              println(
+                s"onDragStart - piece: $piece, turn: ${g.turn()}, canMove: $canMove"
+              ) // Debug log
+              canMove
+            case None =>
+              println("onDragStart - game not initialized") // Debug log
+              false
           }
         }),
       onDrop = js.defined({ (source: String, target: String, _: js.Object) =>
+        println(
+          s"onDrop - attempting move from $source to $target"
+        ) // Debug log
         game match {
           case Some(g) =>
             // Try to make the move
@@ -56,25 +119,34 @@ object Frontend {
             )
 
             if (move != null) {
+              println(s"Move successful: ${move.san}") // Debug log
               // Add move to history in SAN format
               moveHistory = moveHistory :+ move.san.asInstanceOf[String]
+              moveHistorySignal.set(moveHistory)
               // If move was legal, make bot move
               makeBotMove()
               s"$source-$target"
             } else {
+              println(s"Move invalid: $source-$target") // Debug log
               "snapback"
             }
-          case None => "snapback"
+          case None =>
+            println("onDrop - game not initialized") // Debug log
+            "snapback"
         }
       }),
       onSnapEnd = js.defined({ () =>
         // Update the board position after the piece snap animation
-        game.foreach(g => board.foreach(_.position(g.fen())))
+        game.foreach { g =>
+          board.foreach(_.position(g.fen()))
+          println(s"onSnapEnd - updated position: ${g.fen()}") // Debug log
+        }
         updateGameStatus()
       })
     )
 
     board = Some(new Chessboard("board", config))
+    println("Board initialized") // Debug log
   }
 
   private def makeBotMove(): Unit = {
@@ -217,6 +289,7 @@ object Frontend {
             moveResult match {
               case Some(move) =>
                 moveHistory = moveHistory :+ move.san.asInstanceOf[String]
+                moveHistorySignal.set(moveHistory)
                 board.foreach(_.position(g.fen()))
                 updateGameStatus()
               case None =>
@@ -276,11 +349,13 @@ object Frontend {
               g.load(startPosition)
               board.foreach(_.position(startPosition))
               moveHistory = List.empty
+              moveHistorySignal.set(List.empty)
               updateGameStatus()
             }
           }
         )
-      )
+      ),
+      moveLogElement
     )
   }
 }

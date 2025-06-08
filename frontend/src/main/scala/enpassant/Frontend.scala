@@ -8,18 +8,82 @@ import scala.scalajs.js.annotation.{JSExportTopLevel, JSImport}
 object Frontend {
   private var board: Option[Chessboard] = None
   private var game: Option[Chess] = None
-  private var moveHistory: List[String] = List.empty
+
+  // Store full move objects instead of just SAN notation
+  case class ChessMove(
+      from: String,
+      to: String,
+      san: String,
+      promotion: Option[String] = None
+  )
+  private var moveHistory: List[ChessMove] = List.empty
   private val startPosition =
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
-  // Initialize signal with empty list
-  private val moveHistorySignal: Var[List[String]] = Var(List.empty[String])
+  // Initialize signals
+  private val moveHistorySignal: Var[List[ChessMove]] = Var(
+    List.empty[ChessMove]
+  )
+  private val currentMoveIndexSignal: Var[Int] = Var(-1) // -1 means latest move
+  private val showWarningSignal: Var[Boolean] = Var(false)
+
+  // Track if we're viewing a historical position
+  private def isViewingHistory: Boolean = currentMoveIndexSignal.now() >= 0
+
+  private def revertToMove(index: Int): Unit = {
+    println(s"Reverting to move index: $index") // Debug log
+    currentMoveIndexSignal.set(index)
+
+    // Reset game to starting position
+    game.foreach { g =>
+      g.load(startPosition)
+
+      // Replay moves up to the selected index using full move objects
+      moveHistory.take(index + 1).foreach { move =>
+        println(s"Replaying move from ${move.from} to ${move.to}") // Debug log
+        val result = g.move(
+          js.Dynamic.literal(
+            from = move.from.asInstanceOf[js.Any],
+            to = move.to.asInstanceOf[js.Any],
+            promotion = move.promotion
+              .map(_.asInstanceOf[js.Any])
+              .getOrElse("q".asInstanceOf[js.Any])
+          )
+        )
+        if (result == null) {
+          println(s"Failed to replay move: ${move.san}") // Debug log
+        }
+      }
+
+      // Update board position and game status
+      board.foreach { b =>
+        println(s"Setting board position to FEN: ${g.fen()}") // Debug log
+        b.position(g.fen())
+      }
+      updateGameStatus()
+    }
+  }
+
+  private def confirmNewMove(): Boolean = {
+    if (isViewingHistory) {
+      val confirmed = dom.window.confirm(
+        "Making a move from this historical position will discard all future moves. Do you want to continue?"
+      )
+      if (confirmed) {
+        // Truncate move history to current position
+        moveHistory = moveHistory.take(currentMoveIndexSignal.now() + 1)
+        moveHistorySignal.set(moveHistory)
+        currentMoveIndexSignal.set(-1)
+      }
+      confirmed
+    } else true
+  }
 
   // Helper method to format moves in pairs
   private def formatMovePairs(
-      moves: List[String]
+      moves: List[ChessMove]
   ): List[(Int, String, String)] = {
-    moves.grouped(2).toList.zipWithIndex.map { case (pair, idx) =>
+    moves.map(_.san).grouped(2).toList.zipWithIndex.map { case (pair, idx) =>
       val moveNumber = idx + 1
       val whitePart = pair.headOption.getOrElse("")
       val blackPart = pair.lift(1).getOrElse("")
@@ -40,25 +104,51 @@ object Frontend {
 
     val moveItemStyles = Seq(
       "margin-right" -> "20px",
-      "white-space" -> "nowrap"
+      "white-space" -> "nowrap",
+      "cursor" -> "pointer"
     )
 
     div(
       cls := "move-log",
       styleAttr := moveLogStyles.map { case (k, v) => s"$k: $v" }.mkString(";"),
-      children <-- moveHistorySignal.signal.map { moves =>
-        formatMovePairs(moves).map { case (moveNumber, white, black) =>
-          div(
-            cls := "move-pair",
-            styleAttr := moveItemStyles
-              .map { case (k, v) => s"$k: $v" }
-              .mkString(";"),
-            span(s"$moveNumber."),
-            span(cls := "white-move", s" $white"),
-            span(cls := "black-move", if (black.nonEmpty) s" $black" else "")
-          )
+      children <-- moveHistorySignal.signal
+        .combineWith(currentMoveIndexSignal.signal)
+        .map { case (moves, currentIndex) =>
+          formatMovePairs(moves).zipWithIndex.map {
+            case ((moveNumber, white, black), pairIndex) =>
+              val whiteIndex = pairIndex * 2
+              val blackIndex = whiteIndex + 1
+
+              val isFuture = currentIndex >= 0 && whiteIndex > currentIndex
+              val moveItemStyle =
+                moveItemStyles ++ (if (isFuture) Seq("color" -> "#999")
+                                   else Seq())
+
+              div(
+                cls := "move-pair",
+                styleAttr := moveItemStyle
+                  .map { case (k, v) => s"$k: $v" }
+                  .mkString(";"),
+                span(s"$moveNumber."),
+                span(
+                  cls := "white-move",
+                  styleAttr := s"margin: 0 5px; ${if (whiteIndex == currentIndex) "background-color: #e0e0e0;"
+                    else ""}",
+                  onClick --> { _ => revertToMove(whiteIndex) },
+                  s" $white"
+                ),
+                if (black.nonEmpty) {
+                  span(
+                    cls := "black-move",
+                    styleAttr := s"margin-left: 5px; ${if (blackIndex == currentIndex) "background-color: #e0e0e0;"
+                      else ""}",
+                    onClick --> { _ => revertToMove(blackIndex) },
+                    s" $black"
+                  )
+                } else emptyNode
+              )
+          }
         }
-      }
     )
   }
 
@@ -107,32 +197,45 @@ object Frontend {
         println(
           s"onDrop - attempting move from $source to $target"
         ) // Debug log
-        game match {
-          case Some(g) =>
-            // Try to make the move
-            val move = g.move(
-              js.Dynamic.literal(
-                from = source,
-                to = target,
-                promotion = "q" // Always promote to queen for simplicity
-              )
-            )
 
-            if (move != null) {
-              println(s"Move successful: ${move.san}") // Debug log
-              // Add move to history in SAN format
-              moveHistory = moveHistory :+ move.san.asInstanceOf[String]
-              moveHistorySignal.set(moveHistory)
-              // If move was legal, make bot move
-              makeBotMove()
-              s"$source-$target"
-            } else {
-              println(s"Move invalid: $source-$target") // Debug log
+        if (!confirmNewMove()) {
+          "snapback"
+        } else {
+          game match {
+            case Some(g) =>
+              // Try to make the move
+              val move = g.move(
+                js.Dynamic.literal(
+                  from = source,
+                  to = target,
+                  promotion = "q" // Always promote to queen for simplicity
+                )
+              )
+
+              if (move != null) {
+                println(s"Move successful: ${move.san}") // Debug log
+                // Store full move object
+                val chessMove = ChessMove(
+                  from = source,
+                  to = target,
+                  san = move.san.asInstanceOf[String],
+                  promotion = Some("q")
+                )
+                moveHistory = moveHistory :+ chessMove
+                moveHistorySignal.set(moveHistory)
+                // Reset current move index since we're at the latest move
+                currentMoveIndexSignal.set(-1)
+                // If move was legal, make bot move
+                makeBotMove()
+                s"$source-$target"
+              } else {
+                println(s"Move invalid: $source-$target") // Debug log
+                "snapback"
+              }
+            case None =>
+              println("onDrop - game not initialized") // Debug log
               "snapback"
-            }
-          case None =>
-            println("onDrop - game not initialized") // Debug log
-            "snapback"
+          }
         }
       }),
       onSnapEnd = js.defined({ () =>
@@ -153,7 +256,7 @@ object Frontend {
     game.foreach { g =>
       if (!g.game_over()) {
         ApiClient
-          .getBotMove(moveHistory.mkString(" "))
+          .getBotMove(moveHistory.map(_.san).mkString(" "))
           .`then`[Unit]({ moveStr =>
             println(s"Received move from backend: $moveStr") // Debug log
             println(s"Current position FEN: ${g.fen()}") // Debug log
@@ -190,8 +293,7 @@ object Frontend {
                     s"Move result: ${if (result != null) "success"
                       else "failed - castling not allowed (check console for details)"}"
                   ) // Debug log
-                  if (result != null) Some(result.asInstanceOf[js.Dynamic])
-                  else None
+                  if (result != null) Some(result) else None
                 case None =>
                   println("Castling move not found in legal moves") // Debug log
                   None
@@ -238,7 +340,7 @@ object Frontend {
                   } else {
                     // For pieces, try multiple formats in order of preference
                     Seq(
-                      // Try with explicit from-to if start square is provided (most reliable)
+                      // Try with explicit from-to if start square is provided
                       Option(start).map(s =>
                         js.Dynamic.literal(
                           from = s.asInstanceOf[js.Any],
@@ -288,8 +390,25 @@ object Frontend {
             // Apply the successful move or log failure
             moveResult match {
               case Some(move) =>
-                moveHistory = moveHistory :+ move.san.asInstanceOf[String]
+                val moveFrom =
+                  Option(move.from).map(_.asInstanceOf[String]).getOrElse("")
+                val moveTo =
+                  Option(move.to).map(_.asInstanceOf[String]).getOrElse("")
+                val moveSan =
+                  Option(move.san).map(_.asInstanceOf[String]).getOrElse("")
+
+                val chessMove = ChessMove(
+                  from = moveFrom,
+                  to = moveTo,
+                  san = moveSan,
+                  promotion = Some("q")
+                )
+                println(
+                  s"Created ChessMove: from=$moveFrom, to=$moveTo, san=$moveSan"
+                ) // Debug log
+                moveHistory = moveHistory :+ chessMove
                 moveHistorySignal.set(moveHistory)
+                currentMoveIndexSignal.set(-1)
                 board.foreach(_.position(g.fen()))
                 updateGameStatus()
               case None =>
@@ -350,6 +469,7 @@ object Frontend {
               board.foreach(_.position(startPosition))
               moveHistory = List.empty
               moveHistorySignal.set(List.empty)
+              currentMoveIndexSignal.set(-1) // Reset to latest move
               updateGameStatus()
             }
           }

@@ -28,39 +28,55 @@ object Frontend {
   private val showWarningSignal: Var[Boolean] = Var(false)
 
   // Track if we're viewing a historical position
-  private def isViewingHistory: Boolean = currentMoveIndexSignal.now() >= 0
+  private def isViewingHistory: Boolean = {
+    val currentIndex = currentMoveIndexSignal.now()
+    currentIndex >= 0 && currentIndex < moveHistory.length - 1
+  }
 
   private def revertToMove(index: Int): Unit = {
     println(s"Reverting to move index: $index") // Debug log
-    currentMoveIndexSignal.set(index)
 
-    // Reset game to starting position
-    game.foreach { g =>
-      g.load(startPosition)
+    // Calculate if it would be white's turn after reverting
+    val isWhiteTurn =
+      index % 2 == 1 // Odd index means we're reverting to after black's move
 
-      // Replay moves up to the selected index using full move objects
-      moveHistory.take(index + 1).foreach { move =>
-        println(s"Replaying move from ${move.from} to ${move.to}") // Debug log
-        val result = g.move(
-          js.Dynamic.literal(
-            from = move.from.asInstanceOf[js.Any],
-            to = move.to.asInstanceOf[js.Any],
-            promotion = move.promotion
-              .map(_.asInstanceOf[js.Any])
-              .getOrElse("q".asInstanceOf[js.Any])
+    if (isWhiteTurn) {
+      currentMoveIndexSignal.set(index)
+
+      // Reset game to starting position
+      game.foreach { g =>
+        g.load(startPosition)
+
+        // Replay moves up to the selected index using full move objects
+        moveHistory.take(index + 1).foreach { move =>
+          println(
+            s"Replaying move from ${move.from} to ${move.to}"
+          ) // Debug log
+          val result = g.move(
+            js.Dynamic.literal(
+              from = move.from.asInstanceOf[js.Any],
+              to = move.to.asInstanceOf[js.Any],
+              promotion = move.promotion
+                .map(_.asInstanceOf[js.Any])
+                .getOrElse("q".asInstanceOf[js.Any])
+            )
           )
-        )
-        if (result == null) {
-          println(s"Failed to replay move: ${move.san}") // Debug log
+          if (result == null) {
+            println(s"Failed to replay move: ${move.san}") // Debug log
+          }
         }
-      }
 
-      // Update board position and game status
-      board.foreach { b =>
-        println(s"Setting board position to FEN: ${g.fen()}") // Debug log
-        b.position(g.fen())
+        // Update board position and game status
+        board.foreach { b =>
+          println(s"Setting board position to FEN: ${g.fen()}") // Debug log
+          b.position(g.fen())
+        }
+        updateGameStatus()
       }
-      updateGameStatus()
+    } else {
+      println(
+        s"Cannot revert to index $index - it would be black's turn"
+      ) // Debug log
     }
   }
 
@@ -104,9 +120,11 @@ object Frontend {
 
     val moveItemStyles = Seq(
       "margin-right" -> "20px",
-      "white-space" -> "nowrap",
-      "cursor" -> "pointer"
+      "white-space" -> "nowrap"
     )
+
+    val clickableStyle = moveItemStyles ++ Seq("cursor" -> "pointer")
+    val nonClickableStyle = moveItemStyles
 
     div(
       cls := "move-log",
@@ -120,9 +138,14 @@ object Frontend {
               val blackIndex = whiteIndex + 1
 
               val isFuture = currentIndex >= 0 && whiteIndex > currentIndex
-              val moveItemStyle =
-                moveItemStyles ++ (if (isFuture) Seq("color" -> "#999")
-                                   else Seq())
+
+              // We can click black's moves (odd indices) since they lead to white's turn
+              val wouldBeWhiteTurn = blackIndex % 2 == 1
+              val isClickable = black.nonEmpty && wouldBeWhiteTurn
+
+              val moveItemStyle = (if (isFuture) Seq("color" -> "#999")
+                                   else Seq()) ++
+                (if (isClickable) clickableStyle else nonClickableStyle)
 
               div(
                 cls := "move-pair",
@@ -134,7 +157,6 @@ object Frontend {
                   cls := "white-move",
                   styleAttr := s"margin: 0 5px; ${if (whiteIndex == currentIndex) "background-color: #e0e0e0;"
                     else ""}",
-                  onClick --> { _ => revertToMove(whiteIndex) },
                   s" $white"
                 ),
                 if (black.nonEmpty) {
@@ -142,7 +164,9 @@ object Frontend {
                     cls := "black-move",
                     styleAttr := s"margin-left: 5px; ${if (blackIndex == currentIndex) "background-color: #e0e0e0;"
                       else ""}",
-                    onClick --> { _ => revertToMove(blackIndex) },
+                    onClick --> { _ =>
+                      if (isClickable) revertToMove(blackIndex)
+                    },
                     s" $black"
                   )
                 } else emptyNode

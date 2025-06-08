@@ -112,7 +112,7 @@ object Frontend {
       "display" -> "flex",
       "overflow-x" -> "auto",
       "padding" -> "10px",
-      "margin-top" -> "20px",
+      "margin-top" -> "10px",
       "background-color" -> "#f5f5f5",
       "border-radius" -> "4px",
       "font-family" -> "monospace"
@@ -127,52 +127,61 @@ object Frontend {
     val nonClickableStyle = moveItemStyles
 
     div(
-      cls := "move-log",
-      styleAttr := moveLogStyles.map { case (k, v) => s"$k: $v" }.mkString(";"),
-      children <-- moveHistorySignal.signal
-        .combineWith(currentMoveIndexSignal.signal)
-        .map { case (moves, currentIndex) =>
-          formatMovePairs(moves).zipWithIndex.map {
-            case ((moveNumber, white, black), pairIndex) =>
-              val whiteIndex = pairIndex * 2
-              val blackIndex = whiteIndex + 1
+      h3("Move Log"),
+      p(
+        styleAttr := "font-size: 0.8em; color: #666; margin: 5px 0;",
+        "Click on a black move to view the board position after that move."
+      ),
+      div(
+        cls := "move-log",
+        styleAttr := moveLogStyles
+          .map { case (k, v) => s"$k: $v" }
+          .mkString(";"),
+        children <-- moveHistorySignal.signal
+          .combineWith(currentMoveIndexSignal.signal)
+          .map { case (moves, currentIndex) =>
+            formatMovePairs(moves).zipWithIndex.map {
+              case ((moveNumber, white, black), pairIndex) =>
+                val whiteIndex = pairIndex * 2
+                val blackIndex = whiteIndex + 1
 
-              val isFuture = currentIndex >= 0 && whiteIndex > currentIndex
+                val isFuture = currentIndex >= 0 && whiteIndex > currentIndex
 
-              // We can click black's moves (odd indices) since they lead to white's turn
-              val wouldBeWhiteTurn = blackIndex % 2 == 1
-              val isClickable = black.nonEmpty && wouldBeWhiteTurn
+                // We can click black's moves (odd indices) since they lead to white's turn
+                val wouldBeWhiteTurn = blackIndex % 2 == 1
+                val isClickable = black.nonEmpty && wouldBeWhiteTurn
 
-              val moveItemStyle = (if (isFuture) Seq("color" -> "#999")
-                                   else Seq()) ++
-                (if (isClickable) clickableStyle else nonClickableStyle)
+                val moveItemStyle = (if (isFuture) Seq("color" -> "#999")
+                                     else Seq()) ++
+                  (if (isClickable) clickableStyle else nonClickableStyle)
 
-              div(
-                cls := "move-pair",
-                styleAttr := moveItemStyle
-                  .map { case (k, v) => s"$k: $v" }
-                  .mkString(";"),
-                span(s"$moveNumber."),
-                span(
-                  cls := "white-move",
-                  styleAttr := s"margin: 0 5px; ${if (whiteIndex == currentIndex) "background-color: #e0e0e0;"
-                    else ""}",
-                  s" $white"
-                ),
-                if (black.nonEmpty) {
+                div(
+                  cls := "move-pair",
+                  styleAttr := moveItemStyle
+                    .map { case (k, v) => s"$k: $v" }
+                    .mkString(";"),
+                  span(s"$moveNumber."),
                   span(
-                    cls := "black-move",
-                    styleAttr := s"margin-left: 5px; ${if (blackIndex == currentIndex) "background-color: #e0e0e0;"
+                    cls := "white-move",
+                    styleAttr := s"margin: 0 5px; ${if (whiteIndex == currentIndex) "background-color: #e0e0e0;"
                       else ""}",
-                    onClick --> { _ =>
-                      if (isClickable) revertToMove(blackIndex)
-                    },
-                    s" $black"
-                  )
-                } else emptyNode
-              )
+                    s" $white"
+                  ),
+                  if (black.nonEmpty) {
+                    span(
+                      cls := "black-move",
+                      styleAttr := s"margin-left: 5px; ${if (blackIndex == currentIndex) "background-color: #e0e0e0;"
+                        else ""}",
+                      onClick --> { _ =>
+                        if (isClickable) revertToMove(blackIndex)
+                      },
+                      s" $black"
+                    )
+                  } else emptyNode
+                )
+            }
           }
-        }
+      )
     )
   }
 

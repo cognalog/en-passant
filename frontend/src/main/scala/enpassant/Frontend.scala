@@ -26,6 +26,19 @@ object Frontend {
   )
   private val currentMoveIndexSignal: Var[Int] = Var(-1) // -1 means latest move
   private val showWarningSignal: Var[Boolean] = Var(false)
+  
+  private def handleCaptureAnimation(
+      moveSan: String,
+      fromSquare: String,
+      toSquare: String,
+      boardPositionBeforeMove: String
+  ): Unit = {
+    if (moveSan.contains("x") && fromSquare.nonEmpty && toSquare.nonEmpty) {
+      ChessUtils.getPieceAt(toSquare, boardPositionBeforeMove).foreach { piece =>
+        CaptureAnimation.animateCapture(piece, fromSquare, toSquare)
+      }
+    }
+  }
 
   // Track if we're viewing a historical position
   private def isViewingHistory: Boolean = {
@@ -236,6 +249,9 @@ object Frontend {
         } else {
           game match {
             case Some(g) =>
+              // Store board position before move for capture detection
+              val boardPosition = g.fen()
+              
               // Try to make the move
               val move = g.move(
                 js.Dynamic.literal(
@@ -247,6 +263,15 @@ object Frontend {
 
               if (move != null) {
                 println(s"Move successful: ${move.san}") // Debug log
+                
+                // Handle capture animation
+                handleCaptureAnimation(
+                  move.san.asInstanceOf[String],
+                  source,
+                  target,
+                  boardPosition
+                )
+                
                 // Store full move object
                 val chessMove = ChessMove(
                   from = source,
@@ -294,6 +319,9 @@ object Frontend {
             println(s"Received move from backend: $moveStr") // Debug log
             println(s"Current position FEN: ${g.fen()}") // Debug log
             println(s"Current turn: ${g.turn()}") // Debug log
+            
+            // Store current board position to detect captures
+            val positionBeforeMove = g.fen()
 
             // Try to make the move, handling both castling and regular moves
             val moveResult = if (moveStr == "O-O" || moveStr == "O-O-O") {
@@ -429,6 +457,9 @@ object Frontend {
                   Option(move.to).map(_.asInstanceOf[String]).getOrElse("")
                 val moveSan =
                   Option(move.san).map(_.asInstanceOf[String]).getOrElse("")
+
+                // Handle capture animation
+                handleCaptureAnimation(moveSan, moveFrom, moveTo, positionBeforeMove)
 
                 val chessMove = ChessMove(
                   from = moveFrom,

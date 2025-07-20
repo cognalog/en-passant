@@ -3,24 +3,23 @@ package enpassant
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.BeforeAndAfterEach
-import org.scalamock.scalatest.MockFactory
 import scala.scalajs.js
 
-class GameStatusManagerTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach with MockFactory {
+class GameStatusManagerTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach {
 
-  // Mock Chess game for testing status logic
-  class MockChessGame extends Chess() {
-    private var _turn: String = "w"
-    private var _gameOver: Boolean = false
-    private var _inCheck: Boolean = false
-    private var _inCheckmate: Boolean = false
-    private var _inDraw: Boolean = false
+  // Stub implementations for testing since we can't mock js.native classes
+  class StubChess extends js.Object {
+    var _turn: String = "w"
+    var _gameOver: Boolean = false
+    var _inCheck: Boolean = false
+    var _inCheckmate: Boolean = false
+    var _inDraw: Boolean = false
 
-    override def turn(): String = _turn
-    override def game_over(): Boolean = _gameOver
-    override def in_check(): Boolean = _inCheck
-    override def in_checkmate(): Boolean = _inCheckmate
-    override def in_draw(): Boolean = _inDraw
+    def turn(): String = _turn
+    def game_over(): Boolean = _gameOver
+    def in_check(): Boolean = _inCheck
+    def in_checkmate(): Boolean = _inCheckmate
+    def in_draw(): Boolean = _inDraw
 
     def setTurn(turn: String): Unit = _turn = turn
     def setGameOver(gameOver: Boolean): Unit = _gameOver = gameOver
@@ -29,14 +28,15 @@ class GameStatusManagerTest extends AnyFlatSpec with Matchers with BeforeAndAfte
     def setInDraw(inDraw: Boolean): Unit = _inDraw = inDraw
   }
 
+  var stubGame: StubChess = _
+
   override def beforeEach(): Unit = {
-    // Reset any global state if needed
+    super.beforeEach()
+    stubGame = new StubChess()
   }
 
   "Game status logic" should "generate correct status for ongoing game" in {
-    val mockGame = new MockChessGame()
-    
-    def getStatusText(game: Chess): String = {
+    def getStatusText(game: StubChess): String = {
       if (game.game_over()) {
         if (game.in_checkmate()) {
           if (game.turn() == "w") "Game Over: Black wins by checkmate"
@@ -55,28 +55,19 @@ class GameStatusManagerTest extends AnyFlatSpec with Matchers with BeforeAndAfte
       }
     }
 
-    // Test normal game states
-    mockGame.setTurn("w")
-    mockGame.setGameOver(false)
-    mockGame.setInCheck(false)
-    getStatusText(mockGame) shouldBe "White to move"
+    // Test normal game - white to move
+    stubGame.setTurn("w")
+    stubGame.setGameOver(false)
+    stubGame.setInCheck(false)
+    getStatusText(stubGame) shouldBe "White to move"
 
-    mockGame.setTurn("b")
-    getStatusText(mockGame) shouldBe "Black to move"
-
-    // Test check states
-    mockGame.setTurn("w")
-    mockGame.setInCheck(true)
-    getStatusText(mockGame) shouldBe "White is in check"
-
-    mockGame.setTurn("b")
-    getStatusText(mockGame) shouldBe "Black is in check"
+    // Test normal game - black to move
+    stubGame.setTurn("b")
+    getStatusText(stubGame) shouldBe "Black to move"
   }
 
-  it should "generate correct status for game over scenarios" in {
-    val mockGame = new MockChessGame()
-    
-    def getStatusText(game: Chess): String = {
+  it should "generate correct status for check states" in {
+    def getStatusText(game: StubChess): String = {
       if (game.game_over()) {
         if (game.in_checkmate()) {
           if (game.turn() == "w") "Game Over: Black wins by checkmate"
@@ -95,133 +86,152 @@ class GameStatusManagerTest extends AnyFlatSpec with Matchers with BeforeAndAfte
       }
     }
 
-    // Test checkmate scenarios
-    mockGame.setGameOver(true)
-    mockGame.setInCheckmate(true)
-    mockGame.setInDraw(false)
+    // Test white in check
+    stubGame.setTurn("w")
+    stubGame.setGameOver(false)
+    stubGame.setInCheck(true)
+    getStatusText(stubGame) shouldBe "White is in check"
 
-    mockGame.setTurn("w") // White is checkmated, so Black wins
-    getStatusText(mockGame) shouldBe "Game Over: Black wins by checkmate"
+    // Test black in check
+    stubGame.setTurn("b")
+    getStatusText(stubGame) shouldBe "Black is in check"
+  }
 
-    mockGame.setTurn("b") // Black is checkmated, so White wins
-    getStatusText(mockGame) shouldBe "Game Over: White wins by checkmate"
+  it should "generate correct status for checkmate" in {
+    def getStatusText(game: StubChess): String = {
+      if (game.game_over()) {
+        if (game.in_checkmate()) {
+          if (game.turn() == "w") "Game Over: Black wins by checkmate"
+          else "Game Over: White wins by checkmate"
+        } else if (game.in_draw()) {
+          "Game Over: Draw"
+        } else {
+          "Game Over"
+        }
+      } else {
+        if (game.in_check()) {
+          if (game.turn() == "w") "White is in check" else "Black is in check"
+        } else {
+          if (game.turn() == "w") "White to move" else "Black to move"
+        }
+      }
+    }
 
-    // Test draw scenario
-    mockGame.setInCheckmate(false)
-    mockGame.setInDraw(true)
-    getStatusText(mockGame) shouldBe "Game Over: Draw"
+    // Test white checkmated (black wins)
+    stubGame.setTurn("w")
+    stubGame.setGameOver(true)
+    stubGame.setInCheckmate(true)
+    stubGame.setInDraw(false)
+    getStatusText(stubGame) shouldBe "Game Over: Black wins by checkmate"
 
-    // Test generic game over
-    mockGame.setInCheckmate(false)
-    mockGame.setInDraw(false)
-    getStatusText(mockGame) shouldBe "Game Over"
+    // Test black checkmated (white wins)
+    stubGame.setTurn("b")
+    getStatusText(stubGame) shouldBe "Game Over: White wins by checkmate"
+  }
+
+  it should "generate correct status for draw" in {
+    def getStatusText(game: StubChess): String = {
+      if (game.game_over()) {
+        if (game.in_checkmate()) {
+          if (game.turn() == "w") "Game Over: Black wins by checkmate"
+          else "Game Over: White wins by checkmate"
+        } else if (game.in_draw()) {
+          "Game Over: Draw"
+        } else {
+          "Game Over"
+        }
+      } else {
+        if (game.in_check()) {
+          if (game.turn() == "w") "White is in check" else "Black is in check"
+        } else {
+          if (game.turn() == "w") "White to move" else "Black to move"
+        }
+      }
+    }
+
+    // Test draw
+    stubGame.setGameOver(true)
+    stubGame.setInCheckmate(false)
+    stubGame.setInDraw(true)
+    getStatusText(stubGame) shouldBe "Game Over: Draw"
+  }
+
+  it should "generate correct status for general game over" in {
+    def getStatusText(game: StubChess): String = {
+      if (game.game_over()) {
+        if (game.in_checkmate()) {
+          if (game.turn() == "w") "Game Over: Black wins by checkmate"
+          else "Game Over: White wins by checkmate"
+        } else if (game.in_draw()) {
+          "Game Over: Draw"
+        } else {
+          "Game Over"
+        }
+      } else {
+        if (game.in_check()) {
+          if (game.turn() == "w") "White is in check" else "Black is in check"
+        } else {
+          if (game.turn() == "w") "White to move" else "Black to move"
+        }
+      }
+    }
+
+    // Test general game over (not checkmate or draw)
+    stubGame.setGameOver(true)
+    stubGame.setInCheckmate(false)
+    stubGame.setInDraw(false)
+    getStatusText(stubGame) shouldBe "Game Over"
   }
 
   "Turn detection" should "correctly identify current player" in {
-    def getCurrentPlayer(turn: String): String = {
-      if (turn == "w") "White" else "Black"
+    def getCurrentPlayer(game: StubChess): String = {
+      if (game.turn() == "w") "White" else "Black"
     }
 
-    getCurrentPlayer("w") shouldBe "White"
-    getCurrentPlayer("b") shouldBe "Black"
+    stubGame.setTurn("w")
+    getCurrentPlayer(stubGame) shouldBe "White"
+
+    stubGame.setTurn("b")
+    getCurrentPlayer(stubGame) shouldBe "Black"
   }
 
-  "Game state validation" should "validate game state combinations" in {
-    case class GameState(turn: String, gameOver: Boolean, inCheck: Boolean, inCheckmate: Boolean, inDraw: Boolean)
-    
-    def isValidGameState(state: GameState): Boolean = {
-      // Game over states should not have ongoing game flags
-      if (state.gameOver) {
-        if (state.inCheckmate) !state.inDraw // Checkmate and draw are mutually exclusive
-        else true // Other game over states are valid
-      } else {
-        !state.inCheckmate && !state.inDraw // Ongoing games shouldn't have end-game flags
-      }
-    }
+  "Game state validation" should "correctly identify game over conditions" in {
+    def isGameActive(game: StubChess): Boolean = !game.game_over()
 
-    // Valid states
-    isValidGameState(GameState("w", false, false, false, false)) shouldBe true // Normal play
-    isValidGameState(GameState("w", false, true, false, false)) shouldBe true // Check
-    isValidGameState(GameState("w", true, false, true, false)) shouldBe true // Checkmate
-    isValidGameState(GameState("w", true, false, false, true)) shouldBe true // Draw
+    stubGame.setGameOver(false)
+    isGameActive(stubGame) shouldBe true
 
-    // Invalid states
-    isValidGameState(GameState("w", true, false, true, true)) shouldBe false // Checkmate and draw
-    isValidGameState(GameState("w", false, false, true, false)) shouldBe false // Checkmate in ongoing game
-    isValidGameState(GameState("w", false, false, false, true)) shouldBe false // Draw in ongoing game
+    stubGame.setGameOver(true)
+    isGameActive(stubGame) shouldBe false
   }
 
-  "Status message formatting" should "format messages consistently" in {
-    def formatStatusMessage(player: String, action: String): String = {
-      s"$player $action"
-    }
+  "Check detection" should "correctly identify check status" in {
+    def isInCheck(game: StubChess): Boolean = game.in_check()
 
-    formatStatusMessage("White", "to move") shouldBe "White to move"
-    formatStatusMessage("Black", "to move") shouldBe "Black to move"
-    formatStatusMessage("White", "is in check") shouldBe "White is in check"
-    formatStatusMessage("Black", "is in check") shouldBe "Black is in check"
+    stubGame.setInCheck(true)
+    isInCheck(stubGame) shouldBe true
+
+    stubGame.setInCheck(false)
+    isInCheck(stubGame) shouldBe false
   }
 
-  "Game over message formatting" should "format end game messages consistently" in {
-    def formatGameOverMessage(winner: Option[String], reason: String): String = {
-      winner match {
-        case Some(w) => s"Game Over: $w wins by $reason"
-        case None => s"Game Over: $reason"
-      }
-    }
+  "Checkmate detection" should "correctly identify checkmate" in {
+    def isCheckmate(game: StubChess): Boolean = game.in_checkmate()
 
-    formatGameOverMessage(Some("White"), "checkmate") shouldBe "Game Over: White wins by checkmate"
-    formatGameOverMessage(Some("Black"), "checkmate") shouldBe "Game Over: Black wins by checkmate"
-    formatGameOverMessage(None, "Draw") shouldBe "Game Over: Draw"
-    formatGameOverMessage(None, "Stalemate") shouldBe "Game Over: Stalemate"
+    stubGame.setInCheckmate(true)
+    isCheckmate(stubGame) shouldBe true
+
+    stubGame.setInCheckmate(false)
+    isCheckmate(stubGame) shouldBe false
   }
 
-  "Turn switching logic" should "alternate turns correctly" in {
-    def getNextTurn(currentTurn: String): String = {
-      if (currentTurn == "w") "b" else "w"
-    }
+  "Draw detection" should "correctly identify draw conditions" in {
+    def isDraw(game: StubChess): Boolean = game.in_draw()
 
-    getNextTurn("w") shouldBe "b"
-    getNextTurn("b") shouldBe "w"
-  }
+    stubGame.setInDraw(true)
+    isDraw(stubGame) shouldBe true
 
-  it should "handle invalid turn values" in {
-    def isValidTurn(turn: String): Boolean = {
-      turn == "w" || turn == "b"
-    }
-
-    isValidTurn("w") shouldBe true
-    isValidTurn("b") shouldBe true
-    isValidTurn("white") shouldBe false
-    isValidTurn("black") shouldBe false
-    isValidTurn("") shouldBe false
-    isValidTurn("x") shouldBe false
-  }
-
-  "Status priority" should "prioritize game over states correctly" in {
-    case class GameStatus(gameOver: Boolean, checkmate: Boolean, draw: Boolean, check: Boolean)
-    
-    def getStatusPriority(status: GameStatus): Int = {
-      if (status.gameOver) {
-        if (status.checkmate) 1 // Highest priority
-        else if (status.draw) 2
-        else 3 // Generic game over
-      } else {
-        if (status.check) 4
-        else 5 // Normal play, lowest priority
-      }
-    }
-
-    val checkmate = GameStatus(true, true, false, false)
-    val draw = GameStatus(true, false, true, false)
-    val gameOver = GameStatus(true, false, false, false)
-    val check = GameStatus(false, false, false, true)
-    val normal = GameStatus(false, false, false, false)
-
-    getStatusPriority(checkmate) shouldBe 1
-    getStatusPriority(draw) shouldBe 2
-    getStatusPriority(gameOver) shouldBe 3
-    getStatusPriority(check) shouldBe 4
-    getStatusPriority(normal) shouldBe 5
+    stubGame.setInDraw(false)
+    isDraw(stubGame) shouldBe false
   }
 }

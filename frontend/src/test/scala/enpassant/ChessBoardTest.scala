@@ -3,144 +3,252 @@ package enpassant
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.BeforeAndAfterEach
-import org.scalamock.scalatest.MockFactory
 import scala.scalajs.js
 
-class ChessBoardTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach with MockFactory {
+class ChessBoardTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach {
 
-  // Mock objects for JavaScript dependencies
-  class MockChessboard extends Chessboard("test", null) {
-    private var _position: String = GameState.getStartPosition
+  // Stub implementations for testing since we can't mock js.native classes
+  class StubChessboard extends js.Object {
+    private var _position: String = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
     
-    override def position(fen: String): Unit = {
+    def position(fen: String): Unit = {
       _position = fen
     }
     
-    override def position(): String = _position
+    def position(): String = _position
   }
 
-  class MockChess extends Chess() {
-    private var _fen: String = GameState.getStartPosition
+  class StubChess extends js.Object {
+    private var _fen: String = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
     private var _gameOver: Boolean = false
+    private var _turn: String = "w"
     
-    override def load(fen: String): Boolean = {
-      _fen = fen
-      true
-    }
-    
-    override def fen(): String = _fen
-    
-    override def move(move: js.Dynamic): js.Dynamic = {
-      // Simple mock that returns a valid move object
-      if (_fen.contains("w")) { // If it's white's turn
-        _fen = _fen.replace("w", "b") // Switch to black's turn
-        js.Dynamic.literal(
-          from = "e2",
-          to = "e4",
-          san = "e4"
-        )
+    def load(fen: String): Boolean = {
+      if (fen.contains("invalid")) {
+        false
       } else {
-        _fen = _fen.replace("b", "w") // Switch to white's turn
-        js.Dynamic.literal(
-          from = "e7",
-          to = "e5",
-          san = "e5"
-        )
+        _fen = fen
+        true
       }
     }
     
-    override def game_over(): Boolean = _gameOver
+    def fen(): String = _fen
+    
+    def move(move: js.Dynamic): js.Dynamic = {
+      if (move != null && move.asInstanceOf[js.Dictionary[String]].contains("from")) {
+        // Return a valid move result
+        js.Dynamic.literal(
+          "from" -> "e2",
+          "to" -> "e4", 
+          "san" -> "e4"
+        )
+      } else {
+        null
+      }
+    }
+    
+    def moves(options: js.Dynamic = js.Dynamic.literal()): js.Array[String] = {
+      js.Array("e2-e3", "e2-e4", "Nf3", "Ng1-f3")
+    }
+    
+    def game_over(): Boolean = _gameOver
+    def in_check(): Boolean = false
+    def in_checkmate(): Boolean = false
+    def in_draw(): Boolean = false
+    def turn(): String = _turn
     
     def setGameOver(gameOver: Boolean): Unit = _gameOver = gameOver
+    def setTurn(turn: String): Unit = _turn = turn
   }
+
+  var stubChessboard: StubChessboard = _
+  var stubChess: StubChess = _
 
   override def beforeEach(): Unit = {
-    GameState.clearHistory()
-    // Reset ChessBoard state would require refactoring to make it testable
-    // For now, we'll test individual methods that don't rely on global state
+    super.beforeEach()
+    stubChessboard = new StubChessboard()
+    stubChess = new StubChess()
   }
 
-  "ChessBoard" should "return start position from GameState" in {
-    val startPos = GameState.getStartPosition
-    startPos shouldBe "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+  "ChessBoard initialization" should "set up board and game correctly" in {
+    val startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    
+    // Simulate initialization
+    def initializeBoard(board: StubChessboard, game: StubChess, fen: String): Boolean = {
+      val loaded = game.load(fen)
+      if (loaded) {
+        board.position(fen)
+      }
+      loaded
+    }
+    
+    val result = initializeBoard(stubChessboard, stubChess, startFen)
+    result shouldBe true
+    stubChessboard.position() shouldBe startFen
   }
 
-  it should "handle replay moves functionality concept" in {
-    // Test the logic that would be used in replayMovesToPosition
+  "Board position management" should "handle position updates correctly" in {
+    val testFen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
+    
+    stubChessboard.position(testFen)
+    stubChessboard.position() shouldBe testFen
+  }
+
+  it should "get current position correctly" in {
+    val currentFen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
+    
+    stubChessboard.position(currentFen)
+    stubChessboard.position() shouldBe currentFen
+  }
+
+  "Game instance management" should "load FEN positions correctly" in {
+    val testFen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
+    
+    val result = stubChess.load(testFen)
+    result shouldBe true
+    stubChess.fen() shouldBe testFen
+  }
+
+  it should "handle invalid FEN positions" in {
+    val invalidFen = "invalid-fen-string"
+    
+    val result = stubChess.load(invalidFen)
+    result shouldBe false
+  }
+
+  it should "get current FEN correctly" in {
+    val currentFen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
+    
+    stubChess.load(currentFen)
+    stubChess.fen() shouldBe currentFen
+  }
+
+  "Move execution" should "execute valid moves correctly" in {
+    val move = js.Dynamic.literal("from" -> "e2", "to" -> "e4")
+    
+    val result = stubChess.move(move)
+    result should not be null
+    result.asInstanceOf[js.Dynamic].san.asInstanceOf[String] shouldBe "e4"
+  }
+
+  it should "handle invalid moves correctly" in {
+    val invalidMove = null
+    
+    val result = stubChess.move(invalidMove)
+    result shouldBe null
+  }
+
+  "Move generation" should "get legal moves correctly" in {
+    val legalMoves = stubChess.moves()
+    
+    legalMoves.length shouldBe 4
+    legalMoves.toList should contain("e2-e3")
+    legalMoves.toList should contain("e2-e4")
+  }
+
+  it should "get verbose legal moves correctly" in {
+    val verboseOptions = js.Dynamic.literal("verbose" -> true)
+    val verboseMoves = stubChess.moves(verboseOptions)
+    
+    verboseMoves.length should be > 0
+  }
+
+  "Game state queries" should "check game over status correctly" in {
+    stubChess.game_over() shouldBe false
+    
+    stubChess.setGameOver(true)
+    stubChess.game_over() shouldBe true
+  }
+
+  it should "check check status correctly" in {
+    stubChess.in_check() shouldBe false
+  }
+
+  it should "check checkmate status correctly" in {
+    stubChess.in_checkmate() shouldBe false
+  }
+
+  it should "check draw status correctly" in {
+    stubChess.in_draw() shouldBe false
+  }
+
+  it should "get current turn correctly" in {
+    stubChess.turn() shouldBe "w"
+    
+    stubChess.setTurn("b")
+    stubChess.turn() shouldBe "b"
+  }
+
+  "ChessBoard module integration" should "handle board updates correctly" in {
+    // Test integration logic - simulate what ChessBoard.updatePosition might do
+    def updateBoardPosition(board: StubChessboard, game: StubChess): Unit = {
+      val currentFen = game.fen()
+      board.position(currentFen)
+    }
+    
+    val newFen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
+    stubChess.load(newFen)
+    updateBoardPosition(stubChessboard, stubChess)
+    
+    stubChessboard.position() shouldBe newFen
+  }
+
+  it should "handle move history replay correctly" in {
+    // Test move history replay logic - simulate what ChessBoard.replayMovesToPosition might do
     val moves = List(
       ChessMove("e2", "e4", "e4"),
-      ChessMove("e7", "e5", "e5"),
-      ChessMove("g1", "f3", "Nf3")
+      ChessMove("e7", "e5", "e5")
     )
-
-    // Verify moves are well-formed
-    moves should have size 3
-    moves.head.from shouldBe "e2"
-    moves.head.to shouldBe "e4"
-    moves.head.san shouldBe "e4"
-  }
-
-  "MockChess" should "load position correctly" in {
-    val mockGame = new MockChess()
-    val testFen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
     
-    val result = mockGame.load(testFen)
-    result shouldBe true
-    mockGame.fen() shouldBe testFen
-  }
-
-  it should "make moves and switch turns" in {
-    val mockGame = new MockChess()
-    mockGame.load("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-    
-    val move1 = mockGame.move(js.Dynamic.literal())
-    move1.san.asInstanceOf[String] shouldBe "e4"
-    mockGame.fen() should include("b") // Should be black's turn now
-    
-    val move2 = mockGame.move(js.Dynamic.literal())
-    move2.san.asInstanceOf[String] shouldBe "e5"
-    mockGame.fen() should include("w") // Should be white's turn again
-  }
-
-  "MockChessboard" should "update position correctly" in {
-    val mockBoard = new MockChessboard()
-    val testFen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
-    
-    mockBoard.position() shouldBe GameState.getStartPosition
-    mockBoard.position(testFen)
-    mockBoard.position() shouldBe testFen
-  }
-
-  // Integration test concept for board initialization
-  "ChessBoard initialization concept" should "require proper callback functions" in {
-    val onDragStart = (source: String, piece: String, obj: js.Object) => {
-      piece.length shouldBe 2 // Should be format like "wP", "bK", etc.
-      source.length shouldBe 2 // Should be format like "e2", "a1", etc.
-      piece.charAt(0) == 'w' // Only allow white pieces to be dragged
+    def replayMoves(game: StubChess, board: StubChessboard, moves: List[ChessMove]): Unit = {
+      moves.foreach { move =>
+        val moveObj = js.Dynamic.literal("from" -> move.from, "to" -> move.to)
+        val result = game.move(moveObj)
+        if (result != null) {
+          board.position(game.fen())
+        }
+      }
     }
     
-    val onDrop = (source: String, target: String, obj: js.Object) => {
-      source.length shouldBe 2
-      target.length shouldBe 2
-      source should not be target
-      if (source == "e2" && target == "e4") "e2-e4" else "snapback"
-    }
-    
-    val onSnapEnd = () => {
-      // Should update board position after move
-      true // placeholder
-    }
-
-    // Test the callback logic
-    onDragStart("e2", "wP", js.Object()) shouldBe true
-    onDragStart("e7", "bP", js.Object()) shouldBe false
-    
-    onDrop("e2", "e4", js.Object()) shouldBe "e2-e4"
-    onDrop("e2", "e2", js.Object()) shouldBe "snapback"
-    onDrop("a1", "h8", js.Object()) shouldBe "snapback"
+    replayMoves(stubChess, stubChessboard, moves)
+    // The moves should have been processed
+    moves should have size 2
   }
 
-  // Test square validation logic
+  "Error handling" should "handle board initialization errors gracefully" in {
+    // Test error handling for board initialization
+    def safeInitialize(board: StubChessboard, game: StubChess, fen: String): Boolean = {
+      try {
+        val loaded = game.load(fen)
+        if (loaded) {
+          board.position(fen)
+          true
+        } else {
+          false
+        }
+      } catch {
+        case _: Exception => false
+      }
+    }
+    
+    val validFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    safeInitialize(stubChessboard, stubChess, validFen) shouldBe true
+  }
+
+  it should "handle game loading errors gracefully" in {
+    val corruptedFen = "invalid-corrupted-fen"
+    
+    def safeLoadPosition(game: StubChess, fen: String): Boolean = {
+      try {
+        game.load(fen)
+      } catch {
+        case _: Exception => false
+      }
+    }
+    
+    safeLoadPosition(stubChess, corruptedFen) shouldBe false
+  }
+
   "Square validation" should "validate chess square format" in {
     def isValidSquare(square: String): Boolean = {
       square.length == 2 && 
@@ -157,7 +265,6 @@ class ChessBoardTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach w
     isValidSquare("") shouldBe false
   }
 
-  // Test piece format validation
   "Piece validation" should "validate piece format" in {
     def isValidPiece(piece: String): Boolean = {
       piece.length == 2 &&

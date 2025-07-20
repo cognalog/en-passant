@@ -34,10 +34,45 @@ object Frontend {
       boardPositionBeforeMove: String
   ): Unit = {
     if (moveSan.contains("x") && fromSquare.nonEmpty && toSquare.nonEmpty) {
-      ChessUtils.getPieceAt(toSquare, boardPositionBeforeMove).foreach { piece =>
+      // For en-passant captures, we need to get the piece from a different square
+      val capturedPieceSquare = if (isEnPassantMove(moveSan, fromSquare, toSquare, boardPositionBeforeMove)) {
+        getEnPassantVictimSquare(fromSquare, toSquare)
+      } else {
+        toSquare
+      }
+      
+      ChessUtils.getPieceAt(capturedPieceSquare, boardPositionBeforeMove).foreach { piece =>
         CaptureAnimation.animateCapture(piece, fromSquare, toSquare)
       }
     }
+  }
+  
+  private def isEnPassantMove(
+      moveSan: String,
+      fromSquare: String,
+      toSquare: String,
+      boardPositionBeforeMove: String
+  ): Boolean = {
+    // Check if it's a pawn capture where the destination square is empty
+    val fromFile = fromSquare.charAt(0)
+    val toFile = toSquare.charAt(0)
+    val fromRank = fromSquare.charAt(1)
+    val toRank = toSquare.charAt(1)
+    
+    // Must be a diagonal pawn move (different files)
+    if (fromFile == toFile) return false
+    
+    // Must be a capture (already checked for 'x' in moveSan)
+    // Check if destination square is empty (indicating en-passant)
+    ChessUtils.getPieceAt(toSquare, boardPositionBeforeMove).isEmpty &&
+    // And there's a pawn to capture on the adjacent square
+    ChessUtils.getPieceAt(getEnPassantVictimSquare(fromSquare, toSquare), boardPositionBeforeMove).exists(_.contains("p"))
+  }
+  
+  private def getEnPassantVictimSquare(fromSquare: String, toSquare: String): String = {
+    val toFile = toSquare.charAt(0)
+    val fromRank = fromSquare.charAt(1)
+    s"$toFile$fromRank"
   }
 
   // Track if we're viewing a historical position

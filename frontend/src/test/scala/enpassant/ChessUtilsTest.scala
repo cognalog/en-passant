@@ -91,6 +91,15 @@ class ChessUtilsTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach {
     ChessUtils.getSquareCoordinates("e8") shouldBe (4, 0)
   }
 
+  it should "return (-1, -1) for invalid square format" in {
+    ChessUtils.getSquareCoordinates("") shouldBe (-1, -1)
+    ChessUtils.getSquareCoordinates("e") shouldBe (-1, -1)
+    ChessUtils.getSquareCoordinates("e9") shouldBe (-1, -1)
+    ChessUtils.getSquareCoordinates("z1") shouldBe (-1, -1)
+    ChessUtils.getSquareCoordinates("a0") shouldBe (-1, -1)
+    ChessUtils.getSquareCoordinates("i4") shouldBe (-1, -1)
+  }
+
   "FEN parsing edge cases" should "handle complex positions" in {
     // Position with some pieces moved
     val complexFen = "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4"

@@ -125,7 +125,7 @@ class MoveHandlerTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach 
   }
 
   "Move pattern matching" should "parse regular moves correctly" in {
-    val movePattern = """([NBRQK])?([a-h][1-8])?x?([a-h][1-8])(?:=([NBRQ]))?""".r
+    val movePattern = """([NBRQK])?([a-h][1-8]|[a-h]|[1-8])?x?([a-h][1-8])(?:=([NBRQ]))?""".r
     
     def parseMove(moveStr: String): Option[(Option[String], Option[String], String, Option[String])] = {
       moveStr match {

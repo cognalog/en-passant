@@ -181,7 +181,7 @@ object MoveHandler {
   }
 
   private def processRegularMove(moveStr: String, game: Chess): Option[js.Dynamic] = {
-    val movePattern = """([NBRQK])?([a-h][1-8])?x?([a-h][1-8])(?:=([NBRQ]))?""".r
+    val movePattern = """([NBRQK])?([a-h][1-8]|[a-h]|[1-8])?x?([a-h][1-8])(?:=([NBRQ]))?""".r
     moveStr match {
       case movePattern(piece, start, dest, promotion) =>
         println(s"Parsed move: piece=$piece, start=$start, dest=$dest, promotion=$promotion") // Debug log

@@ -19,7 +19,7 @@ class ChessServiceBasicTest extends AnyFunSuite {
     val testBotPlayer: Player = BotPlayer(ABPruningMinimax(1, GeneralEvaluator))
     val startingBoard = StandardBoard.StartingPosition
     
-    val moveResult = testBotPlayer.GetNextMove(startingBoard.toString, Color.Black)
+    val moveResult = testBotPlayer.GetNextMove(startingBoard, Color.Black)
     
     assert(moveResult.isSuccess)
     assert(moveResult.get.toStandardNotation.nonEmpty)
@@ -27,7 +27,7 @@ class ChessServiceBasicTest extends AnyFunSuite {
 
   test("Bot player can handle game with moves") {
     val testBotPlayer: Player = BotPlayer(ABPruningMinimax(1, GeneralEvaluator))
-    val boardWithMoves = "e2e4 e7e5"
+    val boardWithMoves = Board.standardFromMoveStrings(Seq("e2e4", "e7e5")).get
     
     val moveResult = testBotPlayer.GetNextMove(boardWithMoves, Color.Black)
     

@@ -93,6 +93,8 @@ The testing setup addresses these common compilation issues:
 3. **JSON Unmarshalling**: Correct implicit imports for response unmarshalling
 4. **Build Configuration**: Removed unused `artifactPath` settings
 5. **Dependency Versions**: Compatible ScalaTest/ScalaMock versions
+6. **API Parameter Types**: Using `Board` objects instead of `String` for player methods
+7. **Model Class Usage**: Proper factory methods (`StandardBoard.StartingPosition`, `Board.standardFromMoveStrings`)
 
 ## Output
 

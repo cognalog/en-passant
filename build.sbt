@@ -15,12 +15,14 @@ lazy val backend = project
     commonSettings,
     name := "en-passant-backend",
     libraryDependencies ++= Seq(
-      "org.scalamock" %% "scalamock" % "4.4.0" % Test,
-      "org.scalatest" %% "scalatest" % "3.1.0" % Test,
+      "org.scalamock" %% "scalamock" % "5.2.0" % Test,
+      "org.scalatest" %% "scalatest" % "3.2.15" % Test,
       "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion,
       "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
+      "com.typesafe.akka" %% "akka-http-testkit" % AkkaHttpVersion % Test,
+      "com.typesafe.akka" %% "akka-actor-testkit-typed" % AkkaVersion % Test,
       "com.typesafe.play" %% "play-json" % "2.9.4"
     )
   )
@@ -38,7 +40,6 @@ lazy val frontend = project
       "org.scalamock" %%% "scalamock" % "5.2.0" % Test,
       "org.scalatest" %%% "scalatest" % "3.2.15" % Test
     ),
-    Compile / fastLinkJS / artifactPath := baseDirectory.value / "target" / "scala-2.13" / "en-passant-frontend-fastopt" / "main.js",
     scalaJSLinkerConfig ~= {
       _.withModuleKind(ModuleKind.ESModule)
         .withModuleSplitStyle(ModuleSplitStyle.FewestModules)

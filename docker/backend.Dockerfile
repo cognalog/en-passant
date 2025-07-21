@@ -6,5 +6,9 @@ COPY . .
 # Build backend only
 RUN sbt backend/compile
 
-EXPOSE 8080
+# Environment variables with defaults
+ENV BACKEND_PORT=8080
+ENV BOT_SEARCH_DEPTH=4
+
+EXPOSE $BACKEND_PORT
 CMD ["sbt", "backend/run"] 

@@ -9,6 +9,7 @@ import akka.http.scaladsl.Http
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.Duration
 import scala.concurrent.Await
+import scala.util.{Try, Success, Failure}
 
 object ChessServer {
   def main(args: Array[String]): Unit = {
@@ -17,15 +18,26 @@ object ChessServer {
     implicit val executionContext: ExecutionContextExecutor =
       system.executionContext
 
-    // Create a bot player with default settings
-    // TODO: make this configurable
-    val botPlayer = BotPlayer(ABPruningMinimax(4, GeneralEvaluator))
+    // Read configuration from environment variables with defaults
+    val port = sys.env.get("BACKEND_PORT")
+      .flatMap(p => Try(p.toInt).toOption)
+      .getOrElse(8080)
+    
+    val botSearchDepth = sys.env.get("BOT_SEARCH_DEPTH")
+      .flatMap(d => Try(d.toInt).toOption)
+      .getOrElse(4)
+
+    println(s"Starting server on port: $port")
+    println(s"Bot search depth: $botSearchDepth")
+
+    // Create a bot player with configurable depth
+    val botPlayer = BotPlayer(ABPruningMinimax(botSearchDepth, GeneralEvaluator))
     val chessService = new ChessService(botPlayer)
 
     val bindingFuture =
-      Http().newServerAt("0.0.0.0", 8080).bind(chessService.routes)
+      Http().newServerAt("0.0.0.0", port).bind(chessService.routes)
     println(
-      s"Server now online at http://0.0.0.0:8080/"
+      s"Server now online at http://0.0.0.0:$port/"
     )
 
     // Keep the server running indefinitely

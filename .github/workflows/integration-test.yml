@@ -1,0 +1,218 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  BACKEND_PORT: 8080
+  BOT_SEARCH_DEPTH: 2  # Use lower depth for faster tests
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      # No external services needed, we'll use Docker Compose
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          
+      - name: Setup sbt
+        uses: sbt/setup-sbt@v1
+        
+      - name: Cache sbt dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.ivy2/cache
+            ~/.sbt
+            ~/.coursier
+          key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}
+          restore-keys: |
+            ${{ runner.os }}-sbt-
+            
+      - name: Build and test backend
+        run: |
+          echo "Building and testing backend..."
+          echo "Compiling backend..."
+          sbt backend/compile
+          echo "Running backend tests..."
+          sbt backend/test
+          echo "Backend compilation and tests completed successfully"
+          
+      - name: Build frontend
+        run: |
+          echo "Building frontend..."
+          sbt frontend/fastLinkJS
+          
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Build Docker images
+        run: |
+          echo "Building Docker images..."
+          docker-compose build --no-cache
+          
+      - name: Start services
+        run: |
+          echo "Starting services with Docker Compose..."
+          docker-compose up -d
+          
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for backend service to be ready..."
+          timeout 60 bash -c 'until curl -f http://localhost:8080/api/chess/move -X OPTIONS; do sleep 2; done'
+          echo "Waiting for frontend service to be ready..."
+          timeout 60 bash -c 'until curl -f http://localhost:3000; do sleep 2; done'
+          
+      - name: Test backend API endpoints
+        run: |
+          echo "Testing backend API endpoints..."
+          
+          # Test CORS preflight
+          echo "Testing CORS preflight..."
+          curl -X OPTIONS \
+            -H "Origin: http://localhost:3000" \
+            -H "Access-Control-Request-Method: POST" \
+            -H "Access-Control-Request-Headers: Content-Type" \
+            -v http://localhost:8080/api/chess/move
+            
+          # Test move endpoint with a simple game position
+          echo "Testing move endpoint..."
+          response=$(curl -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"board": "", "color": "White"}' \
+            -w "%{http_code}" \
+            -o /tmp/move_response.json \
+            http://localhost:8080/api/chess/move)
+            
+          if [ "$response" = "200" ]; then
+            echo "Move endpoint test passed"
+            cat /tmp/move_response.json
+          else
+            echo "Move endpoint test failed with status: $response"
+            cat /tmp/move_response.json
+            exit 1
+          fi
+          
+          # Test printBoard endpoint
+          echo "Testing printBoard endpoint..."
+          response=$(curl -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"board": ""}' \
+            -w "%{http_code}" \
+            -o /tmp/board_response.json \
+            http://localhost:8080/api/chess/printBoard)
+            
+          if [ "$response" = "200" ]; then
+            echo "PrintBoard endpoint test passed"
+          else
+            echo "PrintBoard endpoint test failed with status: $response"
+            exit 1
+          fi
+          
+      - name: Test frontend accessibility
+        run: |
+          echo "Testing frontend accessibility..."
+          
+          # Check if main page loads
+          response=$(curl -w "%{http_code}" -o /tmp/frontend.html http://localhost:3000)
+          if [ "$response" = "200" ]; then
+            echo "Frontend main page loads successfully"
+          else
+            echo "Frontend main page failed to load with status: $response"
+            exit 1
+          fi
+          
+          # Check if JavaScript files are served
+          if curl -f http://localhost:3000/main.js > /dev/null 2>&1; then
+            echo "Frontend JavaScript files are accessible"
+          else
+            echo "Frontend JavaScript files are not accessible"
+            exit 1
+          fi
+          
+      - name: Test end-to-end API flow
+        run: |
+          echo "Testing end-to-end API flow..."
+          
+          # Test a complete game scenario
+          echo "Testing initial position move request..."
+          response=$(curl -X POST \
+            -H "Content-Type: application/json" \
+            -d '{
+              "board": "",
+              "color": "White"
+            }' \
+            -w "%{http_code}" \
+            -s \
+            -o /tmp/e2e_response.json \
+            http://localhost:8080/api/chess/move)
+            
+          if [ "$response" = "200" ]; then
+            echo "End-to-end test passed"
+            echo "Bot move response:"
+            cat /tmp/e2e_response.json | python3 -m json.tool
+          else
+            echo "End-to-end test failed with status: $response"
+            echo "Response body:"
+            cat /tmp/e2e_response.json
+            exit 1
+          fi
+          
+      - name: Test configuration flexibility
+        run: |
+          echo "Testing configuration flexibility..."
+          
+          # Stop current services
+          docker-compose down
+          
+          # Test with different configuration
+          export BACKEND_PORT=9000
+          export BOT_SEARCH_DEPTH=1
+          
+          # Start with new configuration
+          docker-compose up -d
+          
+          # Wait for service to be ready on new port
+          timeout 60 bash -c 'until curl -f http://localhost:9000/api/chess/move -X OPTIONS; do sleep 2; done'
+          
+          # Test the service on new port
+          response=$(curl -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"board": "", "color": "White"}' \
+            -w "%{http_code}" \
+            -s \
+            -o /tmp/config_test.json \
+            http://localhost:9000/api/chess/move)
+            
+          if [ "$response" = "200" ]; then
+            echo "Configuration flexibility test passed"
+          else
+            echo "Configuration flexibility test failed with status: $response"
+            exit 1
+          fi
+          
+      - name: Check service logs
+        if: always()
+        run: |
+          echo "=== Backend logs ==="
+          docker-compose logs backend
+          echo "=== Frontend logs ==="
+          docker-compose logs frontend
+          
+      - name: Cleanup
+        if: always()
+        run: |
+          docker-compose down
+          docker system prune -f

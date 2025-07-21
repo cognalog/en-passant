@@ -40,7 +40,6 @@ lazy val frontend = project
       "org.scalamock" %%% "scalamock" % "5.2.0" % Test,
       "org.scalatest" %%% "scalatest" % "3.2.15" % Test
     ),
-    Compile / fastLinkJS / artifactPath := baseDirectory.value / "target" / "scala-2.13" / "en-passant-frontend-fastopt" / "main.js",
     scalaJSLinkerConfig ~= {
       _.withModuleKind(ModuleKind.ESModule)
         .withModuleSplitStyle(ModuleSplitStyle.FewestModules)

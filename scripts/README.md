@@ -84,6 +84,16 @@ All scripts respect the following environment variables:
 - bash
 - python3 (for JSON formatting)
 
+## Common Issues Fixed
+
+The testing setup addresses these common compilation issues:
+
+1. **HTTP Test Imports**: Proper imports for `HttpMethods` and `SprayJsonSupport`
+2. **Actor System Compatibility**: Avoiding typed/untyped ActorSystem mixing
+3. **JSON Unmarshalling**: Correct implicit imports for response unmarshalling
+4. **Build Configuration**: Removed unused `artifactPath` settings
+5. **Dependency Versions**: Compatible ScalaTest/ScalaMock versions
+
 ## Output
 
 Scripts provide:

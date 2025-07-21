@@ -128,6 +128,8 @@ The project includes two GitHub Actions workflows:
 - Compile before testing (proper order)
 - Use compatible dependency versions (ScalaTest 3.2.15, ScalaMock 5.2.0)
 - Cache dependencies for faster builds
+- Proper HTTP test imports (HttpMethods, SprayJsonSupport)
+- Compatible actor system usage (no typed/untyped mixing)
 
 ### Troubleshooting
 ```shell

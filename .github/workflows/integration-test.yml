@@ -58,7 +58,7 @@ jobs:
       - name: Build Docker images
         run: |
           echo "Building Docker images..."
-          docker-compose build
+          docker-compose build --no-cache
           
       - name: Start services
         run: |

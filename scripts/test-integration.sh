@@ -101,8 +101,17 @@ trap cleanup EXIT
 
 # Start the application
 echo -e "${YELLOW}Building and starting services...${NC}"
-docker-compose build
-docker-compose up -d
+echo "Building Docker images (this may take a while)..."
+if ! docker-compose build; then
+    echo -e "${RED}Docker build failed. Check logs above.${NC}"
+    exit 1
+fi
+
+echo "Starting services..."
+if ! docker-compose up -d; then
+    echo -e "${RED}Failed to start services. Check logs above.${NC}"
+    exit 1
+fi
 
 # Wait for services to be ready
 wait_for_service "http://localhost:$BACKEND_PORT/api/chess/move" "Backend API" || exit 1

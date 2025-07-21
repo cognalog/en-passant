@@ -3,10 +3,10 @@ package api
 import actor.{BotPlayer, Player}
 import ai.evaluator.GeneralEvaluator
 import ai.search.ABPruningMinimax
-import akka.actor.testkit.typed.scaladsl.ActorTestKit
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes, HttpMethods}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.model.headers._
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import api.JsonFormats._
 import model._
 import org.scalatest.funsuite.AnyFunSuite
@@ -18,9 +18,7 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
   private val testBotPlayer: Player = BotPlayer(ABPruningMinimax(1, GeneralEvaluator))
   private val chessService = new ChessService(testBotPlayer)
 
-  override def afterAll(): Unit = {
-    ActorTestKit.shutdown(system)
-  }
+  // No need for custom cleanup - ScalatestRouteTest handles actor system lifecycle
 
   test("ChessService should handle CORS preflight requests") {
     Options("/api/chess/move") ~> 

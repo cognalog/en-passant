@@ -44,8 +44,8 @@ jobs:
       - name: Build and test backend
         run: |
           echo "Building and testing backend..."
-          sbt backend/test
           sbt backend/compile
+          sbt backend/test
           
       - name: Build frontend
         run: |

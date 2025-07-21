@@ -123,6 +123,22 @@ The project includes two GitHub Actions workflows:
    - Configuration flexibility testing
    - End-to-end service communication
 
+**Note**: If you encounter compilation issues in CI, the workflows are configured to:
+- Use JDK 17 (compatible with Scala 2.13.4)
+- Compile before testing (proper order)
+- Use compatible dependency versions (ScalaTest 3.2.15, ScalaMock 5.2.0)
+- Cache dependencies for faster builds
+
+### Troubleshooting
+```shell
+# Test compilation locally (dry-run)
+./scripts/test-compile.sh
+
+# Test compilation with sbt (requires sbt installation)
+sbt backend/compile
+sbt backend/test
+```
+
 ### API Testing
 The backend provides the following REST endpoints:
 

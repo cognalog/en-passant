@@ -15,8 +15,8 @@ lazy val backend = project
     commonSettings,
     name := "en-passant-backend",
     libraryDependencies ++= Seq(
-      "org.scalamock" %% "scalamock" % "4.4.0" % Test,
-      "org.scalatest" %% "scalatest" % "3.1.0" % Test,
+      "org.scalamock" %% "scalamock" % "5.2.0" % Test,
+      "org.scalatest" %% "scalatest" % "3.2.15" % Test,
       "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion,
       "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,

@@ -34,7 +34,9 @@ lazy val frontend = project
     scalaJSUseMainModuleInitializer := true,
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "2.4.0",
-      "com.raquo" %%% "laminar" % "15.0.1"
+      "com.raquo" %%% "laminar" % "15.0.1",
+      "org.scalamock" %%% "scalamock" % "5.2.0" % Test,
+      "org.scalatest" %%% "scalatest" % "3.2.15" % Test
     ),
     Compile / fastLinkJS / artifactPath := baseDirectory.value / "target" / "scala-2.13" / "en-passant-frontend-fastopt" / "main.js",
     scalaJSLinkerConfig ~= {

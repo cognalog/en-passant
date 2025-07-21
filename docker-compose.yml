@@ -4,9 +4,11 @@ services:
       context: .
       dockerfile: docker/backend.Dockerfile
     ports:
-      - "8080:8080"
+      - "${BACKEND_PORT:-8080}:${BACKEND_PORT:-8080}"
     environment:
       - CORS_ALLOWED_ORIGIN=http://localhost:3000
+      - BACKEND_PORT=${BACKEND_PORT:-8080}
+      - BOT_SEARCH_DEPTH=${BOT_SEARCH_DEPTH:-4}
 
   frontend:
     build:
@@ -14,5 +16,7 @@ services:
       dockerfile: docker/frontend.Dockerfile
     ports:
       - "3000:80"
+    environment:
+      - BACKEND_PORT=${BACKEND_PORT:-8080}
     depends_on:
       - backend

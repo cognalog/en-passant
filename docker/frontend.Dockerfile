@@ -14,5 +14,8 @@ FROM nginx:alpine
 COPY --from=builder /app/frontend/target/scala-2.13/en-passant-frontend-fastopt/main.js /usr/share/nginx/html/
 COPY --from=builder /app/frontend/src/main/resources/* /usr/share/nginx/html/
 
-# Copy nginx configuration
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf 
+# Copy nginx configuration template
+COPY docker/nginx.conf /etc/nginx/templates/default.conf.template
+
+# Environment variable for backend port
+ENV BACKEND_PORT=8080 

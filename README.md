@@ -17,6 +17,43 @@ docker-compose up --build
 # The application will be available at http://localhost:3000
 ```
 
+## Configuration
+
+You can customize the backend port and bot search depth using environment variables:
+
+### Using Docker Compose
+
+Create a `.env` file in the project root (see `.env.example` for reference):
+
+```shell
+# Backend port (default: 8080)
+BACKEND_PORT=9000
+
+# Bot search depth (default: 4)
+# Higher values make the bot stronger but slower
+BOT_SEARCH_DEPTH=6
+```
+
+Then run:
+```shell
+docker-compose up --build
+```
+
+### Using Docker directly
+
+```shell
+# Run with custom port and search depth
+docker build -t chess-app .
+docker run -p 9000:9000 -e BACKEND_PORT=9000 -e BOT_SEARCH_DEPTH=6 chess-app
+```
+
+### Environment Variables
+
+- `BACKEND_PORT`: Port for the backend server (default: 8080)
+- `BOT_SEARCH_DEPTH`: Search depth for the chess AI (default: 4)
+  - Higher values (5-8) make the bot stronger but significantly slower
+  - Lower values (2-3) make the bot faster but weaker
+
 ## Playing against the bot
 
 1. Open http://localhost:3000 in your web browser

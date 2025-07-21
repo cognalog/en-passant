@@ -91,7 +91,7 @@ jobs:
           echo "Testing move endpoint..."
           response=$(curl -X POST \
             -H "Content-Type: application/json" \
-            -d '{"board": "", "color": "Black"}' \
+            -d '{"board": "", "color": "White"}' \
             -w "%{http_code}" \
             -o /tmp/move_response.json \
             http://localhost:8080/api/chess/move)
@@ -152,7 +152,7 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{
               "board": "",
-              "color": "Black"
+              "color": "White"
             }' \
             -w "%{http_code}" \
             -s \
@@ -190,7 +190,7 @@ jobs:
           # Test the service on new port
           response=$(curl -X POST \
             -H "Content-Type: application/json" \
-            -d '{"board": "", "color": "Black"}' \
+            -d '{"board": "", "color": "White"}' \
             -w "%{http_code}" \
             -s \
             -o /tmp/config_test.json \

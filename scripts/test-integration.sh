@@ -135,7 +135,7 @@ test_api_endpoint \
 test_api_endpoint \
     "http://localhost:$BACKEND_PORT/api/chess/move" \
     "POST" \
-    '{"board": "", "color": "Black"}' \
+    '{"board": "", "color": "White"}' \
     200 \
     "Bot move from initial position"
 
@@ -143,9 +143,9 @@ test_api_endpoint \
 test_api_endpoint \
     "http://localhost:$BACKEND_PORT/api/chess/move" \
     "POST" \
-    '{"board": "e2e4 e7e5", "color": "Black"}' \
+    '{"board": "e4 e5", "color": "White"}' \
     200 \
-    "Bot move after e2e4 e7e5"
+    "Bot move after e4 e5"
 
 # Test printBoard endpoint
 test_api_endpoint \
@@ -159,9 +159,9 @@ test_api_endpoint \
 test_api_endpoint \
     "http://localhost:$BACKEND_PORT/api/chess/printBoard" \
     "POST" \
-    '{"board": "e2e4 e7e5"}' \
+    '{"board": "e4 e5"}' \
     200 \
-    "Print board after e2e4 e7e5"
+    "Print board after e4 e5"
 
 echo -e "${YELLOW}=== Testing Frontend Accessibility ===${NC}"
 
@@ -204,7 +204,7 @@ wait_for_service "http://localhost:9000/api/chess/move" "Backend API (port 9000)
 test_api_endpoint \
     "http://localhost:9000/api/chess/move" \
     "POST" \
-    '{"board": "", "color": "Black"}' \
+    '{"board": "", "color": "White"}' \
     200 \
     "Bot move on custom port (9000)"
 

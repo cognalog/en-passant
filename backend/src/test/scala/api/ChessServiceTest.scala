@@ -33,9 +33,11 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
   }
 
   test("ChessService should handle move requests for initial position") {
+    // For initial position, use empty string (no moves played yet)
+    val board = Board.standardFromMoveStrings(Seq()).get
     val moveRequest = MoveRequest(
-      board = StandardBoard.StartingPosition, 
-      color = Color.Black
+      board = board, 
+      color = Color.White // White goes first
     )
     
     Post("/api/chess/move", HttpEntity(ContentTypes.`application/json`, moveRequest.toJson.toString)) ~>
@@ -50,10 +52,10 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
   }
 
   test("ChessService should handle move requests with game history") {
-    val boardWithMoves = Board.standardFromMoveStrings(Seq("e2e4", "e7e5")).get
+    val boardWithMoves = Board.standardFromMoveStrings(Seq("e4", "e5")).get
     val moveRequest = MoveRequest(
       board = boardWithMoves,
-      color = Color.Black
+      color = Color.White // After "e4 e5", it's White's turn
     )
     
     Post("/api/chess/move", HttpEntity(ContentTypes.`application/json`, moveRequest.toJson.toString)) ~>
@@ -68,8 +70,9 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
   }
 
   test("ChessService should handle printBoard requests for initial position") {
+    val board = Board.standardFromMoveStrings(Seq()).get
     val printRequest = PrintBoardRequest(
-      board = StandardBoard.StartingPosition
+      board = board
     )
     
     Post("/api/chess/printBoard", HttpEntity(ContentTypes.`application/json`, printRequest.toJson.toString)) ~>
@@ -83,7 +86,7 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
   }
 
   test("ChessService should handle printBoard requests with game history") {
-    val boardWithMoves = Board.standardFromMoveStrings(Seq("e2e4", "e7e5")).get
+    val boardWithMoves = Board.standardFromMoveStrings(Seq("e4", "e5")).get
     val printRequest = PrintBoardRequest(
       board = boardWithMoves
     )
@@ -101,20 +104,23 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
   test("ChessService should reject invalid JSON requests") {
     Post("/api/chess/move", HttpEntity(ContentTypes.`application/json`, "invalid json")) ~>
       chessService.routes ~> check {
-      assert(status != StatusCodes.OK)
+      // Request should be rejected due to malformed JSON
+      assert(rejection != null)
     }
   }
 
   test("ChessService should reject requests with missing fields") {
     Post("/api/chess/move", HttpEntity(ContentTypes.`application/json`, """{"board": ""}""")) ~>
       chessService.routes ~> check {
-      assert(status != StatusCodes.OK)
+      // Request should be rejected due to missing 'color' field
+      assert(rejection != null)
     }
   }
 
   test("ChessService should handle requests for White color") {
+    val board = Board.standardFromMoveStrings(Seq()).get
     val moveRequest = MoveRequest(
-      board = StandardBoard.StartingPosition,
+      board = board,
       color = Color.White
     )
     
@@ -136,9 +142,10 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
   }
 
   test("ChessService should handle multiple concurrent requests") {
+    val board = Board.standardFromMoveStrings(Seq()).get
     val moveRequest = MoveRequest(
-      board = StandardBoard.StartingPosition,
-      color = Color.Black
+      board = board,
+      color = Color.White
     )
     
     // Test multiple requests can be handled
@@ -153,9 +160,10 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
   }
 
   test("ChessService should include proper CORS headers in responses") {
+    val board = Board.standardFromMoveStrings(Seq()).get
     val moveRequest = MoveRequest(
-      board = StandardBoard.StartingPosition,
-      color = Color.Black
+      board = board,
+      color = Color.White
     )
     
     Post("/api/chess/move", HttpEntity(ContentTypes.`application/json`, moveRequest.toJson.toString)) ~>

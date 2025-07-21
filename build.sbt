@@ -21,6 +21,8 @@ lazy val backend = project
       "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
+      "com.typesafe.akka" %% "akka-http-testkit" % AkkaHttpVersion % Test,
+      "com.typesafe.akka" %% "akka-actor-testkit-typed" % AkkaVersion % Test,
       "com.typesafe.play" %% "play-json" % "2.9.4"
     )
   )

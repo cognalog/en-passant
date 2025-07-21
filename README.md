@@ -86,3 +86,59 @@ The project consists of two main components:
 - Implements the chess bot logic
 - Various search algorithms and heuristics
 - RESTful API for move generation
+
+## Testing
+
+The project includes comprehensive testing at multiple levels:
+
+### Unit Tests
+```shell
+# Run all tests
+sbt test
+
+# Run only backend tests
+sbt backend/test
+
+# Run only frontend tests
+sbt frontend/test
+```
+
+### Integration Tests
+```shell
+# Run integration tests locally (requires Docker)
+./scripts/test-integration.sh
+
+# Run with custom configuration
+BACKEND_PORT=9000 BOT_SEARCH_DEPTH=3 ./scripts/test-integration.sh
+```
+
+### CI/CD
+The project includes two GitHub Actions workflows:
+
+1. **Scala CI** (`scala.yml`) - Runs unit tests on every push/PR
+2. **Integration Tests** (`integration-test.yml`) - Comprehensive testing including:
+   - Backend and frontend service startup
+   - API endpoint functionality testing
+   - CORS configuration verification
+   - Configuration flexibility testing
+   - End-to-end service communication
+
+### API Testing
+The backend provides the following REST endpoints:
+
+- `POST /api/chess/move` - Get the bot's next move
+  ```json
+  {
+    "board": "e2e4 e7e5",
+    "color": "Black"
+  }
+  ```
+
+- `POST /api/chess/printBoard` - Get board representation
+  ```json
+  {
+    "board": "e2e4 e7e5"
+  }
+  ```
+
+- `OPTIONS /api/chess/*` - CORS preflight requests

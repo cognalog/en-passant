@@ -6,7 +6,17 @@ import scala.scalajs.js.JSON
 import scala.scalajs.js.Promise
 
 object ApiClient {
-  private val baseUrl = "http://localhost:8080/api/chess"
+  private val backendPort = dom.window.location.protocol match {
+    case "file:" => "8080" // Default for development
+    case _ => 
+      // In production, use the same host as the frontend but with backend port
+      // Check if there's a meta tag with backend port info
+      Option(dom.document.querySelector("meta[name='backend-port']"))
+        .map(_.getAttribute("content"))
+        .getOrElse("8080")
+  }
+  
+  private val baseUrl = s"${dom.window.location.protocol}//${dom.window.location.hostname}:$backendPort/api/chess"
 
   def getBotMove(moves: String): Promise[String] = {
     new Promise[String]((resolve, reject) => {

@@ -58,7 +58,7 @@ sbt frontend/fastLinkJS
 docker-compose up --build
 
 # Custom configuration example
-BACKEND_PORT=9000 BOT_SEARCH_DEPTH=6 docker-compose up --build
+BACKEND_PORT=9000 FRONTEND_PORT=4000 BOT_SEARCH_DEPTH=6 docker-compose up --build
 ```
 
 ## Key Implementation Details
@@ -83,8 +83,10 @@ BACKEND_PORT=9000 BOT_SEARCH_DEPTH=6 docker-compose up --build
 
 ### Environment Configuration
 - `BACKEND_PORT`: Backend server port (default: 8080)
+- `FRONTEND_PORT`: Frontend server port (default: 3000)
 - `BOT_SEARCH_DEPTH`: AI search depth (default: 4, range: 1-8)
 - Higher search depths improve AI strength but increase response time
+- Frontend automatically connects to the configured backend port
 
 ### Testing Patterns
 - Backend tests use ScalaTest with ScalaMock

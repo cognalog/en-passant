@@ -11,3 +11,4 @@ target
 .bloop/*
 metals.sbt
 *.json
+.env

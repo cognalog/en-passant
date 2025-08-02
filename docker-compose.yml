@@ -9,6 +9,8 @@ services:
       - CORS_ALLOWED_ORIGIN=http://localhost:${FRONTEND_PORT:-3000}
       - BACKEND_PORT=${BACKEND_PORT:-8080}
       - BOT_SEARCH_DEPTH=${BOT_SEARCH_DEPTH:-4}
+    networks:
+      - app-network
 
   frontend:
     build:
@@ -18,5 +20,12 @@ services:
       - "${FRONTEND_PORT:-3000}:80"
     environment:
       - BACKEND_PORT=${BACKEND_PORT:-8080}
+    networks:
+      - app-network
     depends_on:
       - backend
+
+networks:
+  app-network:
+    external: ${USE_EXTERNAL_NETWORK:-false}
+    name: ${DOCKER_NETWORK:-app-network}

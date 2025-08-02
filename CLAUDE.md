@@ -59,6 +59,9 @@ docker-compose up --build
 
 # Custom configuration example
 BACKEND_PORT=9000 FRONTEND_PORT=4000 BOT_SEARCH_DEPTH=6 docker-compose up --build
+
+# Use external network
+USE_EXTERNAL_NETWORK=true DOCKER_NETWORK=crucibots-en-passant-network docker-compose up --build
 ```
 
 ## Key Implementation Details
@@ -85,6 +88,8 @@ BACKEND_PORT=9000 FRONTEND_PORT=4000 BOT_SEARCH_DEPTH=6 docker-compose up --buil
 - `BACKEND_PORT`: Backend server port (default: 8080)
 - `FRONTEND_PORT`: Frontend server port (default: 3000)
 - `BOT_SEARCH_DEPTH`: AI search depth (default: 4, range: 1-8)
+- `USE_EXTERNAL_NETWORK`: Use external Docker network (default: false)
+- `DOCKER_NETWORK`: External network name when USE_EXTERNAL_NETWORK=true
 - Higher search depths improve AI strength but increase response time
 - Frontend automatically connects to the configured backend port
 

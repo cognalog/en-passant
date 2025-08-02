@@ -41,7 +41,7 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
 
   test("ChessService should handle move requests for initial position") {
     // Test with actual JSON format that frontend sends
-    val jsonRequest = """{"board": "", "color": "White"}"""
+    val jsonRequest = """{"movesSoFar": "", "color": "White"}"""
 
     Post(
       "/api/chess/move",
@@ -60,7 +60,7 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
 
   test("ChessService should handle move requests with game history") {
     // Test with actual JSON format that frontend sends
-    val jsonRequest = """{"board": "e4 e5", "color": "White"}"""
+    val jsonRequest = """{"movesSoFar": "e4 e5", "color": "White"}"""
 
     Post(
       "/api/chess/move",
@@ -79,7 +79,7 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
 
   test("ChessService should handle printBoard requests for initial position") {
     // Test with actual JSON format that frontend sends
-    val jsonRequest = """{"board": ""}"""
+    val jsonRequest = """{"movesSoFar": ""}"""
 
     Post(
       "/api/chess/printBoard",
@@ -91,14 +91,14 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
 
         // Check that response contains a board representation
         val responseBody = responseAs[String]
-        assert(responseBody.contains("board"))
+        assert(responseBody.contains("movesSoFar"))
         assert(responseBody.contains("\""))
       }
   }
 
   test("ChessService should handle printBoard requests with game history") {
     // Test with actual JSON format that frontend sends
-    val jsonRequest = """{"board": "e4 e5"}"""
+    val jsonRequest = """{"movesSoFar": "e4 e5"}"""
 
     Post(
       "/api/chess/printBoard",
@@ -110,7 +110,7 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
 
         // Check that response contains a board representation
         val responseBody = responseAs[String]
-        assert(responseBody.contains("board"))
+        assert(responseBody.contains("movesSoFar"))
         assert(responseBody.contains("\""))
       }
   }
@@ -129,7 +129,7 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
   test("ChessService should reject requests with missing fields") {
     Post(
       "/api/chess/move",
-      HttpEntity(ContentTypes.`application/json`, """{"board": ""}""")
+      HttpEntity(ContentTypes.`application/json`, """{"movesSoFar": ""}""")
     ) ~>
       chessService.routes ~> check {
         // Request should be rejected due to missing 'color' field
@@ -139,7 +139,7 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
 
   test("ChessService should handle requests for White color") {
     // Test with actual JSON format that frontend sends
-    val jsonRequest = """{"board": "", "color": "White"}"""
+    val jsonRequest = """{"movesSoFar": "", "color": "White"}"""
 
     Post(
       "/api/chess/move",
@@ -164,7 +164,7 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
 
     test("ChessService should handle multiple concurrent requests") {
     // Test with actual JSON format that frontend sends
-    val jsonRequest = """{"board": "", "color": "White"}"""
+    val jsonRequest = """{"movesSoFar": "", "color": "White"}"""
 
     // Test multiple requests can be handled
     for (_ <- 1 to 3) {
@@ -182,7 +182,7 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
 
   test("ChessService should include proper CORS headers in responses") {
     // Test with actual JSON format that frontend sends
-    val jsonRequest = """{"board": "", "color": "White"}"""
+    val jsonRequest = """{"movesSoFar": "", "color": "White"}"""
 
     Post(
       "/api/chess/move",

@@ -36,7 +36,7 @@ class ChessService(player: Player) {
             post {
               entity(as[MoveRequest]) { request =>
                 complete {
-                  player.GetNextMove(request.board, request.color) match {
+                  player.GetNextMove(request.movesSoFar, request.color) match {
                     case scala.util.Success(move) => MoveResponse(move)
                     case scala.util.Failure(ex) =>
                       throw new RuntimeException(
@@ -51,7 +51,7 @@ class ChessService(player: Player) {
             post {
               entity(as[PrintBoardRequest]) { request =>
                 complete {
-                  PrintBoardResponse(request.board)
+                  PrintBoardResponse(request.movesSoFar)
                 }
               }
             }

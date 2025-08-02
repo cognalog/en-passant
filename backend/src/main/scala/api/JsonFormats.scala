@@ -16,9 +16,12 @@ object JsonFormats extends DefaultJsonProtocol {
   implicit object ColorFormat extends JsonFormat[Color] {
     def write(color: Color): JsValue = JsString(color.toString)
     def read(value: JsValue): Color = value match {
-      case JsString("White") => Color.White
-      case JsString("Black") => Color.Black
-      case _                 => deserializationError("Color expected")
+      case JsString(str) => str.toLowerCase match {
+        case "white" => Color.White
+        case "black" => Color.Black
+        case _       => deserializationError("Color expected")
+      }
+      case _ => deserializationError("Color expected")
     }
   }
 
@@ -53,10 +56,10 @@ object JsonFormats extends DefaultJsonProtocol {
   }
 
   // Request/Response formats
-  case class MoveRequest(board: Board, color: Color)
+  case class MoveRequest(movesSoFar: Board, color: Color)
   case class MoveResponse(move: Move)
-  case class PrintBoardRequest(board: Board)
-  case class PrintBoardResponse(board: Board)
+  case class PrintBoardRequest(movesSoFar: Board)
+  case class PrintBoardResponse(movesSoFar: Board)
 
   implicit val moveRequestFormat: RootJsonFormat[MoveRequest] = jsonFormat2(
     MoveRequest

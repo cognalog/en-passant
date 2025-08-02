@@ -38,7 +38,7 @@ object ApiClient {
       xhr.send(
         JSON.stringify(
           js.Dynamic.literal(
-            board = moves,
+            movesSoFar = moves,
             color = "Black" // Bot always plays as Black
           )
         )

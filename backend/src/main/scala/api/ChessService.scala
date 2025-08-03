@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import actor.Player
 import api.JsonFormats._
-import model.{Board, StandardBoard}
+import model.{Board, StandardBoard, Move}
 import spray.json._
 
 class ChessService(player: Player) {
@@ -37,7 +37,7 @@ class ChessService(player: Player) {
               entity(as[MoveRequest]) { request =>
                 complete {
                   player.GetNextMove(request.movesSoFar, request.color) match {
-                    case scala.util.Success(move) => MoveResponse(move)
+                    case scala.util.Success(move) => MoveResponseWithBoard(move, request.movesSoFar)
                     case scala.util.Failure(ex) =>
                       throw new RuntimeException(
                         s"Failed to get next move: ${ex.getMessage}"

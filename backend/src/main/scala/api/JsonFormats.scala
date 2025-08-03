@@ -4,6 +4,7 @@ import model.Color.Color
 import model._
 import spray.json.{
   DefaultJsonProtocol,
+  JsObject,
   JsString,
   JsValue,
   JsonFormat,
@@ -58,6 +59,7 @@ object JsonFormats extends DefaultJsonProtocol {
   // Request/Response formats
   case class MoveRequest(movesSoFar: Board, color: Color)
   case class MoveResponse(move: Move)
+  case class MoveResponseWithBoard(move: Move, board: Board)
   case class PrintBoardRequest(movesSoFar: Board)
   case class PrintBoardResponse(movesSoFar: Board)
 
@@ -67,6 +69,18 @@ object JsonFormats extends DefaultJsonProtocol {
   implicit val moveResponseFormat: RootJsonFormat[MoveResponse] = jsonFormat1(
     MoveResponse
   )
+  
+  // Custom format for MoveResponseWithBoard that uses SAN
+  implicit object MoveResponseWithBoardFormat extends RootJsonFormat[MoveResponseWithBoard] {
+    def write(response: MoveResponseWithBoard): JsValue = {
+      val sanMove = Move.toSAN(response.move, response.board)
+      JsObject("move" -> JsString(sanMove))
+    }
+    def read(value: JsValue): MoveResponseWithBoard = {
+      deserializationError("Reading MoveResponseWithBoard is not supported")
+    }
+  }
+  
   implicit val printBoardRequestFormat: RootJsonFormat[PrintBoardRequest] =
     jsonFormat1(PrintBoardRequest)
   implicit val printBoardResponseFormat: RootJsonFormat[PrintBoardResponse] =

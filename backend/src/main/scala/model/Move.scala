@@ -6,6 +6,64 @@ object Move {
   private val normalMovePattern =
     raw"([BKNQR])?([a-h])?x?([a-h][1-8])(=[BNQR])?\+?".r
 
+  /** Convert a move to proper Standard Algebraic Notation (SAN) format.
+    * This includes only necessary disambiguation and check/checkmate indicators.
+    *
+    * @param move the move to convert
+    * @param board the board state before the move
+    * @return the move in proper SAN format
+    */
+  def toSAN(move: Move, board: Board): String = move match {
+    case CastleMove(_) => move.toStandardNotation
+    case normalMove: NormalMove =>
+      val piece = normalMove.piece
+      val isCapture = normalMove.isCapture
+      val destination = normalMove.destination
+      val promotion = normalMove.promotion
+
+      // Check if disambiguation is needed
+      val sameTypePieces = board.locatePiece(piece).filter(_ != normalMove.start)
+      val conflictingPieces = sameTypePieces.filter(square =>
+        piece.getLegalMoves(square, board).exists(_.destination == destination)
+      )
+
+      val disambiguation = if (conflictingPieces.nonEmpty) {
+        // If multiple pieces can move to the same destination, we need disambiguation
+        val filesConflict = conflictingPieces.exists(_.file == normalMove.start.file)
+        val ranksConflict = conflictingPieces.exists(_.rank == normalMove.start.rank)
+        
+        if (!filesConflict) {
+          // Disambiguate by file if no file conflict
+          normalMove.start.standardFileName
+        } else if (!ranksConflict) {
+          // Disambiguate by rank if file conflicts but no rank conflict
+          normalMove.start.rank.toString
+        } else {
+          // Full square disambiguation if both file and rank conflict
+          normalMove.start.standardName
+        }
+      } else ""
+
+      // For pawn captures, always include the starting file
+      val pawnCaptureFile = if (piece.isInstanceOf[Pawn] && isCapture) {
+        normalMove.start.standardFileName
+      } else ""
+
+      val pieceSymbol = if (piece.isInstanceOf[Pawn]) "" else piece.standardName
+      val captureSymbol = if (isCapture) "x" else ""
+      val promotionSymbol = promotion.map(p => s"=${p.standardName}").getOrElse("")
+
+      // Determine check/checkmate after the move
+      val boardAfterMove = board.move(move).getOrElse(board)
+      val checkSymbol = if (boardAfterMove.isCheckmate) {
+        "#"
+      } else if (boardAfterMove.kingInCheck(boardAfterMove.turnColor)) {
+        "+"
+      } else ""
+
+      s"$pieceSymbol${disambiguation}${pawnCaptureFile}${captureSymbol}${destination.standardName}${promotionSymbol}${checkSymbol}"
+  }
+
   /** Parse a move string written in Algebraic Notation. Limited legality
     * checking is performed to resolve ambiguity.
     *

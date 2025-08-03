@@ -51,10 +51,18 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
         assert(status == StatusCodes.OK)
         assert(contentType == ContentTypes.`application/json`)
 
-        // Check that response contains a move in standard notation
+        // Check that response contains a move in SAN format
         val responseBody = responseAs[String]
         assert(responseBody.contains("move"))
-        assert(responseBody.contains("\""))
+        
+        // Parse JSON and verify move is in SAN format (no square coordinates like "e2e4")
+        val json = responseBody.parseJson.asJsObject
+        val move = json.fields("move").convertTo[String]
+        
+        // SAN format should be simple like "e4", "Nf3", not "e2e4" or "Ng1f3"
+        assert(move.matches("^[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](=[QRBN])?[+#]?$"))
+        assert(!move.contains("e2e4")) // Should not contain coordinate notation
+        assert(!move.contains("Ng1f3")) // Should not contain unnecessary disambiguation
       }
   }
 
@@ -70,10 +78,17 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
         assert(status == StatusCodes.OK)
         assert(contentType == ContentTypes.`application/json`)
 
-        // Check that response contains a move in standard notation
+        // Check that response contains a move in SAN format
         val responseBody = responseAs[String]
         assert(responseBody.contains("move"))
-        assert(responseBody.contains("\""))
+        
+        // Parse JSON and verify move is in SAN format
+        val json = responseBody.parseJson.asJsObject
+        val move = json.fields("move").convertTo[String]
+        
+        // SAN format should be simple like "Nf3", "d4", not coordinate notation
+        assert(move.matches("^[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](=[QRBN])?[+#]?$"))
+        assert(!move.matches("^[a-h][1-8][a-h][1-8]")) // Should not be coordinate notation like "e2e4"
       }
   }
 
@@ -149,10 +164,15 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
         assert(status == StatusCodes.OK)
         assert(contentType == ContentTypes.`application/json`)
 
-        // Check that response contains a move in standard notation
+        // Check that response contains a move in SAN format
         val responseBody = responseAs[String]
         assert(responseBody.contains("move"))
-        assert(responseBody.contains("\""))
+        
+        // Parse JSON and verify move is in SAN format
+        val json = responseBody.parseJson.asJsObject
+        val move = json.fields("move").convertTo[String]
+        assert(move.nonEmpty)
+        assert(move.matches("^[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](=[QRBN])?[+#]?$"))
       }
   }
 
@@ -176,6 +196,11 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
         assert(status == StatusCodes.OK)
         val responseBody = responseAs[String]
         assert(responseBody.contains("move"))
+        
+        // Verify each response contains proper SAN format
+        val json = responseBody.parseJson.asJsObject
+        val move = json.fields("move").convertTo[String]
+        assert(move.matches("^[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](=[QRBN])?[+#]?$"))
       }
     }
   }
@@ -193,5 +218,38 @@ class ChessServiceTest extends AnyFunSuite with ScalatestRouteTest {
         assert(status == StatusCodes.OK)
         assert(header("Access-Control-Allow-Origin").isDefined)
       }
+  }
+
+  test("ChessService should return moves in proper SAN format") {
+    // Test various game positions to ensure SAN format is correct
+    val testCases = Seq(
+      ("""{"movesSoFar": "", "color": "White"}""", "Initial position"),
+      ("""{"movesSoFar": "e4", "color": "Black"}""", "After e4"),
+      ("""{"movesSoFar": "e4 e5 Nf3", "color": "Black"}""", "After development"),
+      ("""{"movesSoFar": "e4 e5 Nf3 Nc6", "color": "White"}""", "Early game")
+    )
+
+    testCases.foreach { case (jsonRequest, description) =>
+      Post(
+        "/api/chess/move",
+        HttpEntity(ContentTypes.`application/json`, jsonRequest)
+      ) ~>
+        chessService.routes ~> check {
+          assert(status == StatusCodes.OK, s"Failed for: $description")
+          
+          val responseBody = responseAs[String]
+          val json = responseBody.parseJson.asJsObject
+          val move = json.fields("move").convertTo[String]
+          
+          // Verify proper SAN format
+          assert(move.nonEmpty, s"Empty move for: $description")
+          assert(move.matches("^[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](=[QRBN])?[+#]?$"), 
+                 s"Invalid SAN format '$move' for: $description")
+          
+          // Verify it's not coordinate notation
+          assert(!move.matches("^[a-h][1-8][a-h][1-8]"), 
+                 s"Move '$move' appears to be coordinate notation for: $description")
+        }
+    }
   }
 }

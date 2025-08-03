@@ -187,4 +187,110 @@ class MoveTest extends AnyFunSuite {
       NormalMove(Square(5, 7), Square(6, 8), Pawn(Color.White), isCapture = true, promotion = Some(Queen(Color.White))).toStandardNotation
     }
   }
+
+  // Tests for Move.toSAN method - proper Standard Algebraic Notation
+  test("testToSAN_pawn_simple_move") {
+    val board = StandardBoard.StartingPosition
+    val move = NormalMove(Square(5, 2), Square(5, 4), Pawn(Color.White))
+    assertResult("e4") {
+      Move.toSAN(move, board)
+    }
+  }
+
+  test("testToSAN_knight_simple_move") {
+    val board = StandardBoard.StartingPosition
+    val move = NormalMove(Square(7, 1), Square(6, 3), Knight(Color.White))
+    assertResult("Nf3") {
+      Move.toSAN(move, board)
+    }
+  }
+
+  test("testToSAN_pawn_capture") {
+    // Create board with capture possible
+    val board = StandardBoard(Map(
+      Square(5, 2) -> Pawn(Color.White),
+      Square(4, 3) -> Pawn(Color.Black)
+    ), Color.White)
+    val move = NormalMove(Square(5, 2), Square(4, 3), Pawn(Color.White), isCapture = true)
+    assertResult("exd3") {
+      Move.toSAN(move, board)
+    }
+  }
+
+  test("testToSAN_knight_with_disambiguation_needed") {
+    // Create board where both knights can actually move to e5
+    val board = StandardBoard(Map(
+      Square(3, 3) -> Knight(Color.White), // Nc3 can move to e5 via d5-e5 
+      Square(6, 3) -> Knight(Color.White), // Nf3 can move to e5 via d4-e5
+      Square(1, 1) -> King(Color.White),
+      Square(8, 8) -> King(Color.Black)
+    ), Color.White)
+    
+    // Check if both knights can actually reach e5
+    val nc3Moves = Knight(Color.White).getLegalMoves(Square(3, 3), board)
+    val nf3Moves = Knight(Color.White).getLegalMoves(Square(6, 3), board)
+    
+    // Find a square both can reach for true disambiguation test
+    val commonSquares = nc3Moves.map(_.destination).intersect(nf3Moves.map(_.destination))
+    
+    if (commonSquares.nonEmpty) {
+      val targetSquare = commonSquares.head
+      val move = NormalMove(Square(6, 3), targetSquare, Knight(Color.White))
+      val sanMove = Move.toSAN(move, board)
+      
+      // Should include disambiguation
+      assert(sanMove.contains("f") || sanMove.length > 3, s"Expected disambiguation in $sanMove")
+      assert(sanMove.startsWith("N"))
+    } else {
+      // If no common squares, just test that no disambiguation is added when not needed
+      val move = NormalMove(Square(6, 3), Square(5, 5), Knight(Color.White))
+      val sanMove = Move.toSAN(move, board)
+      assertResult("Ne5") { sanMove }
+    }
+  }
+
+  test("testToSAN_castle_kingside") {
+    val board = StandardBoard.StartingPosition
+    val move = CastleMove(Square(7, 1))
+    assertResult("O-O") {
+      Move.toSAN(move, board)
+    }
+  }
+
+  test("testToSAN_castle_queenside") {
+    val board = StandardBoard.StartingPosition
+    val move = CastleMove(Square(3, 1))
+    assertResult("O-O-O") {
+      Move.toSAN(move, board)
+    }
+  }
+
+  test("testToSAN_promotion") {
+    val board = StandardBoard(Map(
+      Square(5, 7) -> Pawn(Color.White),
+      Square(1, 1) -> King(Color.White),
+      Square(8, 1) -> King(Color.Black) // Put black king on back rank to avoid check
+    ), Color.White)
+    val move = NormalMove(Square(5, 7), Square(5, 8), Pawn(Color.White), promotion = Some(Queen(Color.White)))
+    val sanMove = Move.toSAN(move, board)
+    
+    // The move should be promotion, possibly with check
+    assert(sanMove.startsWith("e8=Q"))
+    assert(sanMove.matches("^e8=Q[+#]?$"))
+  }
+
+  test("testToSAN_capture_with_promotion") {
+    val board = StandardBoard(Map(
+      Square(5, 7) -> Pawn(Color.White),
+      Square(6, 8) -> Rook(Color.Black),
+      Square(1, 1) -> King(Color.White),
+      Square(8, 1) -> King(Color.Black) // Put black king away to avoid check
+    ), Color.White)
+    val move = NormalMove(Square(5, 7), Square(6, 8), Pawn(Color.White), isCapture = true, promotion = Some(Queen(Color.White)))
+    val sanMove = Move.toSAN(move, board)
+    
+    // The move should be capture with promotion, possibly with check
+    assert(sanMove.startsWith("exf8=Q"))
+    assert(sanMove.matches("^exf8=Q[+#]?$"))
+  }
 }

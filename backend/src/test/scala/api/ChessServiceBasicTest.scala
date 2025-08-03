@@ -24,6 +24,11 @@ class ChessServiceBasicTest extends AnyFunSuite {
     
     assert(moveResult.isSuccess)
     assert(moveResult.get.toStandardNotation.nonEmpty)
+    
+    // Also test that SAN format works
+    val sanMove = Move.toSAN(moveResult.get, startingBoard)
+    assert(sanMove.nonEmpty)
+    assert(sanMove.matches("^[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](=[QRBN])?[+#]?$"))
   }
 
   test("Bot player can handle game with moves") {
@@ -35,6 +40,11 @@ class ChessServiceBasicTest extends AnyFunSuite {
     
     assert(moveResult.isSuccess)
     assert(moveResult.get.toStandardNotation.nonEmpty)
+    
+    // Also test that SAN format works
+    val sanMove = Move.toSAN(moveResult.get, boardWithMoves)
+    assert(sanMove.nonEmpty)
+    assert(sanMove.matches("^[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](=[QRBN])?[+#]?$"))
   }
 
   test("StandardBoard can be created from move strings") {
